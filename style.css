@@ -1,0 +1,111 @@
+/* ==========================================================================
+   style.css - 마라톤 페이스 & 레이스 전략 플래너 PRO (AdSense & SEO 최적화 버전)
+   ========================================================================== */
+
+:root {
+  --brand-primary: #4f46e5;
+  --brand-light: #818cf8;
+  --coupang-red: #e11d48;
+  --naver-green: #03c75a;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 커스텀 범위 슬라이더 (모바일 엄지 조작 최적화) */
+input[type="range"].runner-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"].runner-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.dark input[type="range"].runner-slider::-webkit-slider-thumb {
+  background: var(--brand-light);
+  border-color: #1e293b;
+}
+
+input[type="range"].runner-slider::-webkit-slider-thumb:active {
+  transform: scale(1.18);
+}
+
+input[type="range"].runner-slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand-primary);
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+/* 숫자 입력 기본 화살표 제거 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* 구글 애드센스 반응형 슬롯 컨테이너 (CLS 레이아웃 밀림 방지) */
+.ad-slot-container {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* 쿠팡 / 네이버 제휴 버튼 호버 효과 */
+.btn-coupang {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  color: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn-coupang:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(225, 29, 72, 0.3);
+}
+
+.btn-naver {
+  background: linear-gradient(135deg, #03c75a 0%, #029f48 100%);
+  color: #ffffff;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+.btn-naver:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(3, 199, 90, 0.3);
+}
+
+/* 아티클 본문 가독성 향상 (애드센스 크롤러 친화적 타이포그래피) */
+.seo-article h3 {
+  font-weight: 800;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.seo-article p {
+  line-height: 1.75;
+  margin-bottom: 0.85rem;
+}
