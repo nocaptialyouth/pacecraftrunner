@@ -194,11 +194,12 @@ input[type="number"] {
         <span>MarathonLab <span class="text-brand-600 dark:text-brand-400">PRO</span></span>
       </a>
 
-      <div class="hidden md:flex items-center gap-5 text-xs font-bold text-slate-600 dark:text-slate-300">
-        <a href="#calculator-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT·스플릿 계산기</a>
+      <div class="hidden md:flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
+        <a href="#calculator-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT·스플릿</a>
         <a href="#fueling-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">에너지젤 보급표</a>
+        <a href="#pro-lab-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition text-brand-600 dark:text-brand-400">🔬 10대 레이스 연구소</a>
         <a href="#gear-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">추천 레이스 기어</a>
-        <a href="#training-guide" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT 훈련 칼럼</a>
+        <a href="#checklist-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">대회 체크리스트</a>
         <a href="#faq-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">FAQ</a>
       </div>
 
@@ -304,32 +305,57 @@ input[type="number"] {
           </div>
         </div>
 
-        <!-- 카드 2: 러너 신체 프로필 (체중) -->
+        <!-- 카드 2: 러너 신체 프로필 (키 & 체중 30kg~130kg) -->
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-base font-bold flex items-center gap-2">
               <span class="w-6 h-6 rounded-lg bg-brand-600 text-white text-xs flex items-center justify-center font-bold">2</span>
-              체중 및 대사 프로필
+              키 · 체중 및 대사 프로필
             </h2>
-            <span class="text-xs font-medium text-slate-400">칼로리·탄수화물 계산</span>
+            <span id="bmi-status-badge" class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400">
+              BMI 23.0 · 표준 러너형
+            </span>
           </div>
 
-          <div class="flex items-center justify-between mb-2">
-            <label for="runner-weight" class="text-xs font-semibold text-slate-500 dark:text-slate-400">현재 체중 (kg)</label>
-            <div class="flex items-center gap-1.5">
-              <button type="button" id="weight-minus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">-</button>
-              <input id="runner-weight" type="number" min="35" max="130" step="0.5" value="68" class="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1 text-center font-mono text-sm font-bold" />
-              <span class="text-xs font-semibold text-slate-500">kg</span>
-              <button type="button" id="weight-plus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">+</button>
+          <!-- 키(cm) 입력 및 슬라이더 -->
+          <div class="mb-4 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="runner-height" class="text-xs font-semibold text-slate-500 dark:text-slate-400">현재 신장 / 키 (cm)</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="height-minus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">-</button>
+                <input id="runner-height" type="number" min="120" max="210" step="0.5" value="172" class="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1 text-center font-mono text-sm font-bold" />
+                <span class="text-xs font-semibold text-slate-500">cm</span>
+                <button type="button" id="height-plus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">+</button>
+              </div>
+            </div>
+            <input id="height-slider" type="range" min="130" max="200" step="1" value="172" aria-label="키 슬라이더" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+            <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>130cm</span>
+              <span>155cm</span>
+              <span>175cm</span>
+              <span>200cm</span>
             </div>
           </div>
 
-          <input id="weight-slider" type="range" min="40" max="110" step="1" value="68" aria-label="체중 슬라이더" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
-          <div class="flex justify-between text-[11px] text-slate-400 mt-1">
-            <span>40kg</span>
-            <span>65kg</span>
-            <span>85kg</span>
-            <span>110kg</span>
+          <!-- 체중(kg) 입력 및 슬라이더 (30kg부터 지원!) -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="runner-weight" class="text-xs font-semibold text-slate-500 dark:text-slate-400">현재 체중 (kg · 30kg~130kg)</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="weight-minus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">-</button>
+                <input id="runner-weight" type="number" min="30" max="130" step="0.5" value="68" class="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1 text-center font-mono text-sm font-bold" />
+                <span class="text-xs font-semibold text-slate-500">kg</span>
+                <button type="button" id="weight-plus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">+</button>
+              </div>
+            </div>
+
+            <input id="weight-slider" type="range" min="30" max="110" step="1" value="68" aria-label="체중 슬라이더" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+            <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>30kg</span>
+              <span>55kg</span>
+              <span>80kg</span>
+              <span>110kg</span>
+            </div>
           </div>
         </div>
       </div>
@@ -347,15 +373,19 @@ input[type="number"] {
             </span>
           </div>
 
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">목표 대회 종목</label>
-          <div class="grid grid-cols-2 gap-2.5 mb-4" id="target-dist-group">
-            <button type="button" data-dist="21.0975" class="target-dist-btn py-3 px-4 rounded-xl text-sm font-bold border transition flex items-center justify-between">
-              <span>🏅 하프 마라톤</span>
-              <span class="text-xs font-mono opacity-75">21.0975 km</span>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">목표 대회 종목 (10km / 하프 / 풀코스)</label>
+          <div class="grid grid-cols-3 gap-2 mb-4" id="target-dist-group">
+            <button type="button" data-dist="10" class="target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5">
+              <span>🏃 10km</span>
+              <span class="text-[11px] font-mono opacity-75">10.0 km</span>
             </button>
-            <button type="button" data-dist="42.195" class="target-dist-btn py-3 px-4 rounded-xl text-sm font-bold border transition flex items-center justify-between">
-              <span>🏆 풀코스 마라톤</span>
-              <span class="text-xs font-mono opacity-75">42.195 km</span>
+            <button type="button" data-dist="21.0975" class="target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5">
+              <span>🏅 하프</span>
+              <span class="text-[11px] font-mono opacity-75">21.1 km</span>
+            </button>
+            <button type="button" data-dist="42.195" class="target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5">
+              <span>🏆 풀코스</span>
+              <span class="text-[11px] font-mono opacity-75">42.2 km</span>
             </button>
           </div>
 
@@ -469,7 +499,7 @@ input[type="number"] {
           </div>
 
           <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">예상 소모 에너지</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">예상 소모 에너지 (키·체중·속도)</div>
             <div class="mt-1 flex items-baseline gap-1">
               <span id="kcal-val" class="text-2xl sm:text-3xl font-extrabold font-mono text-orange-500">2,920</span>
               <span class="text-xs font-bold text-slate-400">kcal</span>
@@ -531,11 +561,11 @@ input[type="number"] {
       <section class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
-            <h2 class="text-lg font-extrabold flex items-center gap-2">
+            <h2 id="split-table-title" class="text-lg font-extrabold flex items-center gap-2">
               ⏱️ 5km 구간별 목표 통과 시간표 (Split Table)
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              선택한 주행 전략에 맞춘 구간별 목표 페이스 및 누적 통과 시간입니다.
+              선택한 목표 종목(10km/하프/풀코스)과 주행 전략에 맞춘 구간별 목표 페이스 및 누적 통과 시간입니다.
             </p>
           </div>
           <span id="split-strategy-chip" class="self-start sm:self-auto px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
@@ -567,7 +597,7 @@ input[type="number"] {
               ⚡ 레이스 에너지젤 &amp; 수분 보급 타임라인
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              체중(<span id="fuel-weight-label" class="font-bold text-slate-700 dark:text-slate-200">68kg</span>)과 예상 주행 시간을 기반으로 30km 이후 '마라톤 벽(Bonking)'을 예방하는 스포츠 영양학 프로토콜입니다.
+              신장·체중(<span id="fuel-weight-label" class="font-bold text-slate-700 dark:text-slate-200">172cm · 68kg</span>)과 예상 주행 시간을 기반으로 에너지 고갈을 예방하는 스포츠 영양학 프로토콜입니다.
             </p>
           </div>
           <div class="flex items-center gap-2 text-xs font-bold">
@@ -609,6 +639,401 @@ input[type="number"] {
           <span>💬 카카오톡 공유용 텍스트 복사</span>
         </button>
       </div>
+    </section>
+
+    <!-- =====================================================================
+         [신규 10대 PRO 확장 기능] 마라톤 올인원 레이스 연구소 (10-in-1 Lab)
+         ===================================================================== -->
+    <section id="pro-lab-section" class="mt-6 space-y-6">
+
+      <!-- 연구소 헤더 & 빠른 이동 앵커 바 -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-brand-500/30 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <span class="inline-block text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-400 mb-1">
+              🔬 ALL-IN-ONE MARATHON LAB • 10대 실전 시뮬레이터
+            </span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+              마라톤 실전 퍼포먼스 &amp; 레이스 준비 10대 도구
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              위에서 입력한 <strong>키·체중·목표 기록</strong>과 실시간 연동되는 10가지 전문 마라톤 분석 도구입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+          <a href="#lab-dday" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">1. 📆 대회 D-Day·코스</a>
+          <a href="#lab-weather" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">2. 🌡️ 날씨 페이스 보정</a>
+          <a href="#lab-outfit" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">3. 🎽 기온별 러닝 복장</a>
+          <a href="#lab-paceband" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">4. ⌚ 손목 페이스 밴드</a>
+          <a href="#lab-carboload" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">5. 🍙 3일 카보로딩 계산기</a>
+          <a href="#lab-hr-zone" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">6. ❤️ 심박수 존(Zone 1~5)</a>
+          <a href="#lab-cadence" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">7. 👟 키·보폭·케이던스</a>
+          <a href="#lab-weight-sim" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">8. 📉 체중 감량 시뮬레이터</a>
+          <a href="#lab-schedule" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">9. 🗓️ 주간 훈련 스케줄표</a>
+          <a href="#checklist-section" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">10. ✅ 준비물 체크리스트</a>
+        </div>
+      </div>
+
+      <!-- [기능 1] 국내 주요 마라톤 대회 D-Day 카운트다운 & 코스 난이도 -->
+      <div id="lab-dday" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              📆 1. 목표 마라톤 대회 D-Day 카운트다운 &amp; 코스 난이도 분석
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              참가 예정인 메이저 대회를 선택하거나 직접 대회 날짜를 지정해 남은 훈련 기간과 코스 특성을 확인하세요.
+            </p>
+          </div>
+          <div id="dday-counter-badge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-brand-600 text-white font-mono text-sm font-extrabold shadow-sm">
+            D-Day 계산 중
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 mb-4" id="major-race-buttons">
+          <button type="button" data-race="seoul" data-date="2027-03-21" data-course="flat" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white transition">
+            🏆 서울마라톤 (동아·평탄 고속)
+          </button>
+          <button type="button" data-race="jtbc" data-date="2026-11-08" data-course="rolling" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🔥 JTBC 서울마라톤 (후반 완만 언덕)
+          </button>
+          <button type="button" data-race="chuncheon" data-date="2026-10-25" data-course="hilly" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🍁 춘천마라톤 (호반 업다운 코어)
+          </button>
+          <button type="button" data-race="daegu" data-date="2027-02-21" data-course="flat" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            ⚡ 대구국제마라톤 (초고속 순환)
+          </button>
+          <button type="button" data-race="gyeongju" data-date="2026-10-17" data-course="rolling" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🌸 경주마라톤 (완만 구릉지)
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
+          <div>
+            <label for="race-date-input" class="block text-[11px] font-bold text-slate-500 mb-1">대회 날짜 직접 선택</label>
+            <input id="race-date-input" type="date" value="2027-03-21" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700" />
+          </div>
+          <div>
+            <label for="race-course-select" class="block text-[11px] font-bold text-slate-500 mb-1">코스 지형 난이도</label>
+            <select id="race-course-select" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">
+              <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
+              <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
+              <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
+            </select>
+          </div>
+          <div id="dday-course-summary" class="flex flex-col justify-center text-xs text-slate-600 dark:text-slate-300"></div>
+        </div>
+      </div>
+
+      <!-- [기능 2 & 3] 대회 당일 날씨(기온·습도·풍속) 페이스 보정기 & 기온별 러닝 복장 코디네이터 -->
+      <div id="lab-weather" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 좌측: 날씨 페이스 보정기 (6 cols) -->
+        <div class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-extrabold flex items-center gap-1.5">
+                🌡️ 2. 날씨(기온·습도·풍속) 페이스 보정기
+              </h3>
+              <span id="weather-penalty-badge" class="text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                최적 기온 (+0" 보정)
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              마라톤 최적 기온(10~12°C) 대비 더위·추위·습도·맞바람에 따른 실전 페이스 저하와 추가 수분 필요량을 계산합니다.
+            </p>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span>예상 출발 기온 (°C)</span>
+                  <span id="weather-temp-val" class="font-mono text-brand-600 dark:text-brand-400">10°C (마라톤 최적)</span>
+                </div>
+                <input id="weather-temp-slider" type="range" min="-5" max="30" step="1" value="10" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                  <span>-5°C (한파)</span>
+                  <span>10°C (최적)</span>
+                  <span>20°C (온난)</span>
+                  <span>30°C (폭염)</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span>예상 상대 습도 (%)</span>
+                  <span id="weather-hum-val" class="font-mono text-sky-600 dark:text-sky-400">55%</span>
+                </div>
+                <input id="weather-hum-slider" type="range" min="30" max="95" step="5" value="55" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span>예상 맞바람 풍속 (m/s)</span>
+                  <span id="weather-wind-val" class="font-mono text-amber-600 dark:text-amber-400">2 m/s (약풍)</span>
+                </div>
+                <input id="weather-wind-slider" type="range" min="0" max="10" step="0.5" value="2" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+              </div>
+            </div>
+          </div>
+
+          <div id="weather-result-box" class="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 text-xs space-y-1.5"></div>
+        </div>
+
+        <!-- 우측: 기온별 러닝 복장 & 필수 기어 코디네이터 (6 cols) -->
+        <div id="lab-outfit" class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-extrabold flex items-center gap-1.5">
+                🎽 3. 기온별 러닝 복장 &amp; 기어 코디네이터
+              </h3>
+              <span id="outfit-temp-badge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400">
+                10°C 추천 착장
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              좌측 기온 슬라이더를 움직이면 해당 온도에 가장 알맞은 레이스 복장과 방한·자외선 차단 기어를 자동 매칭합니다.
+            </p>
+            <div id="outfit-recommendation-box" class="space-y-2.5"></div>
+          </div>
+          <div id="outfit-affiliate-links" class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- [기능 4 & 5] 손목 부착용 마라톤 페이스 밴드 생성기 & 대회 3일 전 카보로딩 계산기 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 좌측: 손목 페이스 밴드 (5 cols) -->
+        <div id="lab-paceband" class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-extrabold">⌚ 4. 손목 페이스 밴드 생성기</h3>
+              <button
+                type="button"
+                id="download-paceband-btn"
+                class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 hover:bg-brand-700 text-white transition shadow-sm"
+              >
+                📸 페이스 밴드 이미지 저장
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              대회 당일 손목에 감거나 휴대폰 배경화면으로 설정할 수 있는 구간별 통과 시간 &amp; 보급(⚡젤) 요약 밴드입니다.
+            </p>
+
+            <!-- 이미지 캡처 대상: 손목 페이스 밴드 -->
+            <div id="wrist-pace-band-card" class="p-3.5 rounded-2xl bg-slate-900 text-white border-2 border-brand-500 shadow-inner">
+              <div class="text-center border-b border-slate-700 pb-2 mb-2">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-brand-400">MARATHONLAB PRO PACE BAND</div>
+                <div id="paceband-header-title" class="text-sm font-extrabold mt-0.5">풀코스 3:30:00 (4'58"/km)</div>
+              </div>
+              <table class="w-full text-xs font-mono">
+                <thead>
+                  <tr class="text-[10px] text-slate-400 border-b border-slate-800">
+                    <th class="py-1 text-left">구간</th>
+                    <th class="py-1 text-center">페이스</th>
+                    <th class="py-1 text-right">누적시간</th>
+                    <th class="py-1 text-right">보급</th>
+                  </tr>
+                </thead>
+                <tbody id="paceband-tbody" class="divide-y divide-slate-800/80"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우측: 대회 전 3일 카보로딩 식단 & 에너지젤 박스 계산기 (7 cols) -->
+        <div id="lab-carboload" class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-extrabold">🍙 5. 대회 전 3일 '카보로딩(탄수화물 로딩)' 계산기</h3>
+              <span id="carboload-weight-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                68kg 기준
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              근육과 간에 글리코겐을 100% 가득 채우기 위해 대회 D-3일부터 매일 섭취해야 할 탄수화물 양(g)과 실전 식단 환산표입니다.
+            </p>
+
+            <div id="carboload-summary-cards" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3"></div>
+            <div id="carboload-meal-guide" class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 text-xs space-y-1.5"></div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <a
+              href="https://naver.me/FfsnsNFQ"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-naver py-2.5 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <span>🟢 네이버: 요헤미티 에너지젤 20포 대용량 박스 보기</span>
+            </a>
+            <a
+              href="https://link.coupang.com/a/imXjJvf18C"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-coupang py-2.5 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <span>🚀 쿠팡: 요헤미티 지속형 에너지젤 10포 보기</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- [기능 6 & 7] 카보넨 심박수 존(Zone 1~5) 계산기 & 신장(키) 기반 최적 케이던스·보폭 분석기 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 좌측: 카보넨 심박수 존 계산기 (6 cols) -->
+        <div id="lab-hr-zone" class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-base font-extrabold">❤️ 6. 카보넨(Karvonen) 심박수 존 계산기</h3>
+            <span id="max-hr-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-400">
+              최대심박 183 bpm
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            나이와 아침 기상 직후 안정시 심박수를 입력하면 여유심박수(HRR) 공식으로 정밀 훈련 심박수 구간(Zone 1~5)을 산출합니다.
+          </p>
+
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label for="runner-age" class="block text-[11px] font-bold text-slate-500 mb-1">만 나이 (세)</label>
+              <input id="runner-age" type="number" min="12" max="90" value="35" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+            <div>
+              <label for="runner-rest-hr" class="block text-[11px] font-bold text-slate-500 mb-1">안정시 심박수 (bpm)</label>
+              <input id="runner-rest-hr" type="number" min="35" max="100" value="58" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+          </div>
+
+          <div id="hr-zones-list" class="space-y-1.5 text-xs"></div>
+        </div>
+
+        <!-- 우측: 신장(키) × 목표 페이스 기반 케이던스·보폭 분석기 (6 cols) -->
+        <div id="lab-cadence" class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-extrabold">👟 7. 신장(키) 기반 최적 케이던스 &amp; 보폭 분석기</h3>
+              <span id="stride-height-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400">
+                신장 172cm 기준
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              입력하신 <strong>키(<span id="cadence-height-text">172</span>cm)</strong>와 목표 페이스를 분석해 무릎·발목 부상을 유발하는 오버스트라이딩(과보폭)을 방지하는 이상적인 케이던스(spm)와 보폭(m)을 제시합니다.
+            </p>
+
+            <div class="mb-3">
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>목표 케이던스 설정 (분당 걸음수, spm)</span>
+                <span id="cadence-spm-val" class="font-mono text-brand-600 dark:text-brand-400">180 spm (권장)</span>
+              </div>
+              <input id="cadence-slider" type="range" min="160" max="200" step="2" value="180" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+            </div>
+
+            <div id="cadence-analysis-box" class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 text-xs space-y-2"></div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <a
+              href="https://naver.me/xk9w9FZp"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-naver py-2 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1 shadow-sm"
+            >
+              <span>🟢 네이버: 아이언빅 장목 압박 러닝양말 보기</span>
+            </a>
+            <a
+              href="https://naver.me/G4dbd4av"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-naver py-2 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1 shadow-sm"
+            >
+              <span>🟢 네이버: 울티모 물집방지 쿠션 러닝양말 보기</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- [기능 8] 체중 감량 시 예상 기록 단축 시뮬레이터 -->
+      <div id="lab-weight-sim" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              📉 8. 체중 감량(-1kg ~ -5kg) 시 예상 마라톤 기록 단축 시뮬레이터
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              현재 신장·체중(<strong><span id="weight-sim-current-label">172cm · 68kg</span></strong>)에서 불필요한 체지방을 감량했을 때 체중당 최대산소섭취량(VO₂max) 증가에 따른 종목별 예상 단축 시간입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto -mx-2 px-2">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm font-mono">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-sans">
+                <th class="py-2.5 px-2 sm:px-3">체중 변화</th>
+                <th class="py-2.5 px-2 sm:px-3">변화 후 BMI</th>
+                <th class="py-2.5 px-2 sm:px-3">유효 VDOT</th>
+                <th class="py-2.5 px-2 sm:px-3">10km 예상 기록</th>
+                <th class="py-2.5 px-2 sm:px-3">하프 예상 기록</th>
+                <th class="py-2.5 px-2 sm:px-3">풀코스 예상 기록</th>
+              </tr>
+            </thead>
+            <tbody id="weight-sim-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- [기능 9] 남은 기간(4주 / 8주 / 12주) 자동 주간 훈련 스케줄 표 생성기 -->
+      <div id="lab-schedule" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              🗓️ 9. 맞춤형 주간 훈련 스케줄 자동 생성기 (4주 · 8주 · 12주 플랜)
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              산출된 내 <strong>E · M · T · I 훈련 페이스</strong>를 기반으로 요일별 핵심 훈련 프로그램과 일요일 LSD 보급 리허설을 자동 구성합니다.
+            </p>
+          </div>
+          <div class="flex items-center gap-1.5" id="schedule-weeks-group">
+            <button type="button" data-weeks="4" class="sched-week-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              4주 단기 완성
+            </button>
+            <button type="button" data-weeks="8" class="sched-week-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm">
+              8주 표준 빌드업
+            </button>
+            <button type="button" data-weeks="12" class="sched-week-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              12주 마스터즈 정석
+            </button>
+          </div>
+        </div>
+
+        <div id="weekly-schedule-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- [기능 10] 대회 전날 밤 '마라톤 필수 준비물 체크리스트' (진척도 % + 미보유 기어 즉시 구매) -->
+      <div id="checklist-section" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              ✅ 10. 대회 전날 밤 '마라톤 필수 준비물 체크리스트'
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              하나씩 챙기면서 체크해 보세요! 아직 준비하지 못한 보급품이나 레이스 기어는 우측 버튼으로 바로 확인할 수 있습니다.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="checklist-progress-text" class="text-xs font-mono font-extrabold text-brand-600 dark:text-brand-400">준비 완료 0/8 (0%)</span>
+            <button type="button" id="reset-checklist-btn" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+              초기화
+            </button>
+          </div>
+        </div>
+
+        <div class="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
+          <div id="checklist-progress-bar" class="h-full bg-brand-600 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div id="race-checklist-container" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+      </div>
+
     </section>
 
     <!-- 섹션 4: 수익화(CTA) 모듈 (페이스별 베스트 픽 쇼케이스 + 전체 파트너 스토어 & 인라인 편집기) -->
@@ -1207,10 +1632,11 @@ input[type="number"] {
   const state = {
     recentDist: 10,                 // 10 | 21.0975 | 42.195
     recentSec: 48 * 60 + 20,        // 기본 10km 48분 20초
-    targetDist: 42.195,             // 21.0975 | 42.195
+    targetDist: 42.195,             // 10 | 21.0975 | 42.195
     targetSec: 3 * 3600 + 30 * 60,  // 기본 풀코스 3시간 30분 00초
     strategy: 'negative',           // 'even' | 'negative' | 'positive'
-    weight: 68                      // kg
+    height: 172,                    // cm (120 ~ 210)
+    weight: 68                      // kg (30 ~ 130)
   };
 
   const DIST_LIMITS = {
@@ -1229,16 +1655,24 @@ input[type="number"] {
       { label: '완주 목표 (5:00:00)', sec: 5 * 3600 }
     ],
     '21.0975': [
-      { label: '1시간 25분 (Sub-3급)', sec: 1 * 3600 + 25 * 60 },
-      { label: 'Sub-1:30 (1:29:59)', sec: 1 * 3600 + 29 * 60 + 59 },
-      { label: '1시간 40분 (3:30급)', sec: 1 * 3600 + 40 * 60 },
-      { label: 'Sub-2 (1:59:59)', sec: 1 * 3600 + 59 * 60 + 59 },
-      { label: '2시간 15분 완주', sec: 2 * 3600 + 15 * 60 }
+      { label: '🏆 1시간 25분 (Sub-3급)', sec: 1 * 3600 + 25 * 60 },
+      { label: '🔥 Sub-1:30 (1:29:59)', sec: 1 * 3600 + 29 * 60 + 59 },
+      { label: '⚡ 1시간 40분 (3:30급)', sec: 1 * 3600 + 40 * 60 },
+      { label: '🏅 Sub-2 (1:59:59)', sec: 1 * 3600 + 59 * 60 + 59 },
+      { label: '🛡️ 2시간 15분 완주', sec: 2 * 3600 + 15 * 60 }
+    ],
+    '10': [
+      { label: '🏆 Sub-40 (39:59)', sec: 39 * 60 + 59 },
+      { label: '🔥 45분 돌파 (45:00)', sec: 45 * 60 },
+      { label: '⚡ Sub-50 (49:59)', sec: 49 * 60 + 59 },
+      { label: '🏅 55분 (55:00)', sec: 55 * 60 },
+      { label: '🛡️ Sub-1시간 (59:59)', sec: 59 * 60 + 59 },
+      { label: '완주 목표 (1:10:00)', sec: 70 * 60 }
     ]
   };
 
   // =========================================================================
-  // 3. 수학 및 VDOT 계산 유틸리티
+  // 3. 수학 및 VDOT · 신체 대사(키/체중/BMI) 계산 유틸리티
   // =========================================================================
   function secToHMS(totalSec) {
     const sec = Math.max(0, Math.round(totalSec));
@@ -1294,7 +1728,7 @@ input[type="number"] {
   }
 
   function predictEquivalentTimeSec(vdot, distKm) {
-    let low = 1200;
+    let low = 900;
     let high = 30000;
     for (let i = 0; i < 32; i++) {
       const mid = (low + high) / 2;
@@ -1305,14 +1739,48 @@ input[type="number"] {
     return (low + high) / 2;
   }
 
-  // 풀코스 환산 시간(시간 단위)으로부터 목표 클래스(tier) 판별
+  // 키(cm), 체중(kg), 거리(km), 주행 시간(sec)을 모두 반영한 정밀 칼로리·대사 계산
+  function calcMetabolicProfile(heightCm, weightKg, distKm, timeSec) {
+    const hMeter = Math.max(1.2, heightCm / 100);
+    const bmi = weightKg / (hMeter * hMeter);
+    // Mosteller 체표면적 (BSA, m^2) - 키와 체중이 모두 반영됨
+    const bsa = Math.sqrt((heightCm * weightKg) / 3600);
+
+    // 1) 신장(키)에 따른 공기저항 및 보폭 모멘트 보정 (170cm 기준)
+    const heightFactor = 1 + (heightCm - 170) * 0.0018;
+    // 2) BMI에 따른 러닝 경제성(Running Economy) 보정 (마라톤 최적 BMI 20.5 기준)
+    const bmiFactor = 1 + Math.max(-0.04, (bmi - 20.5) * 0.0065);
+    // 3) 주행 속도(km/h)에 따른 고강도 에너지 소모 보정
+    const speedKmh = distKm / Math.max(0.25, timeSec / 3600);
+    const speedFactor = 1 + Math.max(0, (speedKmh - 10) * 0.011);
+
+    const kcalPerKgKm = 1.036 * heightFactor * bmiFactor * speedFactor;
+    const totalKcal = Math.round(weightKg * distKm * kcalPerKgKm);
+
+    let bmiType = '표준 러너형';
+    if (bmi < 18.5) bmiType = '초경량 스피드형';
+    else if (bmi < 21.5) bmiType = '엘리트 마라토너형';
+    else if (bmi < 24.0) bmiType = '표준 밸런스형';
+    else if (bmi < 26.5) bmiType = '파워 근육·체격형';
+    else bmiType = '체중 부하 주의형';
+
+    return {
+      bmi,
+      bsa,
+      bmiType,
+      totalKcal,
+      kcalPerKgKm
+    };
+  }
+
+  // 목표 페이스(초/km)로부터 목표 클래스(tier) 판별
   function detectTierFromTargetPace(targetPaceSec) {
     const equivFullHours = (targetPaceSec * 42.195) / 3600;
-    if (equivFullHours <= 3.01) return 'sub3';     // Sub-3 (4'15"/km 이하)
+    if (equivFullHours <= 3.01) return 'sub3';     // Sub-3 (4'15"/km 이하, 10km 40분대 이하)
     if (equivFullHours <= 3.26) return 'single';   // 싱글 (3:00 ~ 3:15, 4'37"/km 이하)
-    if (equivFullHours <= 3.55) return 'sub330';   // Sub-3:30 (4'58"/km 전후)
-    if (equivFullHours <= 4.05) return 'sub4';     // Sub-4 (5'40"/km 이하)
-    return 'finish';                               // 4시간 이상 완주
+    if (equivFullHours <= 3.55) return 'sub330';   // Sub-3:30 (4'58"/km 전후, 10km 48~50분)
+    if (equivFullHours <= 4.05) return 'sub4';     // Sub-4 (5'40"/km 이하, 10km 55분)
+    return 'finish';                               // 완주 목표
   }
 
   // =========================================================================
@@ -1325,10 +1793,16 @@ input[type="number"] {
   const recentSlider = document.getElementById('recent-slider');
   const recentPaceBadge = document.getElementById('recent-pace-badge');
 
+  const heightInput = document.getElementById('runner-height');
+  const heightSlider = document.getElementById('height-slider');
+  const heightMinus = document.getElementById('height-minus');
+  const heightPlus = document.getElementById('height-plus');
+
   const weightInput = document.getElementById('runner-weight');
   const weightSlider = document.getElementById('weight-slider');
   const weightMinus = document.getElementById('weight-minus');
   const weightPlus = document.getElementById('weight-plus');
+  const bmiStatusBadge = document.getElementById('bmi-status-badge');
 
   const targetDistBtns = document.querySelectorAll('.target-dist-btn');
   const presetContainer = document.getElementById('preset-buttons');
@@ -1353,9 +1827,9 @@ input[type="number"] {
     targetDistBtns.forEach(btn => {
       const d = parseFloat(btn.dataset.dist);
       if (Math.abs(d - state.targetDist) < 0.01) {
-        btn.className = 'target-dist-btn py-3 px-4 rounded-xl text-sm font-bold border transition flex items-center justify-between bg-brand-600 text-white border-brand-600 shadow-sm';
+        btn.className = 'target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5 bg-brand-600 text-white border-brand-600 shadow-sm';
       } else {
-        btn.className = 'target-dist-btn py-3 px-4 rounded-xl text-sm font-bold border transition flex items-center justify-between bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100';
+        btn.className = 'target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5 bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100';
       }
     });
 
@@ -1369,11 +1843,17 @@ input[type="number"] {
     });
   }
 
+  function getTargetDistKey() {
+    if (state.targetDist > 30) return '42.195';
+    if (state.targetDist > 15) return '21.0975';
+    return '10';
+  }
+
   function renderPresets() {
-    const key = state.targetDist > 30 ? '42.195' : '21.0975';
-    const list = TARGET_PRESETS[key];
+    const key = getTargetDistKey();
+    const list = TARGET_PRESETS[key] || TARGET_PRESETS['42.195'];
     presetContainer.innerHTML = list.map(item => {
-      const active = Math.abs(state.targetSec - item.sec) <= 30;
+      const active = Math.abs(state.targetSec - item.sec) <= 20;
       const cls = active
         ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-brand-600 text-white transition shadow-xs'
         : 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition';
@@ -1383,7 +1863,7 @@ input[type="number"] {
     presetContainer.querySelectorAll('.preset-chip').forEach(chip => {
       chip.addEventListener('click', () => {
         state.targetSec = parseInt(chip.dataset.sec, 10);
-        selectedShowcaseTier = 'auto'; // 프리셋 클릭 시 해당 페이스 베스트픽으로 자동 연동
+        selectedShowcaseTier = 'auto';
         syncTargetInputsFromSec();
         calculateAndRender();
       });
@@ -1404,16 +1884,19 @@ input[type="number"] {
   }
 
   function syncTargetInputsFromSec() {
-    const lim = DIST_LIMITS[String(state.targetDist)];
+    const key = getTargetDistKey();
+    const lim = DIST_LIMITS[key];
     targetSlider.min = lim.min;
     targetSlider.max = lim.max;
     targetSlider.step = lim.step;
     targetSlider.value = Math.min(lim.max, Math.max(lim.min, state.targetSec));
 
-    if (state.targetDist > 30) {
+    if (key === '42.195') {
       targetSliderLabels.innerHTML = '<span>2:10:00</span><span>3:30:00</span><span>4:45:00</span><span>6:30:00</span>';
-    } else {
+    } else if (key === '21.0975') {
       targetSliderLabels.innerHTML = '<span>1:05:00</span><span>1:45:00</span><span>2:25:00</span><span>3:10:00</span>';
+    } else {
+      targetSliderLabels.innerHTML = '<span>28:00</span><span>45:00</span><span>1:00:00</span><span>1:30:00</span>';
     }
 
     const { h, m, s } = secToHMS(state.targetSec);
@@ -1440,7 +1923,14 @@ input[type="number"] {
 
     const equivTargetSec = predictEquivalentTimeSec(currentVDOT, state.targetDist);
 
-    const rawProb = 100 / (1 + Math.exp(0.68 * (vdotDiff - 2.1)));
+    // 키·체중(BMI) 및 종목 특성을 반영한 달성 확률 산출
+    const metabolic = calcMetabolicProfile(state.height, state.weight, state.targetDist, state.targetSec);
+    if (bmiStatusBadge) {
+      bmiStatusBadge.textContent = `BMI ${metabolic.bmi.toFixed(1)} · ${metabolic.bmiType}`;
+    }
+
+    const bmiPenalty = state.targetDist > 20 && metabolic.bmi > 24.5 ? (metabolic.bmi - 24.5) * 0.25 : 0;
+    const rawProb = 100 / (1 + Math.exp(0.68 * (vdotDiff + bmiPenalty - 2.1)));
     const prob = Math.max(5, Math.min(99, Math.round(rawProb)));
 
     document.getElementById('current-vdot-val').textContent = currentVDOT.toFixed(1);
@@ -1455,7 +1945,7 @@ input[type="number"] {
       diffEl.className = 'text-xs font-mono font-bold text-emerald-500';
     }
 
-    const targetName = state.targetDist > 30 ? '풀코스' : '하프';
+    const targetName = state.targetDist > 30 ? '풀코스' : state.targetDist > 15 ? '하프' : '10km';
     document.getElementById('equiv-time-text').textContent = `동등 ${targetName}: ${formatHMS(equivTargetSec)}`;
     document.getElementById('target-pace-summary').textContent = `요구 페이스: ${formatPace(targetPace)}/km`;
 
@@ -1469,12 +1959,14 @@ input[type="number"] {
 
     const autoTier = detectTierFromTargetPace(targetPace);
     const tierTitleMap = {
-      sub3: 'Sub-3 (2시간대)',
-      single: '싱글 (3시간 00~15분)',
-      sub330: 'Sub-3:30 (3시간 30분)',
-      sub4: 'Sub-4 (3시간 59분)',
-      finish: '4시간+ 완주'
+      sub3: 'Sub-3급 (고속 레이스)',
+      single: '싱글급 (상급 레이스)',
+      sub330: 'Sub-3:30급 (마스터즈)',
+      sub4: 'Sub-4급 (중장거리)',
+      finish: '안전 완주 클래스'
     };
+
+    const bodyInfoText = `신장 <strong>${state.height}cm</strong> · 체중 <strong>${state.weight}kg</strong>(BMI <strong>${metabolic.bmi.toFixed(1)}</strong>, ${metabolic.bmiType})`;
 
     if (prob >= 80) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400';
@@ -1483,18 +1975,18 @@ input[type="number"] {
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
       adviceEl.innerHTML = `
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><strong>💡 데이터 코치 진단:</strong> 현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)이 목표 VDOT(<strong>${targetVDOT.toFixed(1)}</strong>)을 이미 충족합니다! 초반 오버페이스만 자제하고 7km 주기 에너지젤 보급만 지키면 달성 확률이 매우 높습니다.</div>
-          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보급·기어 보기 ↓</a>
+          <div><strong>💡 데이터 코치 진단:</strong> 현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 달성이 충분히 가능합니다! 초반 오버페이스만 주의하세요.</div>
+          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보기 ↓</a>
         </div>`;
     } else if (prob >= 55) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-sky-600 dark:text-sky-400';
       probBarEl.className = 'h-full bg-sky-500 rounded-full transition-all duration-300';
-      badgeEl.textContent = '🔥 적정 도전 목표 (8~12주 훈련 권장)';
+      badgeEl.textContent = '🔥 적정 도전 목표 (6~10주 훈련 권장)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-sky-500/15 text-sky-600 dark:text-sky-400';
       adviceEl.innerHTML = `
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><strong>💡 데이터 코치 진단:</strong> 현재 VDOT 대비 <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 챌린지 목표입니다. 주 1회 <strong>T 페이스(젖산역치주)</strong>와 레이스 당일 <strong>고효율 에너지젤·아미노산 보급</strong>을 병행하세요.</div>
-          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보급·기어 보기 ↓</a>
+          <div><strong>💡 데이터 코치 진단:</strong> ${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표입니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.</div>
+          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보기 ↓</a>
         </div>`;
     } else {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 dark:text-rose-400';
@@ -1503,18 +1995,19 @@ input[type="number"] {
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400';
       adviceEl.innerHTML = `
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><strong>💡 데이터 코치 진단:</strong> 요구 VDOT 차이(<strong>+${vdotDiff.toFixed(1)}</strong>)가 커서 후반 30km 이후 글리코겐 고갈 위험이 높습니다. 충분한 훈련 기간 확보와 철저한 에너지젤·경련 예방 보급이 필수입니다.</div>
-          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보급·기어 보기 ↓</a>
+          <div><strong>💡 데이터 코치 진단:</strong> ${bodyInfoText} 대비 요구 VDOT 차이(<strong>+${vdotDiff.toFixed(1)}</strong>)가 커서 후반 에너지 고갈 위험이 높습니다. 충분한 훈련 기간 확보와 철저한 보급이 필수입니다.</div>
+          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보기 ↓</a>
         </div>`;
     }
 
-    const totalKcal = Math.round(state.weight * state.targetDist * 1.036);
+    const totalKcal = metabolic.totalKcal;
     const raceHours = state.targetSec / 3600;
-    const hourlyCarbGram = Math.min(72, Math.max(35, Math.round(state.weight * 0.85)));
+    // 체표면적(BSA)과 체중을 함께 반영한 시간당 탄수화물 요구량
+    const hourlyCarbGram = Math.min(78, Math.max(25, Math.round((state.weight * 0.72) + (metabolic.bsa * 8))));
     const totalCarbGram = Math.round(hourlyCarbGram * raceHours);
 
     document.getElementById('kcal-val').textContent = totalKcal.toLocaleString();
-    document.getElementById('carb-need-text').textContent = `권장 탄수화물: 총 ${totalCarbGram}g (시간당 ~${hourlyCarbGram}g)`;
+    document.getElementById('carb-need-text').textContent = `${state.height}cm·${state.weight}kg(BMI ${metabolic.bmi.toFixed(1)}) · 권장 탄수화물 ${totalCarbGram}g`;
 
     const eFast = getPaceSecFromVDOTIntensity(currentVDOT, 0.74);
     const eSlow = getPaceSecFromVDOTIntensity(currentVDOT, 0.65);
@@ -1528,14 +2021,25 @@ input[type="number"] {
     document.getElementById('pace-i').textContent = `${formatPace(iPace)}/km`;
 
     renderSplitTable(targetPace);
-    renderFuelingTimeline(targetPace);
+    renderFuelingTimeline(targetPace, metabolic);
     renderCTAModule(targetPace);
+    renderProLabTools(currentVDOT, targetVDOT, targetPace, metabolic, { eFast, eSlow, mPace, tPace, iPace });
   }
 
   function renderSplitTable(basePaceSec) {
-    const milestones = state.targetDist > 30
+    const key = getTargetDistKey();
+    const milestones = key === '42.195'
       ? [5, 10, 15, 20, 21.0975, 25, 30, 35, 40, 42.195]
-      : [5, 10, 15, 20, 21.0975];
+      : key === '21.0975'
+        ? [5, 10, 15, 20, 21.0975]
+        : [2, 4, 5, 6, 8, 10];
+
+    const splitTitleEl = document.getElementById('split-table-title');
+    if (splitTitleEl) {
+      splitTitleEl.textContent = key === '10'
+        ? '⏱️ 10km 레이스 구간별 목표 통과 시간표 (2km · 5km 반환점 스플릿)'
+        : '⏱️ 5km 구간별 목표 통과 시간표 (Split Table)';
+    }
 
     const segments = [];
     let prevKm = 0;
@@ -1582,11 +2086,12 @@ input[type="number"] {
       cumSec += segSec;
       const segPace = segSec / seg.dist;
 
-      const isHalfMark = Math.abs(seg.endKm - 21.0975) < 0.01;
+      const isHalfMark = (key === '42.195' && Math.abs(seg.endKm - 21.0975) < 0.01) || (key === '10' && Math.abs(seg.endKm - 5) < 0.01);
       const isFinish = Math.abs(seg.endKm - state.targetDist) < 0.01;
 
       let label = `${seg.endKm} km`;
-      if (isHalfMark && state.targetDist > 30) label = 'Half (21.1km)';
+      if (isHalfMark && key === '42.195') label = 'Half (21.1km)';
+      if (isHalfMark && key === '10') label = 'Half (5.0km 반환)';
       if (isFinish) label = `Finish (${seg.endKm}km)`;
 
       const rowHighlight = isFinish
@@ -1617,13 +2122,19 @@ input[type="number"] {
   }
 
   // =========================================================================
-  // 6. 레이스 보급 타임라인 (각 지점마다 해당 보급품 추천 바로가기 링크 연결!)
+  // 6. 레이스 보급 타임라인 (키·체중·BMI 및 10km/하프/풀코스 종목별 맞춤 보급!)
   // =========================================================================
-  function renderFuelingTimeline(basePaceSec) {
-    document.getElementById('fuel-weight-label').textContent = `${state.weight}kg`;
+  function renderFuelingTimeline(basePaceSec, metabolic) {
+    const bsa = metabolic ? metabolic.bsa : Math.sqrt((state.height * state.weight) / 3600);
+    const bmi = metabolic ? metabolic.bmi : state.weight / Math.pow(state.height / 100, 2);
+    document.getElementById('fuel-weight-label').textContent = `${state.height}cm · ${state.weight}kg (BMI ${bmi.toFixed(1)})`;
 
-    const baseGelCarb = Math.round(Math.max(20, Math.min(35, state.weight * 0.4)));
-    const baseWaterMl = Math.round(Math.max(150, Math.min(300, state.weight * 3.1)));
+    // 신장(키)·체중 기반 체표면적(BSA)을 함께 반영하여 1회 탄수화물·수분 섭취량 산출
+    const baseGelCarb = Math.round(Math.max(18, Math.min(38, state.weight * 0.34 + bsa * 3.5)));
+    const baseWaterMl = Math.round(Math.max(120, Math.min(320, state.weight * 2.2 + bsa * 38)));
+
+    const is10K = state.targetDist < 15;
+    const isFull = state.targetDist > 30;
 
     const points = [
       {
@@ -1634,41 +2145,49 @@ input[type="number"] {
         water: Math.round(baseWaterMl * 1.1),
         tip: '간 글리코겐 충전 및 근손실·초반 혈당 스파이크 방지용 사전 아미노산 보급',
         isActive: true,
+        skipLabel: '',
         linkUrl: 'https://link.coupang.com/a/imXk9XEyeO',
         linkText: '쿠팡: 하이뮨 아미노포텐 에너지젤 10포 보기 →'
       },
       {
-        km: 7,
-        title: '7km 지점 (초반 보급)',
+        km: is10K ? 5 : 7,
+        title: is10K ? '5km 반환점 (10K 중반 스퍼트)' : '7km 지점 (초반 보급)',
         type: '아미노바이탈 아미노샷 퍼펙트 에너지젤 1포',
-        carb: baseGelCarb,
+        carb: is10K ? Math.round(baseGelCarb * 0.8) : baseGelCarb,
         water: baseWaterMl,
-        tip: '고갈 신호가 오기 전 선제적 탄수화물·아미노산 투입 (급수대 물과 함께 섭취)',
+        tip: is10K
+          ? '10km 반환점 통과 직후 후반 5km 페이스 유지를 위한 빠른 아미노샷·수분 보충'
+          : '고갈 신호가 오기 전 선제적 탄수화물·아미노산 투입 (급수대 물과 함께 섭취)',
         isActive: true,
+        skipLabel: '',
         linkUrl: 'https://link.coupang.com/a/imXiIz3QnA',
         linkText: '쿠팡: 아미노바이탈 아미노샷 퍼펙트 에너지젤 →'
       },
       {
-        km: 14,
-        title: '14km 지점 (중반 진입)',
-        type: '요헤미티 에너지젤 지속형 파워젤 1포',
+        km: is10K ? 10 : 14,
+        title: is10K ? '10km 피니시 직후 (즉시 리커버리)' : '14km 지점 (중반 진입)',
+        type: is10K ? '요헤미티 파워젤 & 전해질 리커버리' : '요헤미티 에너지젤 지속형 파워젤 1포',
         carb: baseGelCarb,
         water: baseWaterMl,
-        tip: '중반부 페이스 유지를 위한 지속형 파워젤 보급 및 수분 보충',
+        tip: is10K
+          ? '10km 고강도 질주 직후 30분 골든타임 내 고갈된 글리코겐과 수분 즉시 회복'
+          : '중반부 페이스 유지를 위한 지속형 파워젤 보급 및 수분 보충',
         isActive: true,
+        skipLabel: '',
         linkUrl: 'https://naver.me/5PWMWh8M',
         linkText: '네이버: 요헤미티 에너지젤 파워젤 10포 세트 →'
       },
       {
         km: 21,
         title: '21km 지점 (하프 통과)',
-        type: state.targetDist > 30 ? '요헤미티 에너지젤 대용량 레이스 보급 1포' : '피니시 스퍼트 에너지젤 보충',
-        carb: state.targetDist > 30 ? baseGelCarb : Math.round(baseGelCarb * 0.5),
+        type: isFull ? '요헤미티 에너지젤 대용량 레이스 보급 1포' : '피니시 스퍼트 에너지젤 보충',
+        carb: isFull ? baseGelCarb : Math.round(baseGelCarb * 0.5),
         water: baseWaterMl,
-        tip: state.targetDist > 30
+        tip: isFull
           ? '하프 반환점 통과 직후 후반 21km를 버티기 위한 메인 탄수화물 재충전'
           : '하프 마라톤 피니시 직전 라스트 스퍼트 에너지 공급',
-        isActive: true,
+        isActive: !is10K,
+        skipLabel: '하프·풀코스 전용 구간 (10km 생략)',
         linkUrl: 'https://naver.me/FfsnsNFQ',
         linkText: '네이버: 요헤미티 에너지젤 파워젤 20포 세트 →'
       },
@@ -1679,7 +2198,8 @@ input[type="number"] {
         carb: baseGelCarb + 3,
         water: Math.round(baseWaterMl * 1.15),
         tip: '30~32km 마의 벽(Bonking) 구간 진입 전 글리코겐 고갈을 막는 핵심 보급',
-        isActive: state.targetDist > 30,
+        isActive: isFull,
+        skipLabel: is10K ? '풀코스 전용 구간 (10km 생략)' : '풀코스 전용 구간 (하프 생략)',
         linkUrl: 'https://link.coupang.com/a/imXjJvf18C',
         linkText: '쿠팡: 요헤미티 마라톤 지속형 파워젤 10포 →'
       },
@@ -1690,7 +2210,8 @@ input[type="number"] {
         carb: baseGelCarb,
         water: baseWaterMl,
         tip: '피니시 라인까지 폼 무너짐과 후반 퍼짐을 방어하는 마지막 에너지 투입',
-        isActive: state.targetDist > 30,
+        isActive: isFull,
+        skipLabel: is10K ? '풀코스 전용 구간 (10km 생략)' : '풀코스 전용 구간 (하프 생략)',
         linkUrl: 'https://naver.me/xGFoiD1T',
         linkText: '네이버: 마라톤 실전 레이스 에너지젤 보급팩 →'
       }
@@ -1707,13 +2228,13 @@ input[type="number"] {
       if (pt.isActive) {
         totalCarb += pt.carb;
         totalWater += pt.water;
-        if (pt.carb >= 20) gelCount += 1;
+        if (pt.carb >= 15) gelCount += 1;
       }
 
       const opacityCls = pt.isActive ? '' : 'opacity-45 bg-slate-50/40 dark:bg-slate-900/40 border-dashed';
       const badgeText = pt.isActive
         ? `탄수화물 ${pt.carb}g · 수분 ${pt.water}ml`
-        : '풀코스 전용 구간 (하프 생략)';
+        : pt.skipLabel;
 
       return `
         <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 flex flex-col justify-between ${opacityCls}">
@@ -2387,9 +2908,40 @@ input[type="number"] {
     calculateAndRender();
   });
 
+  // 신장 / 키(cm) 이벤트 바인딩 (120cm ~ 210cm)
+  if (heightInput && heightSlider) {
+    heightInput.addEventListener('input', () => {
+      state.height = Math.max(120, Math.min(210, parseFloat(heightInput.value || '172')));
+      heightSlider.value = Math.max(130, Math.min(200, state.height));
+      calculateAndRender();
+    });
+    heightSlider.addEventListener('input', () => {
+      state.height = parseFloat(heightSlider.value);
+      heightInput.value = state.height;
+      calculateAndRender();
+    });
+    if (heightMinus) {
+      heightMinus.addEventListener('click', () => {
+        state.height = Math.max(120, state.height - 1);
+        heightInput.value = state.height;
+        heightSlider.value = Math.max(130, Math.min(200, state.height));
+        calculateAndRender();
+      });
+    }
+    if (heightPlus) {
+      heightPlus.addEventListener('click', () => {
+        state.height = Math.min(210, state.height + 1);
+        heightInput.value = state.height;
+        heightSlider.value = Math.max(130, Math.min(200, state.height));
+        calculateAndRender();
+      });
+    }
+  }
+
+  // 체중(kg) 이벤트 바인딩 (30kg ~ 130kg 지원!)
   weightInput.addEventListener('input', () => {
-    state.weight = Math.max(35, Math.min(130, parseFloat(weightInput.value || '68')));
-    weightSlider.value = state.weight;
+    state.weight = Math.max(30, Math.min(130, parseFloat(weightInput.value || '68')));
+    weightSlider.value = Math.max(30, Math.min(110, state.weight));
     calculateAndRender();
   });
   weightSlider.addEventListener('input', () => {
@@ -2398,15 +2950,15 @@ input[type="number"] {
     calculateAndRender();
   });
   weightMinus.addEventListener('click', () => {
-    state.weight = Math.max(35, state.weight - 1);
+    state.weight = Math.max(30, state.weight - 1);
     weightInput.value = state.weight;
-    weightSlider.value = state.weight;
+    weightSlider.value = Math.max(30, Math.min(110, state.weight));
     calculateAndRender();
   });
   weightPlus.addEventListener('click', () => {
     state.weight = Math.min(130, state.weight + 1);
     weightInput.value = state.weight;
-    weightSlider.value = state.weight;
+    weightSlider.value = Math.max(30, Math.min(110, state.weight));
     calculateAndRender();
   });
 
@@ -2415,7 +2967,13 @@ input[type="number"] {
       const newDist = parseFloat(btn.dataset.dist);
       if (Math.abs(newDist - state.targetDist) < 0.01) return;
       state.targetDist = newDist;
-      state.targetSec = newDist > 30 ? (3 * 3600 + 30 * 60) : (1 * 3600 + 45 * 60);
+      if (newDist > 30) {
+        state.targetSec = 3 * 3600 + 30 * 60; // 풀코스 기본 3:30:00
+      } else if (newDist > 15) {
+        state.targetSec = 1 * 3600 + 45 * 60; // 하프 기본 1:45:00
+      } else {
+        state.targetSec = 49 * 60 + 59;       // 10km 기본 49:59 (Sub-50)
+      }
       selectedShowcaseTier = 'auto';
       syncTargetInputsFromSec();
       calculateAndRender();
@@ -2426,7 +2984,8 @@ input[type="number"] {
     const h = parseInt(targetH.value || '0', 10);
     const m = parseInt(targetM.value || '0', 10);
     const s = parseInt(targetS.value || '0', 10);
-    state.targetSec = Math.max(1800, h * 3600 + m * 60 + s);
+    const minAllowed = state.targetDist < 15 ? 900 : 1800;
+    state.targetSec = Math.max(minAllowed, h * 3600 + m * 60 + s);
     targetSlider.value = state.targetSec;
     selectedShowcaseTier = 'auto';
     calculateAndRender();
@@ -2473,9 +3032,10 @@ input[type="number"] {
   document.getElementById('copy-kakao-btn').addEventListener('click', async () => {
     const curVDOT = calcVDOT(state.recentDist, state.recentSec).toFixed(1);
     const tarVDOT = calcVDOT(state.targetDist, state.targetSec).toFixed(1);
-    const targetName = state.targetDist > 30 ? '풀코스(42.195km)' : '하프(21.0975km)';
+    const targetName = state.targetDist > 30 ? '풀코스(42.195km)' : state.targetDist > 15 ? '하프(21.0975km)' : '10km 레이스(10.0km)';
     const targetPace = formatPace(state.targetSec / state.targetDist);
     const prob = document.getElementById('prob-val').textContent;
+    const kcal = document.getElementById('kcal-val').textContent;
     const strategyName = {
       even: '이븐 페이스',
       negative: '네거티브 스플릿',
@@ -2495,11 +3055,12 @@ input[type="number"] {
       `⏱️ 목표 기록: ${formatHMS(state.targetSec)} (평균 ${targetPace}/km)`,
       `🧭 주행 전략: ${strategyName}`,
       `📊 VDOT 진단: 현재 ${curVDOT} → 요구 ${tarVDOT} (달성 가능성 ${prob}%)`,
+      `⚖️ 신체·대사: ${state.height}cm · ${state.weight}kg (예상 소모 ${kcal}kcal)`,
       `━━━━━━━━━━━━━━`,
       `📌 [구간별 통과 시간표]`,
       splitSummary,
       `━━━━━━━━━━━━━━`,
-      `⚡ 보급 플랜: 출발 30분 전 + 매 7km 에너지젤 & 급수`,
+      `⚡ 보급 플랜: ${state.targetDist < 15 ? '출발 30분 전 + 5km 반환점 보급' : '출발 30분 전 + 매 7km 에너지젤 & 급수'}`,
       `🔥 훈련 권장 페이스: E(${document.getElementById('pace-e').textContent}) / M(${document.getElementById('pace-m').textContent}) / T(${document.getElementById('pace-t').textContent}) / I(${document.getElementById('pace-i').textContent})`
     ].join('\n');
 
@@ -2616,8 +3177,697 @@ input[type="number"] {
     });
   }
 
+  // =========================================================================
+  // 11. 신규 10대 PRO 레이스 연구소 (10-in-1 Marathon Lab) 상태 및 렌더링
+  // =========================================================================
+  const CHECKLIST_STORAGE_KEY = 'marathon_pro_checklist_v1';
+
+  const labState = {
+    raceDate: '2027-03-21',
+    courseType: 'flat',   // 'flat' | 'rolling' | 'hilly'
+    tempC: 10,            // -5 ~ 30
+    humidity: 55,         // 30 ~ 95
+    windMs: 2,            // 0 ~ 10
+    age: 35,
+    restHR: 58,
+    cadenceSpm: 180,
+    schedWeeks: 8
+  };
+
+  const CHECKLIST_ITEMS = [
+    {
+      id: 'chk-gel',
+      title: '레이스 메인 에너지젤 (5~6포 여유분 포함)',
+      desc: '출발 전 및 매 7km 보급용 요헤미티 파워젤 / 아미노바이탈 아미노샷',
+      btnLabel: '🟢 네이버: 요헤미티 에너지젤 10포 보기',
+      url: 'https://naver.me/5PWMWh8M',
+      platform: 'naver'
+    },
+    {
+      id: 'chk-amino',
+      title: '출발 30분 전·하프 근피로 방지 아미노산',
+      desc: '고함량 BCAA·아미노산 보급용 일동후디스 하이뮨 아미노포텐',
+      btnLabel: '🚀 쿠팡: 하이뮨 아미노포텐 10포 보기',
+      url: 'https://link.coupang.com/a/imXk9XEyeO',
+      platform: 'coupang'
+    },
+    {
+      id: 'chk-belt',
+      title: '흔들림 없는 에너지젤·휴대폰 수납 러닝벨트',
+      desc: '배번표 및 에너지젤 6포를 밀착 수납하는 아이언빅 플립벨트 힙색',
+      btnLabel: '🟢 네이버: 아이언빅 마라톤 러닝벨트 보기',
+      url: 'https://naver.me/xbK3KSbu',
+      platform: 'naver'
+    },
+    {
+      id: 'chk-socks',
+      title: '장거리 물집 방지·발목 압박 러닝양말',
+      desc: '울티모 논슬립 쿠션 러닝양말 또는 아이언빅 장목 압박 페이스 삭스',
+      btnLabel: '🟢 네이버: 울티모 스포츠 러닝양말 보기',
+      url: 'https://naver.me/G4dbd4av',
+      platform: 'naver'
+    },
+    {
+      id: 'chk-vest',
+      title: '장거리 급수·방풍자켓 수납 초경량 러닝조끼',
+      desc: 'LSD 및 풀코스 개인 급수 휴대용 아이언빅(런런) 울트라라이트 베스트',
+      btnLabel: '🟢 네이버: 런런 초경량 러닝조끼 보기',
+      url: 'https://naver.me/FgEpE2Xq',
+      platform: 'naver'
+    },
+    {
+      id: 'chk-sunglasses',
+      title: '자외선·아스팔트 난반사 차단 러닝 고글',
+      desc: '아이언빅 초경량 스포츠 편광 선글라스 또는 RNRN 변색 고글',
+      btnLabel: '🟢 네이버: 아이언빅 편광 러닝 선글라스 보기',
+      url: 'https://naver.me/5VxixMPP',
+      platform: 'naver'
+    },
+    {
+      id: 'chk-winter',
+      title: '출발 대기·동계 보온 러닝장갑 & 넥워머',
+      desc: '스마트폰 터치 기모 러닝장갑 및 바라클라바 목토시',
+      btnLabel: '🟢 네이버: 아이언빅 방한 러닝장갑 보기',
+      url: 'https://naver.me/5B0q0nkT',
+      platform: 'naver'
+    },
+    {
+      id: 'chk-bib',
+      title: '대회 배번표 · 기록칩 확인 & 러닝워치 100% 충전',
+      desc: '전날 밤 배번표 미리 장착 및 가민·애플워치 GPS 배터리 완충 필수',
+      btnLabel: '🚀 쿠팡: 아미노바이탈 퍼펙트젤 보기',
+      url: 'https://link.coupang.com/a/imXiIz3QnA',
+      platform: 'coupang'
+    }
+  ];
+
+  let checkedMap = {};
+  try {
+    const savedChk = localStorage.getItem(CHECKLIST_STORAGE_KEY);
+    if (savedChk) checkedMap = JSON.parse(savedChk) || {};
+  } catch (e) {}
+
+  function saveChecklistState() {
+    try {
+      localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checkedMap));
+    } catch (e) {}
+  }
+
+  function renderProLabTools(currentVDOT, targetVDOT, targetPaceSec, metabolic, paces) {
+    // --- 1. 대회 D-Day & 코스 난이도 ---
+    const ddayBadge = document.getElementById('dday-counter-badge');
+    const ddayCourseSummary = document.getElementById('dday-course-summary');
+    if (ddayBadge && ddayCourseSummary) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const targetDate = new Date(labState.raceDate + 'T00:00:00');
+      const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 0) {
+        const weeksLeft = (diffDays / 7).toFixed(1);
+        ddayBadge.textContent = `D-${diffDays} (${weeksLeft}주 남음)`;
+      } else if (diffDays === 0) {
+        ddayBadge.textContent = `🔥 D-DAY (오늘 대회!)`;
+      } else {
+        ddayBadge.textContent = `D+${Math.abs(diffDays)} (대회 종료·날짜 변경 가능)`;
+      }
+
+      const coursePenalties = { flat: 0, rolling: 2.5, hilly: 6.0 };
+      const penSecPerKm = coursePenalties[labState.courseType] || 0;
+      const totalCoursePenaltySec = Math.round(penSecPerKm * state.targetDist);
+      const adjCourseTime = formatHMS(state.targetSec + totalCoursePenaltySec);
+
+      const courseDescMap = {
+        flat: `<strong>평지 고속 코스:</strong> 고도 편차가 적어 목표 기록(<strong>${formatHMS(state.targetSec)}</strong>) 달성에 최적입니다.`,
+        rolling: `<strong>완만한 언덕 코스:</strong> 언덕 구간 페이스 저하(+2.5초/km) 감안 시 실전 보정 기록 <strong>${adjCourseTime}</strong> 예상`,
+        hilly: `<strong>업다운 난코스:</strong> 오르막 체력 소모(+6초/km) 감안 시 보정 기록 <strong>${adjCourseTime}</strong> (전반 오버페이스 절대 금물)`
+      };
+      ddayCourseSummary.innerHTML = courseDescMap[labState.courseType];
+    }
+
+    // --- 2 & 3. 날씨(기온·습도·풍속) 페이스 보정기 & 기온별 러닝 복장 코디네이터 ---
+    const tempValEl = document.getElementById('weather-temp-val');
+    const humValEl = document.getElementById('weather-hum-val');
+    const windValEl = document.getElementById('weather-wind-val');
+    const weatherBadge = document.getElementById('weather-penalty-badge');
+    const weatherResultBox = document.getElementById('weather-result-box');
+    const outfitTempBadge = document.getElementById('outfit-temp-badge');
+    const outfitBox = document.getElementById('outfit-recommendation-box');
+    const outfitLinks = document.getElementById('outfit-affiliate-links');
+
+    if (tempValEl && weatherResultBox) {
+      const t = labState.tempC;
+      const h = labState.humidity;
+      const w = labState.windMs;
+
+      let tempStatus = '마라톤 최적 기온';
+      if (t < 3) tempStatus = '동계 저온 (보온 필수)';
+      else if (t < 9) tempStatus = '쾌적·쌀쌀 (기록 단축 유리)';
+      else if (t <= 14) tempStatus = '마라톤 최적 기온';
+      else if (t <= 20) tempStatus = '다소 더움 (수분 보충 주의)';
+      else tempStatus = '고온 주의 (페이스 하향 필수)';
+
+      tempValEl.textContent = `${t}°C (${tempStatus})`;
+      humValEl.textContent = `${h}%`;
+      windValEl.textContent = `${w} m/s`;
+
+      // 기온 보정 (최적 11°C 기준)
+      let tempPenaltySec = 0;
+      if (t > 13) tempPenaltySec = (t - 13) * 1.35;
+      else if (t < 4) tempPenaltySec = (4 - t) * 0.65;
+
+      // 습도 보정 (15°C 이상이면서 습도 65% 초과 시 발한 효율 저하)
+      const humPenaltySec = (t >= 15 && h > 65) ? ((h - 65) * 0.18) : 0;
+      // 맞바람 보정 (2m/s 초과 시 공기저항 증가)
+      const windPenaltySec = w > 2 ? (w - 2) * 1.45 : 0;
+
+      const totalWeatherPenaltyPerKm = Math.round((tempPenaltySec + humPenaltySec + windPenaltySec) * 10) / 10;
+      const adjustedPaceSec = targetPaceSec + totalWeatherPenaltyPerKm;
+      const adjustedTotalSec = adjustedPaceSec * state.targetDist;
+      const extraWaterPerHour = t > 14 ? Math.round((t - 14) * 28 + Math.max(0, h - 60) * 3) : 0;
+
+      if (totalWeatherPenaltyPerKm <= 1.5) {
+        weatherBadge.textContent = `최적 조건 (+${totalWeatherPenaltyPerKm.toFixed(1)}"/km)`;
+        weatherBadge.className = 'text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
+      } else if (totalWeatherPenaltyPerKm <= 6) {
+        weatherBadge.textContent = `주의 조건 (+${totalWeatherPenaltyPerKm.toFixed(1)}"/km 늦춤 권장)`;
+        weatherBadge.className = 'text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400';
+      } else {
+        weatherBadge.textContent = `경고 조건 (+${totalWeatherPenaltyPerKm.toFixed(1)}"/km 감속 필수)`;
+        weatherBadge.className = 'text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-400';
+      }
+
+      weatherResultBox.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 dark:text-slate-400">기존 목표 페이스 → <strong>날씨 보정 권장 페이스</strong></span>
+          <span class="font-mono font-extrabold text-brand-600 dark:text-brand-400">${formatPace(targetPaceSec)}/km → ${formatPace(adjustedPaceSec)}/km</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 dark:text-slate-400">날씨 반영 예상 완주 시간</span>
+          <span class="font-mono font-bold">${formatHMS(adjustedTotalSec)} (${totalWeatherPenaltyPerKm > 0 ? `+${formatDurationClean(adjustedTotalSec - state.targetSec)} 보정` : '손실 없음'})</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 dark:text-slate-400">기온·습도 따른 추가 수분 필요량</span>
+          <span class="font-mono font-bold text-cyan-600 dark:text-cyan-400">${extraWaterPerHour > 0 ? `시간당 +${extraWaterPerHour}ml 추가 급수 필수` : '기본 급수량 유지'}</span>
+        </div>
+      `;
+
+      // 기온별 러닝 복장 코디네이터
+      if (outfitTempBadge && outfitBox && outfitLinks) {
+        outfitTempBadge.textContent = `${t}°C 맞춤 레이스 착장`;
+        let outfitItems = [];
+        let gearBtns = [];
+
+        if (t <= 4) {
+          outfitItems = [
+            '👕 <strong>상의:</strong> 기능성 긴팔 베이스레이어 + 경량 방풍 자켓(또는 싱글렛 레이어드)',
+            '👖 <strong>하의:</strong> 롱 타이즈 또는 기모 하프타이즈 + <strong>장목 압박 러닝양말</strong>',
+            '🧤 <strong>방한 필수템:</strong> <strong>기모 러닝장갑(또는 2in1 방풍 미튼)</strong> + <strong>기모 넥워머 바라클라바</strong>'
+          ];
+          gearBtns = [
+            { label: '🟢 네이버: 아이언빅 겨울 방한 기모 러닝장갑', url: 'https://naver.me/5B0q0nkT' },
+            { label: '🟢 네이버: 아이언빅 겨울 러닝 넥워머 바라클라바', url: 'https://naver.me/56XHXqsS' },
+            { label: '🟢 네이버: 아이언빅 2in1 방한 미튼 장갑', url: 'https://naver.me/5suzuHzr' },
+            { label: '🟢 네이버: 아이언빅 장목 압박 러닝양말', url: 'https://naver.me/xk9w9FZp' }
+          ];
+        } else if (t <= 11) {
+          outfitItems = [
+            '👕 <strong>상의:</strong> 레이싱 싱글렛(또는 반팔) + 출발 대기용 암슬리브(팔토시)',
+            '🩳 <strong>하의:</strong> 레이싱 쇼츠(또는 하프타이즈) + <strong>물집방지 쿠션 러닝양말</strong>',
+            '🧤 <strong>레이스 기어:</strong> 출발 초반 손 시림 방지용 <strong>러닝장갑</strong> + <strong>수납 러닝벨트</strong> + <strong>변색 고글</strong>'
+          ];
+          gearBtns = [
+            { label: '🟢 네이버: 아이언빅 겨울 방한 러닝장갑', url: 'https://naver.me/5B0q0nkT' },
+            { label: '🟢 네이버: 아이언빅(RNRN) 변색 러닝 선글라스', url: 'https://naver.me/GlR1RiLH' },
+            { label: '🟢 네이버: 아이언빅 마라톤 러닝벨트 힙색', url: 'https://naver.me/xbK3KSbu' },
+            { label: '🟢 네이버: 울티모(ULTIMO) 스포츠 러닝양말', url: 'https://naver.me/G4dbd4av' }
+          ];
+        } else {
+          outfitItems = [
+            '👕 <strong>상의:</strong> 통기성 극대화 초경량 레이싱 싱글렛',
+            '🩳 <strong>하의:</strong> 3~4인치 스플릿 레이싱 쇼츠 + <strong>통풍 논슬립 러닝양말</strong>',
+            '🕶️ <strong>자외선·급수 기어:</strong> <strong>초경량 편광 러닝 선글라스</strong> + <strong>울트라라이트 러닝조끼(개인 급수)</strong>'
+          ];
+          gearBtns = [
+            { label: '🟢 네이버: 아이언빅 스포츠 편광 러닝 선글라스', url: 'https://naver.me/5VxixMPP' },
+            { label: '🟢 네이버: 아이언빅(런런) 초경량 러닝조끼 베스트', url: 'https://naver.me/FgEpE2Xq' },
+            { label: '🟢 네이버: 울티모(ULTIMO) 스포츠 러닝양말', url: 'https://naver.me/G4dbd4av' },
+            { label: '🟢 네이버: 아이언빅 마라톤 러닝벨트 힙색', url: 'https://naver.me/xbK3KSbu' }
+          ];
+        }
+
+        outfitBox.innerHTML = outfitItems.map(line => `
+          <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-200">${line}</div>
+        `).join('');
+
+        outfitLinks.innerHTML = gearBtns.map(b => `
+          <a href="${b.url}" target="_blank" rel="noopener noreferrer sponsored" class="btn-naver py-2 px-2.5 rounded-xl text-[11px] font-extrabold text-center truncate shadow-xs">
+            ${b.label}
+          </a>
+        `).join('');
+      }
+    }
+
+    // --- 4. 손목 페이스 밴드 생성기 ---
+    const pacebandHeader = document.getElementById('paceband-header-title');
+    const pacebandTbody = document.getElementById('paceband-tbody');
+    if (pacebandHeader && pacebandTbody) {
+      const distName = state.targetDist > 30 ? '풀코스 42.195K' : state.targetDist > 15 ? '하프 21.0975K' : '10K 레이스';
+      pacebandHeader.textContent = `${distName} • ${formatHMS(state.targetSec)} (${formatPace(targetPaceSec)}/km)`;
+
+      const splitRows = Array.from(document.querySelectorAll('#split-table-body tr'));
+      pacebandTbody.innerHTML = splitRows.map(tr => {
+        const tds = tr.querySelectorAll('td');
+        if (tds.length < 4) return '';
+        const kmText = tds[0].textContent.trim();
+        const paceText = tds[1].textContent.trim().replace('/km', '');
+        const cumText = tds[3].textContent.trim();
+        const kmNum = parseFloat(kmText.replace(/[^0-9.]/g, '')) || 0;
+
+        let fuelMark = '-';
+        if (state.targetDist < 15) {
+          if (Math.abs(kmNum - 5) < 0.2) fuelMark = '⚡젤+💧';
+        } else {
+          if ([5, 15, 21.1, 25, 35].some(k => Math.abs(kmNum - k) < 0.3)) fuelMark = '⚡젤+💧';
+          else if ([10, 20, 30, 40].some(k => Math.abs(kmNum - k) < 0.3)) fuelMark = '💧급수';
+        }
+
+        return `
+          <tr>
+            <td class="py-1 text-left font-bold text-slate-200">${kmText}</td>
+            <td class="py-1 text-center text-brand-300">${paceText}</td>
+            <td class="py-1 text-right font-extrabold text-white">${cumText}</td>
+            <td class="py-1 text-right text-[10px] text-amber-400 font-sans font-bold">${fuelMark}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- 5. 대회 3일 전 카보로딩 계산기 ---
+    const carboWeightBadge = document.getElementById('carboload-weight-badge');
+    const carboCards = document.getElementById('carboload-summary-cards');
+    const carboMealGuide = document.getElementById('carboload-meal-guide');
+    if (carboWeightBadge && carboCards && carboMealGuide) {
+      carboWeightBadge.textContent = `${state.height}cm · ${state.weight}kg 기준`;
+      const carbPerKg = state.targetDist > 30 ? 8.5 : state.targetDist > 15 ? 6.8 : 5.2;
+      const dailyTargetCarb = Math.round(state.weight * carbPerKg);
+      const threeDayTotalCarb = dailyTargetCarb * 3;
+      const raceDayGels = state.targetDist > 30 ? 6 : state.targetDist > 15 ? 3 : 2;
+      const recommendedBoxSize = (raceDayGels + 4) >= 10 ? '20포 대용량 박스 (훈련 리허설 + 대회 당일)' : '10포 레이스 세트';
+
+      const riceBowls = Math.max(2, Math.round((dailyTargetCarb * 0.55) / 65));
+      const bananas = Math.max(1, Math.round((dailyTargetCarb * 0.2) / 27));
+      const gelsPerDay = Math.max(1, Math.round((dailyTargetCarb * 0.15) / 28));
+
+      carboCards.innerHTML = `
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <div class="text-[11px] text-slate-500 dark:text-slate-400">일일 목표 탄수화물 (D-3~D-1)</div>
+          <div class="text-lg font-mono font-extrabold text-amber-600 dark:text-amber-400 mt-0.5">${dailyTargetCarb}g / 일</div>
+          <div class="text-[10px] text-slate-400">체중 1kg당 ${carbPerKg}g 로딩</div>
+        </div>
+        <div class="p-3 rounded-xl bg-brand-500/10 border border-brand-500/20">
+          <div class="text-[11px] text-slate-500 dark:text-slate-400">3일 누적 글리코겐 충전량</div>
+          <div class="text-lg font-mono font-extrabold text-brand-600 dark:text-brand-400 mt-0.5">${threeDayTotalCarb.toLocaleString()}g</div>
+          <div class="text-[10px] text-slate-400">간·근육 글리코겐 100% 포화</div>
+        </div>
+        <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 col-span-2 sm:col-span-1">
+          <div class="text-[11px] text-slate-500 dark:text-slate-400">필요 에너지젤 수량 (리허설+실전)</div>
+          <div class="text-lg font-mono font-extrabold text-emerald-600 dark:text-emerald-400 mt-0.5">최소 ${raceDayGels + 4}포</div>
+          <div class="text-[10px] text-slate-400">${recommendedBoxSize} 권장</div>
+        </div>
+      `;
+
+      carboMealGuide.innerHTML = `
+        <div class="font-bold text-slate-900 dark:text-white">🍽️ ${state.weight}kg 러너를 위한 하루(${dailyTargetCarb}g) 카보로딩 실전 식단 예시:</div>
+        <div class="text-slate-600 dark:text-slate-300">• <strong>주식(복합 탄수화물):</strong> 흰쌀밥 또는 파스타/베이글 <strong>약 ${riceBowls}공기 분량</strong> (${riceBowls * 65}g)</div>
+        <div class="text-slate-600 dark:text-slate-300">• <strong>간식(과일·단당류):</strong> 바나나 <strong>${bananas}개</strong> + 꿀물/이온음료 500ml (${bananas * 27 + 30}g)</div>
+        <div class="text-slate-600 dark:text-slate-300">• <strong>소화 부담 없는 액상 로딩:</strong> 식간에 <strong>요헤미티 에너지젤 ${gelsPerDay}포</strong> 추가 섭취 시 위장 팽만감 없이 목표량 100% 달성!</div>
+      `;
+    }
+
+    // --- 6. 카보넨(Karvonen) 심박수 존 계산기 ---
+    const maxHrBadge = document.getElementById('max-hr-badge');
+    const hrZonesList = document.getElementById('hr-zones-list');
+    if (maxHrBadge && hrZonesList) {
+      const maxHR = Math.round(207 - 0.7 * labState.age);
+      const hrr = Math.max(40, maxHR - labState.restHR);
+      maxHrBadge.textContent = `최대심박 ${maxHR} bpm · 여유심박 ${hrr}`;
+
+      const zones = [
+        { name: 'Zone 1 • 회복주 (Recovery)', minPct: 0.50, maxPct: 0.60, matchPace: formatPace(paces.eSlow), color: 'text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800' },
+        { name: 'Zone 2 • 유산소 기반 LSD (E 페이스)', minPct: 0.60, maxPct: 0.70, matchPace: `${formatPace(paces.eFast)}~${formatPace(paces.eSlow)}`, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' },
+        { name: 'Zone 3 • 마라톤 레이스 (M 페이스)', minPct: 0.70, maxPct: 0.80, matchPace: formatPace(paces.mPace), color: 'text-sky-600 dark:text-sky-400 bg-sky-500/10' },
+        { name: 'Zone 4 • 젖산역치 지속주 (T 페이스)', minPct: 0.80, maxPct: 0.90, matchPace: formatPace(paces.tPace), color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10' },
+        { name: 'Zone 5 • VO₂max 인터벌 (I 페이스)', minPct: 0.90, maxPct: 1.00, matchPace: formatPace(paces.iPace), color: 'text-rose-600 dark:text-rose-400 bg-rose-500/10' }
+      ];
+
+      hrZonesList.innerHTML = zones.map(z => {
+        const lowBpm = Math.round(labState.restHR + hrr * z.minPct);
+        const highBpm = Math.round(labState.restHR + hrr * z.maxPct);
+        return `
+          <div class="p-2.5 rounded-xl ${z.color} flex items-center justify-between gap-2">
+            <div>
+              <div class="font-extrabold">${z.name}</div>
+              <div class="text-[10px] opacity-80">매칭 훈련 페이스: ${z.matchPace}/km</div>
+            </div>
+            <div class="font-mono font-extrabold text-sm">${lowBpm} ~ ${highBpm} bpm</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // --- 7. 신장(키) 기반 최적 케이던스 & 보폭(Stride Length) 분석기 ---
+    const strideHeightBadge = document.getElementById('stride-height-badge');
+    const cadenceHeightText = document.getElementById('cadence-height-text');
+    const cadenceSpmVal = document.getElementById('cadence-spm-val');
+    const cadenceBox = document.getElementById('cadence-analysis-box');
+    if (strideHeightBadge && cadenceBox) {
+      strideHeightBadge.textContent = `신장 ${state.height}cm 기준`;
+      if (cadenceHeightText) cadenceHeightText.textContent = state.height;
+
+      const speedMeterPerMin = 1000 / (targetPaceSec / 60);
+      const strideLengthM = speedMeterPerMin / labState.cadenceSpm;
+      const strideToHeightRatio = (strideLengthM / (state.height / 100)) * 100;
+
+      // 키와 속도를 고려한 이상적 케이던스 추천 (키가 클수록 적정 케이던스가 약간 낮고, 속도가 빠를수록 높음)
+      const idealCadence = Math.round(Math.min(194, Math.max(170, 182 - (state.height - 170) * 0.25 + (speedMeterPerMin - 200) * 0.06)));
+      const idealStrideM = speedMeterPerMin / idealCadence;
+
+      cadenceSpmVal.textContent = `${labState.cadenceSpm} spm (보폭 ${strideLengthM.toFixed(2)}m)`;
+
+      let strideDiagnosis = '✅ 신장 대비 이상적인 보폭·케이던스 밸런스입니다!';
+      if (strideToHeightRatio > 72) {
+        strideDiagnosis = `⚠️ <strong>오버스트라이딩(과보폭) 주의:</strong> 신장(${state.height}cm) 대비 보폭(${strideLengthM.toFixed(2)}m, ${strideToHeightRatio.toFixed(0)}%)이 넓어 무릎·정강이 충격이 큽니다. 케이던스를 <strong>${idealCadence} spm</strong> 이상으로 높여 보폭을 줄이세요.`;
+      } else if (strideToHeightRatio < 50) {
+        strideDiagnosis = `💡 <strong>종종걸음(단보폭) 경향:</strong> 현재 페이스 대비 보폭(${strideLengthM.toFixed(2)}m)이 좁습니다. 고관절 가동성과 후방 추진력을 조금 더 활용해 보세요.`;
+      }
+
+      cadenceBox.innerHTML = `
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 dark:text-slate-400">목표 페이스(${formatPace(targetPaceSec)}/km) 주행 시 필요 보폭</span>
+          <span class="font-mono font-extrabold text-brand-600 dark:text-brand-400">${strideLengthM.toFixed(2)}m (신장의 ${strideToHeightRatio.toFixed(1)}%)</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-slate-500 dark:text-slate-400">신장 ${state.height}cm 러너의 권장 케이던스 · 보폭</span>
+          <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">${idealCadence} spm · ${idealStrideM.toFixed(2)}m</span>
+        </div>
+        <div class="pt-1.5 border-t border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 leading-relaxed">
+          ${strideDiagnosis}
+        </div>
+      `;
+    }
+
+    // --- 8. 체중 감량(-1kg ~ -5kg) 시 예상 기록 단축 시뮬레이터 ---
+    const weightSimLabel = document.getElementById('weight-sim-current-label');
+    const weightSimTbody = document.getElementById('weight-sim-tbody');
+    if (weightSimLabel && weightSimTbody) {
+      weightSimLabel.textContent = `${state.height}cm · ${state.weight}kg (BMI ${metabolic.bmi.toFixed(1)})`;
+      const base10k = predictEquivalentTimeSec(currentVDOT, 10);
+      const baseHalf = predictEquivalentTimeSec(currentVDOT, 21.0975);
+      const baseFull = predictEquivalentTimeSec(currentVDOT, 42.195);
+
+      const deltas = [0, -1, -2, -3, -5];
+      weightSimTbody.innerHTML = deltas.map(d => {
+        const simWeight = Math.max(30, state.weight + d);
+        const hMeter = state.height / 100;
+        const simBmi = simWeight / (hMeter * hMeter);
+
+        // 너무 낮은 BMI(17.5 미만)로 내려가는 감량은 근손실 경고를 표시
+        const isUnderweight = simBmi < 17.5 && d < 0;
+        // 체중 감소에 따른 상대적 VO2max(VDOT) 상승률 (근손실 없는 체지방 감량 가정 시 ~0.75 지수)
+        const simVDOT = isUnderweight
+          ? currentVDOT
+          : currentVDOT * Math.pow(state.weight / simWeight, 0.72);
+
+        const t10 = predictEquivalentTimeSec(simVDOT, 10);
+        const tHalf = predictEquivalentTimeSec(simVDOT, 21.0975);
+        const tFull = predictEquivalentTimeSec(simVDOT, 42.195);
+
+        const diffFull = Math.round(baseFull - tFull);
+        const diffBadge = d === 0
+          ? '<span class="text-slate-400">(현재 기준)</span>'
+          : isUnderweight
+            ? '<span class="text-rose-500 text-[11px]">⚠️ 저체중·근손실 주의</span>'
+            : `<span class="text-emerald-600 dark:text-emerald-400 font-bold">(-${formatDurationClean(diffFull)} 단축)</span>`;
+
+        const rowCls = d === 0 ? 'bg-slate-50/80 dark:bg-slate-800/40 font-bold' : '';
+        return `
+          <tr class="${rowCls}">
+            <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap">${d === 0 ? `현재 (${simWeight}kg)` : `${d}kg 감량 (${simWeight}kg)`}</td>
+            <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap">BMI ${simBmi.toFixed(1)}</td>
+            <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap text-brand-600 dark:text-brand-400 font-bold">${simVDOT.toFixed(1)}</td>
+            <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap">${formatDurationClean(t10)}</td>
+            <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap">${formatHMS(tHalf)}</td>
+            <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap">${formatHMS(tFull)} ${diffBadge}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // --- 9. 맞춤형 주간 훈련 스케줄 자동 생성기 (4주 / 8주 / 12주) ---
+    const schedGrid = document.getElementById('weekly-schedule-grid');
+    if (schedGrid) {
+      const is10K = state.targetDist < 15;
+      const isHalf = state.targetDist > 15 && state.targetDist < 30;
+      const w = labState.schedWeeks;
+
+      const lsdDist = is10K ? (w === 4 ? '12~14km' : '15~18km') : isHalf ? (w === 4 ? '16~18km' : '20~24km') : (w === 4 ? '24~28km' : '30~35km');
+      const tempoDist = is10K ? '6~8km' : isHalf ? '8~10km' : '10~14km';
+
+      const days = [
+        {
+          day: '화요일 (Speed / Interval)',
+          badge: `${w}주 플랜 핵심 #1`,
+          title: `VO₂max 인터벌 (I 페이스 ${formatPace(paces.iPace)}/km)`,
+          desc: `800m~1000m 질주 × ${is10K ? '6~8세트' : '5~7세트'} (세트 사이 400m 천천히 조깅 회복). 심폐 최대산소섭취량을 끌어올립니다.`
+        },
+        {
+          day: '목요일 (Threshold / Tempo)',
+          badge: `${w}주 플랜 핵심 #2`,
+          title: `젖산역치 지속주 (T 페이스 ${formatPace(paces.tPace)}/km)`,
+          desc: `${tempoDist} 지속주 또는 M 페이스(${formatPace(paces.mPace)}/km) 페이스주. 후반부 젖산 축적에도 지치지 않는 지구력을 완성합니다.`
+        },
+        {
+          day: '토요일 (Easy / Recovery)',
+          badge: '부상 방지 & 회복',
+          title: `이지런 회복 조깅 (${formatPace(paces.eFast)}~${formatPace(paces.eSlow)}/km)`,
+          desc: `6~10km 편안한 대화 가능 페이스로 모세혈관 발달 및 하체 피로를 풀고 코어·스트레칭을 병행합니다.`
+        },
+        {
+          day: '일요일 (Long Slow Distance)',
+          badge: '실전 보급 리허설',
+          title: `주말 LSD 장거리주 (${lsdDist})`,
+          desc: `E 페이스(${formatPace(paces.eFast)}/km)로 달린 뒤 마지막 3~5km를 M 페이스로 빌드업! 실전처럼 7km마다 에너지젤 섭취를 반드시 연습하세요.`
+        }
+      ];
+
+      schedGrid.innerHTML = days.map(d => `
+        <div class="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between text-[11px] font-extrabold text-brand-600 dark:text-brand-400 mb-1">
+              <span>${d.day}</span>
+              <span class="px-2 py-0.5 rounded bg-brand-500/10">${d.badge}</span>
+            </div>
+            <div class="text-sm font-extrabold text-slate-900 dark:text-white mb-1.5">${d.title}</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">${d.desc}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // --- 10. 대회 전날 밤 마라톤 준비물 체크리스트 ---
+    renderChecklistUI();
+  }
+
+  function renderChecklistUI() {
+    const container = document.getElementById('race-checklist-container');
+    const progText = document.getElementById('checklist-progress-text');
+    const progBar = document.getElementById('checklist-progress-bar');
+    if (!container) return;
+
+    const total = CHECKLIST_ITEMS.length;
+    const doneCount = CHECKLIST_ITEMS.filter(item => !!checkedMap[item.id]).length;
+    const pct = Math.round((doneCount / total) * 100);
+
+    if (progText) progText.textContent = `준비 완료 ${doneCount}/${total} (${pct}%)`;
+    if (progBar) progBar.style.width = `${pct}%`;
+
+    container.innerHTML = CHECKLIST_ITEMS.map(item => {
+      const isChecked = !!checkedMap[item.id];
+      const boxCls = isChecked
+        ? 'border-emerald-500/40 bg-emerald-500/5'
+        : 'border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-800/40';
+      const titleCls = isChecked ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white';
+      const btnCls = item.platform === 'coupang' ? 'btn-coupang' : 'btn-naver';
+
+      return `
+        <div class="p-3.5 rounded-xl border ${boxCls} flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 transition">
+          <label class="flex items-start gap-2.5 cursor-pointer flex-1">
+            <input
+              type="checkbox"
+              data-chk-id="${item.id}"
+              ${isChecked ? 'checked' : ''}
+              class="race-chk-input mt-1 w-4 h-4 rounded accent-indigo-600 cursor-pointer"
+            />
+            <div>
+              <div class="text-xs sm:text-sm font-extrabold ${titleCls}">${item.title}</div>
+              <div class="text-[11px] text-slate-500 dark:text-slate-400">${item.desc}</div>
+            </div>
+          </label>
+          <a
+            href="${item.url}"
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            class="${btnCls} shrink-0 py-1.5 px-2.5 rounded-lg text-[11px] font-extrabold text-center shadow-xs"
+          >
+            ${item.btnLabel}
+          </a>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.race-chk-input').forEach(inp => {
+      inp.addEventListener('change', () => {
+        const id = inp.getAttribute('data-chk-id');
+        checkedMap[id] = inp.checked;
+        saveChecklistState();
+        renderChecklistUI();
+      });
+    });
+  }
+
+  function initProLabEvents() {
+    // 1. 메이저 대회 프리셋 버튼 및 날짜·코스 변경
+    const raceDateInput = document.getElementById('race-date-input');
+    const raceCourseSelect = document.getElementById('race-course-select');
+    document.querySelectorAll('.race-preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        labState.raceDate = btn.getAttribute('data-date');
+        labState.courseType = btn.getAttribute('data-course');
+        if (raceDateInput) raceDateInput.value = labState.raceDate;
+        if (raceCourseSelect) raceCourseSelect.value = labState.courseType;
+
+        document.querySelectorAll('.race-preset-btn').forEach(b => {
+          b.className = b === btn
+            ? 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white transition'
+            : 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+        });
+        calculateAndRender();
+      });
+    });
+
+    if (raceDateInput) {
+      raceDateInput.addEventListener('change', () => {
+        labState.raceDate = raceDateInput.value;
+        calculateAndRender();
+      });
+    }
+    if (raceCourseSelect) {
+      raceCourseSelect.addEventListener('change', () => {
+        labState.courseType = raceCourseSelect.value;
+        calculateAndRender();
+      });
+    }
+
+    // 2. 날씨 슬라이더 (기온·습도·풍속)
+    const tempSlider = document.getElementById('weather-temp-slider');
+    const humSlider = document.getElementById('weather-hum-slider');
+    const windSlider = document.getElementById('weather-wind-slider');
+    if (tempSlider) {
+      tempSlider.addEventListener('input', () => {
+        labState.tempC = parseInt(tempSlider.value, 10);
+        calculateAndRender();
+      });
+    }
+    if (humSlider) {
+      humSlider.addEventListener('input', () => {
+        labState.humidity = parseInt(humSlider.value, 10);
+        calculateAndRender();
+      });
+    }
+    if (windSlider) {
+      windSlider.addEventListener('input', () => {
+        labState.windMs = parseFloat(windSlider.value);
+        calculateAndRender();
+      });
+    }
+
+    // 4. 손목 페이스 밴드 단독 이미지 다운로드
+    const pacebandBtn = document.getElementById('download-paceband-btn');
+    if (pacebandBtn) {
+      pacebandBtn.addEventListener('click', async () => {
+        const bandEl = document.getElementById('wrist-pace-band-card');
+        if (!bandEl) return;
+        const orig = pacebandBtn.textContent;
+        pacebandBtn.textContent = '⏳ 저장 중...';
+        try {
+          const canvas = await html2canvas(bandEl, { backgroundColor: '#0f172a', scale: 2, useCORS: true });
+          const link = document.createElement('a');
+          link.download = `wrist-paceband-${formatHMS(state.targetSec).replace(/:/g, '')}.png`;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          showToast('⌚ 손목 페이스 밴드 이미지가 저장되었습니다!');
+        } catch (e) {
+          showToast('⚠️ 이미지 저장에 실패했습니다.');
+        } finally {
+          pacebandBtn.textContent = orig;
+        }
+      });
+    }
+
+    // 6. 심박수 존 나이·안정시 심박수 입력
+    const ageInput = document.getElementById('runner-age');
+    const restHrInput = document.getElementById('runner-rest-hr');
+    if (ageInput) {
+      ageInput.addEventListener('input', () => {
+        labState.age = Math.max(10, Math.min(95, parseInt(ageInput.value || '35', 10)));
+        calculateAndRender();
+      });
+    }
+    if (restHrInput) {
+      restHrInput.addEventListener('input', () => {
+        labState.restHR = Math.max(30, Math.min(110, parseInt(restHrInput.value || '58', 10)));
+        calculateAndRender();
+      });
+    }
+
+    // 7. 케이던스 슬라이더
+    const cadenceSlider = document.getElementById('cadence-slider');
+    if (cadenceSlider) {
+      cadenceSlider.addEventListener('input', () => {
+        labState.cadenceSpm = parseInt(cadenceSlider.value, 10);
+        calculateAndRender();
+      });
+    }
+
+    // 9. 주간 훈련 스케줄 주수 선택 (4주 / 8주 / 12주)
+    document.querySelectorAll('.sched-week-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        labState.schedWeeks = parseInt(btn.getAttribute('data-weeks'), 10);
+        document.querySelectorAll('.sched-week-btn').forEach(b => {
+          b.className = b === btn
+            ? 'sched-week-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm'
+            : 'sched-week-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300';
+        });
+        calculateAndRender();
+      });
+    });
+
+    // 10. 체크리스트 초기화 버튼
+    const resetChkBtn = document.getElementById('reset-checklist-btn');
+    if (resetChkBtn) {
+      resetChkBtn.addEventListener('click', () => {
+        checkedMap = {};
+        saveChecklistState();
+        renderChecklistUI();
+        showToast('🔄 대회 준비물 체크리스트가 초기화되었습니다.');
+      });
+    }
+  }
+
   // 초기 실행
   initAffiliateLinkManager();
+  initProLabEvents();
   syncRecentInputsFromSec();
   syncTargetInputsFromSec();
   calculateAndRender();

@@ -81,11 +81,12 @@
         <span>MarathonLab <span class="text-brand-600 dark:text-brand-400">PRO</span></span>
       </a>
 
-      <div class="hidden md:flex items-center gap-5 text-xs font-bold text-slate-600 dark:text-slate-300">
-        <a href="#calculator-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT·스플릿 계산기</a>
+      <div class="hidden md:flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
+        <a href="#calculator-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT·스플릿</a>
         <a href="#fueling-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">에너지젤 보급표</a>
+        <a href="#pro-lab-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition text-brand-600 dark:text-brand-400">🔬 10대 레이스 연구소</a>
         <a href="#gear-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">추천 레이스 기어</a>
-        <a href="#training-guide" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT 훈련 칼럼</a>
+        <a href="#checklist-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">대회 체크리스트</a>
         <a href="#faq-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">FAQ</a>
       </div>
 
@@ -191,32 +192,57 @@
           </div>
         </div>
 
-        <!-- 카드 2: 러너 신체 프로필 (체중) -->
+        <!-- 카드 2: 러너 신체 프로필 (키 & 체중 30kg~130kg) -->
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-base font-bold flex items-center gap-2">
               <span class="w-6 h-6 rounded-lg bg-brand-600 text-white text-xs flex items-center justify-center font-bold">2</span>
-              체중 및 대사 프로필
+              키 · 체중 및 대사 프로필
             </h2>
-            <span class="text-xs font-medium text-slate-400">칼로리·탄수화물 계산</span>
+            <span id="bmi-status-badge" class="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-brand-500/10 text-brand-600 dark:text-brand-400">
+              BMI 23.0 · 표준 러너형
+            </span>
           </div>
 
-          <div class="flex items-center justify-between mb-2">
-            <label for="runner-weight" class="text-xs font-semibold text-slate-500 dark:text-slate-400">현재 체중 (kg)</label>
-            <div class="flex items-center gap-1.5">
-              <button type="button" id="weight-minus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">-</button>
-              <input id="runner-weight" type="number" min="35" max="130" step="0.5" value="68" class="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1 text-center font-mono text-sm font-bold" />
-              <span class="text-xs font-semibold text-slate-500">kg</span>
-              <button type="button" id="weight-plus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">+</button>
+          <!-- 키(cm) 입력 및 슬라이더 -->
+          <div class="mb-4 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="runner-height" class="text-xs font-semibold text-slate-500 dark:text-slate-400">현재 신장 / 키 (cm)</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="height-minus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">-</button>
+                <input id="runner-height" type="number" min="120" max="210" step="0.5" value="172" class="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1 text-center font-mono text-sm font-bold" />
+                <span class="text-xs font-semibold text-slate-500">cm</span>
+                <button type="button" id="height-plus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">+</button>
+              </div>
+            </div>
+            <input id="height-slider" type="range" min="130" max="200" step="1" value="172" aria-label="키 슬라이더" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+            <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>130cm</span>
+              <span>155cm</span>
+              <span>175cm</span>
+              <span>200cm</span>
             </div>
           </div>
 
-          <input id="weight-slider" type="range" min="40" max="110" step="1" value="68" aria-label="체중 슬라이더" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
-          <div class="flex justify-between text-[11px] text-slate-400 mt-1">
-            <span>40kg</span>
-            <span>65kg</span>
-            <span>85kg</span>
-            <span>110kg</span>
+          <!-- 체중(kg) 입력 및 슬라이더 (30kg부터 지원!) -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="runner-weight" class="text-xs font-semibold text-slate-500 dark:text-slate-400">현재 체중 (kg · 30kg~130kg)</label>
+              <div class="flex items-center gap-1.5">
+                <button type="button" id="weight-minus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">-</button>
+                <input id="runner-weight" type="number" min="30" max="130" step="0.5" value="68" class="w-16 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-1 text-center font-mono text-sm font-bold" />
+                <span class="text-xs font-semibold text-slate-500">kg</span>
+                <button type="button" id="weight-plus" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm hover:bg-slate-200 dark:hover:bg-slate-700">+</button>
+              </div>
+            </div>
+
+            <input id="weight-slider" type="range" min="30" max="110" step="1" value="68" aria-label="체중 슬라이더" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+            <div class="flex justify-between text-[11px] text-slate-400 mt-1">
+              <span>30kg</span>
+              <span>55kg</span>
+              <span>80kg</span>
+              <span>110kg</span>
+            </div>
           </div>
         </div>
       </div>
@@ -234,15 +260,19 @@
             </span>
           </div>
 
-          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">목표 대회 종목</label>
-          <div class="grid grid-cols-2 gap-2.5 mb-4" id="target-dist-group">
-            <button type="button" data-dist="21.0975" class="target-dist-btn py-3 px-4 rounded-xl text-sm font-bold border transition flex items-center justify-between">
-              <span>🏅 하프 마라톤</span>
-              <span class="text-xs font-mono opacity-75">21.0975 km</span>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">목표 대회 종목 (10km / 하프 / 풀코스)</label>
+          <div class="grid grid-cols-3 gap-2 mb-4" id="target-dist-group">
+            <button type="button" data-dist="10" class="target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5">
+              <span>🏃 10km</span>
+              <span class="text-[11px] font-mono opacity-75">10.0 km</span>
             </button>
-            <button type="button" data-dist="42.195" class="target-dist-btn py-3 px-4 rounded-xl text-sm font-bold border transition flex items-center justify-between">
-              <span>🏆 풀코스 마라톤</span>
-              <span class="text-xs font-mono opacity-75">42.195 km</span>
+            <button type="button" data-dist="21.0975" class="target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5">
+              <span>🏅 하프</span>
+              <span class="text-[11px] font-mono opacity-75">21.1 km</span>
+            </button>
+            <button type="button" data-dist="42.195" class="target-dist-btn py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition flex flex-col sm:flex-row items-center justify-between gap-0.5">
+              <span>🏆 풀코스</span>
+              <span class="text-[11px] font-mono opacity-75">42.2 km</span>
             </button>
           </div>
 
@@ -356,7 +386,7 @@
           </div>
 
           <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">예상 소모 에너지</div>
+            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">예상 소모 에너지 (키·체중·속도)</div>
             <div class="mt-1 flex items-baseline gap-1">
               <span id="kcal-val" class="text-2xl sm:text-3xl font-extrabold font-mono text-orange-500">2,920</span>
               <span class="text-xs font-bold text-slate-400">kcal</span>
@@ -418,11 +448,11 @@
       <section class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
-            <h2 class="text-lg font-extrabold flex items-center gap-2">
+            <h2 id="split-table-title" class="text-lg font-extrabold flex items-center gap-2">
               ⏱️ 5km 구간별 목표 통과 시간표 (Split Table)
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              선택한 주행 전략에 맞춘 구간별 목표 페이스 및 누적 통과 시간입니다.
+              선택한 목표 종목(10km/하프/풀코스)과 주행 전략에 맞춘 구간별 목표 페이스 및 누적 통과 시간입니다.
             </p>
           </div>
           <span id="split-strategy-chip" class="self-start sm:self-auto px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
@@ -454,7 +484,7 @@
               ⚡ 레이스 에너지젤 &amp; 수분 보급 타임라인
             </h2>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              체중(<span id="fuel-weight-label" class="font-bold text-slate-700 dark:text-slate-200">68kg</span>)과 예상 주행 시간을 기반으로 30km 이후 '마라톤 벽(Bonking)'을 예방하는 스포츠 영양학 프로토콜입니다.
+              신장·체중(<span id="fuel-weight-label" class="font-bold text-slate-700 dark:text-slate-200">172cm · 68kg</span>)과 예상 주행 시간을 기반으로 에너지 고갈을 예방하는 스포츠 영양학 프로토콜입니다.
             </p>
           </div>
           <div class="flex items-center gap-2 text-xs font-bold">
@@ -496,6 +526,401 @@
           <span>💬 카카오톡 공유용 텍스트 복사</span>
         </button>
       </div>
+    </section>
+
+    <!-- =====================================================================
+         [신규 10대 PRO 확장 기능] 마라톤 올인원 레이스 연구소 (10-in-1 Lab)
+         ===================================================================== -->
+    <section id="pro-lab-section" class="mt-6 space-y-6">
+
+      <!-- 연구소 헤더 & 빠른 이동 앵커 바 -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-brand-500/30 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <span class="inline-block text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-400 mb-1">
+              🔬 ALL-IN-ONE MARATHON LAB • 10대 실전 시뮬레이터
+            </span>
+            <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+              마라톤 실전 퍼포먼스 &amp; 레이스 준비 10대 도구
+            </h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              위에서 입력한 <strong>키·체중·목표 기록</strong>과 실시간 연동되는 10가지 전문 마라톤 분석 도구입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 text-xs font-bold">
+          <a href="#lab-dday" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">1. 📆 대회 D-Day·코스</a>
+          <a href="#lab-weather" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">2. 🌡️ 날씨 페이스 보정</a>
+          <a href="#lab-outfit" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">3. 🎽 기온별 러닝 복장</a>
+          <a href="#lab-paceband" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">4. ⌚ 손목 페이스 밴드</a>
+          <a href="#lab-carboload" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">5. 🍙 3일 카보로딩 계산기</a>
+          <a href="#lab-hr-zone" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">6. ❤️ 심박수 존(Zone 1~5)</a>
+          <a href="#lab-cadence" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">7. 👟 키·보폭·케이던스</a>
+          <a href="#lab-weight-sim" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">8. 📉 체중 감량 시뮬레이터</a>
+          <a href="#lab-schedule" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">9. 🗓️ 주간 훈련 스케줄표</a>
+          <a href="#checklist-section" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">10. ✅ 준비물 체크리스트</a>
+        </div>
+      </div>
+
+      <!-- [기능 1] 국내 주요 마라톤 대회 D-Day 카운트다운 & 코스 난이도 -->
+      <div id="lab-dday" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              📆 1. 목표 마라톤 대회 D-Day 카운트다운 &amp; 코스 난이도 분석
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              참가 예정인 메이저 대회를 선택하거나 직접 대회 날짜를 지정해 남은 훈련 기간과 코스 특성을 확인하세요.
+            </p>
+          </div>
+          <div id="dday-counter-badge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-brand-600 text-white font-mono text-sm font-extrabold shadow-sm">
+            D-Day 계산 중
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 mb-4" id="major-race-buttons">
+          <button type="button" data-race="seoul" data-date="2027-03-21" data-course="flat" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white transition">
+            🏆 서울마라톤 (동아·평탄 고속)
+          </button>
+          <button type="button" data-race="jtbc" data-date="2026-11-08" data-course="rolling" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🔥 JTBC 서울마라톤 (후반 완만 언덕)
+          </button>
+          <button type="button" data-race="chuncheon" data-date="2026-10-25" data-course="hilly" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🍁 춘천마라톤 (호반 업다운 코어)
+          </button>
+          <button type="button" data-race="daegu" data-date="2027-02-21" data-course="flat" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            ⚡ 대구국제마라톤 (초고속 순환)
+          </button>
+          <button type="button" data-race="gyeongju" data-date="2026-10-17" data-course="rolling" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🌸 경주마라톤 (완만 구릉지)
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
+          <div>
+            <label for="race-date-input" class="block text-[11px] font-bold text-slate-500 mb-1">대회 날짜 직접 선택</label>
+            <input id="race-date-input" type="date" value="2027-03-21" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700" />
+          </div>
+          <div>
+            <label for="race-course-select" class="block text-[11px] font-bold text-slate-500 mb-1">코스 지형 난이도</label>
+            <select id="race-course-select" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">
+              <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
+              <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
+              <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
+            </select>
+          </div>
+          <div id="dday-course-summary" class="flex flex-col justify-center text-xs text-slate-600 dark:text-slate-300"></div>
+        </div>
+      </div>
+
+      <!-- [기능 2 & 3] 대회 당일 날씨(기온·습도·풍속) 페이스 보정기 & 기온별 러닝 복장 코디네이터 -->
+      <div id="lab-weather" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 좌측: 날씨 페이스 보정기 (6 cols) -->
+        <div class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-extrabold flex items-center gap-1.5">
+                🌡️ 2. 날씨(기온·습도·풍속) 페이스 보정기
+              </h3>
+              <span id="weather-penalty-badge" class="text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                최적 기온 (+0" 보정)
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">
+              마라톤 최적 기온(10~12°C) 대비 더위·추위·습도·맞바람에 따른 실전 페이스 저하와 추가 수분 필요량을 계산합니다.
+            </p>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span>예상 출발 기온 (°C)</span>
+                  <span id="weather-temp-val" class="font-mono text-brand-600 dark:text-brand-400">10°C (마라톤 최적)</span>
+                </div>
+                <input id="weather-temp-slider" type="range" min="-5" max="30" step="1" value="10" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+                <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                  <span>-5°C (한파)</span>
+                  <span>10°C (최적)</span>
+                  <span>20°C (온난)</span>
+                  <span>30°C (폭염)</span>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span>예상 상대 습도 (%)</span>
+                  <span id="weather-hum-val" class="font-mono text-sky-600 dark:text-sky-400">55%</span>
+                </div>
+                <input id="weather-hum-slider" type="range" min="30" max="95" step="5" value="55" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs font-bold mb-1">
+                  <span>예상 맞바람 풍속 (m/s)</span>
+                  <span id="weather-wind-val" class="font-mono text-amber-600 dark:text-amber-400">2 m/s (약풍)</span>
+                </div>
+                <input id="weather-wind-slider" type="range" min="0" max="10" step="0.5" value="2" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+              </div>
+            </div>
+          </div>
+
+          <div id="weather-result-box" class="mt-4 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700 text-xs space-y-1.5"></div>
+        </div>
+
+        <!-- 우측: 기온별 러닝 복장 & 필수 기어 코디네이터 (6 cols) -->
+        <div id="lab-outfit" class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-extrabold flex items-center gap-1.5">
+                🎽 3. 기온별 러닝 복장 &amp; 기어 코디네이터
+              </h3>
+              <span id="outfit-temp-badge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400">
+                10°C 추천 착장
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              좌측 기온 슬라이더를 움직이면 해당 온도에 가장 알맞은 레이스 복장과 방한·자외선 차단 기어를 자동 매칭합니다.
+            </p>
+            <div id="outfit-recommendation-box" class="space-y-2.5"></div>
+          </div>
+          <div id="outfit-affiliate-links" class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+        </div>
+      </div>
+
+      <!-- [기능 4 & 5] 손목 부착용 마라톤 페이스 밴드 생성기 & 대회 3일 전 카보로딩 계산기 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 좌측: 손목 페이스 밴드 (5 cols) -->
+        <div id="lab-paceband" class="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-extrabold">⌚ 4. 손목 페이스 밴드 생성기</h3>
+              <button
+                type="button"
+                id="download-paceband-btn"
+                class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 hover:bg-brand-700 text-white transition shadow-sm"
+              >
+                📸 페이스 밴드 이미지 저장
+              </button>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              대회 당일 손목에 감거나 휴대폰 배경화면으로 설정할 수 있는 구간별 통과 시간 &amp; 보급(⚡젤) 요약 밴드입니다.
+            </p>
+
+            <!-- 이미지 캡처 대상: 손목 페이스 밴드 -->
+            <div id="wrist-pace-band-card" class="p-3.5 rounded-2xl bg-slate-900 text-white border-2 border-brand-500 shadow-inner">
+              <div class="text-center border-b border-slate-700 pb-2 mb-2">
+                <div class="text-[10px] font-mono uppercase tracking-widest text-brand-400">MARATHONLAB PRO PACE BAND</div>
+                <div id="paceband-header-title" class="text-sm font-extrabold mt-0.5">풀코스 3:30:00 (4'58"/km)</div>
+              </div>
+              <table class="w-full text-xs font-mono">
+                <thead>
+                  <tr class="text-[10px] text-slate-400 border-b border-slate-800">
+                    <th class="py-1 text-left">구간</th>
+                    <th class="py-1 text-center">페이스</th>
+                    <th class="py-1 text-right">누적시간</th>
+                    <th class="py-1 text-right">보급</th>
+                  </tr>
+                </thead>
+                <tbody id="paceband-tbody" class="divide-y divide-slate-800/80"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- 우측: 대회 전 3일 카보로딩 식단 & 에너지젤 박스 계산기 (7 cols) -->
+        <div id="lab-carboload" class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-extrabold">🍙 5. 대회 전 3일 '카보로딩(탄수화물 로딩)' 계산기</h3>
+              <span id="carboload-weight-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                68kg 기준
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              근육과 간에 글리코겐을 100% 가득 채우기 위해 대회 D-3일부터 매일 섭취해야 할 탄수화물 양(g)과 실전 식단 환산표입니다.
+            </p>
+
+            <div id="carboload-summary-cards" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-3"></div>
+            <div id="carboload-meal-guide" class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 text-xs space-y-1.5"></div>
+          </div>
+
+          <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <a
+              href="https://naver.me/FfsnsNFQ"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-naver py-2.5 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <span>🟢 네이버: 요헤미티 에너지젤 20포 대용량 박스 보기</span>
+            </a>
+            <a
+              href="https://link.coupang.com/a/imXjJvf18C"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-coupang py-2.5 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <span>🚀 쿠팡: 요헤미티 지속형 에너지젤 10포 보기</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- [기능 6 & 7] 카보넨 심박수 존(Zone 1~5) 계산기 & 신장(키) 기반 최적 케이던스·보폭 분석기 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 좌측: 카보넨 심박수 존 계산기 (6 cols) -->
+        <div id="lab-hr-zone" class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-base font-extrabold">❤️ 6. 카보넨(Karvonen) 심박수 존 계산기</h3>
+            <span id="max-hr-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-rose-500/15 text-rose-600 dark:text-rose-400">
+              최대심박 183 bpm
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+            나이와 아침 기상 직후 안정시 심박수를 입력하면 여유심박수(HRR) 공식으로 정밀 훈련 심박수 구간(Zone 1~5)을 산출합니다.
+          </p>
+
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label for="runner-age" class="block text-[11px] font-bold text-slate-500 mb-1">만 나이 (세)</label>
+              <input id="runner-age" type="number" min="12" max="90" value="35" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+            <div>
+              <label for="runner-rest-hr" class="block text-[11px] font-bold text-slate-500 mb-1">안정시 심박수 (bpm)</label>
+              <input id="runner-rest-hr" type="number" min="35" max="100" value="58" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
+            </div>
+          </div>
+
+          <div id="hr-zones-list" class="space-y-1.5 text-xs"></div>
+        </div>
+
+        <!-- 우측: 신장(키) × 목표 페이스 기반 케이던스·보폭 분석기 (6 cols) -->
+        <div id="lab-cadence" class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-extrabold">👟 7. 신장(키) 기반 최적 케이던스 &amp; 보폭 분석기</h3>
+              <span id="stride-height-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-brand-500/15 text-brand-600 dark:text-brand-400">
+                신장 172cm 기준
+              </span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">
+              입력하신 <strong>키(<span id="cadence-height-text">172</span>cm)</strong>와 목표 페이스를 분석해 무릎·발목 부상을 유발하는 오버스트라이딩(과보폭)을 방지하는 이상적인 케이던스(spm)와 보폭(m)을 제시합니다.
+            </p>
+
+            <div class="mb-3">
+              <div class="flex justify-between text-xs font-bold mb-1">
+                <span>목표 케이던스 설정 (분당 걸음수, spm)</span>
+                <span id="cadence-spm-val" class="font-mono text-brand-600 dark:text-brand-400">180 spm (권장)</span>
+              </div>
+              <input id="cadence-slider" type="range" min="160" max="200" step="2" value="180" class="runner-slider w-full bg-slate-200 dark:bg-slate-700" />
+            </div>
+
+            <div id="cadence-analysis-box" class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800 text-xs space-y-2"></div>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <a
+              href="https://naver.me/xk9w9FZp"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-naver py-2 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1 shadow-sm"
+            >
+              <span>🟢 네이버: 아이언빅 장목 압박 러닝양말 보기</span>
+            </a>
+            <a
+              href="https://naver.me/G4dbd4av"
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              class="btn-naver py-2 px-3 rounded-xl text-xs font-extrabold text-center flex items-center justify-center gap-1 shadow-sm"
+            >
+              <span>🟢 네이버: 울티모 물집방지 쿠션 러닝양말 보기</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- [기능 8] 체중 감량 시 예상 기록 단축 시뮬레이터 -->
+      <div id="lab-weight-sim" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              📉 8. 체중 감량(-1kg ~ -5kg) 시 예상 마라톤 기록 단축 시뮬레이터
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              현재 신장·체중(<strong><span id="weight-sim-current-label">172cm · 68kg</span></strong>)에서 불필요한 체지방을 감량했을 때 체중당 최대산소섭취량(VO₂max) 증가에 따른 종목별 예상 단축 시간입니다.
+            </p>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto -mx-2 px-2">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm font-mono">
+            <thead>
+              <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider text-slate-400 font-sans">
+                <th class="py-2.5 px-2 sm:px-3">체중 변화</th>
+                <th class="py-2.5 px-2 sm:px-3">변화 후 BMI</th>
+                <th class="py-2.5 px-2 sm:px-3">유효 VDOT</th>
+                <th class="py-2.5 px-2 sm:px-3">10km 예상 기록</th>
+                <th class="py-2.5 px-2 sm:px-3">하프 예상 기록</th>
+                <th class="py-2.5 px-2 sm:px-3">풀코스 예상 기록</th>
+              </tr>
+            </thead>
+            <tbody id="weight-sim-tbody" class="divide-y divide-slate-100 dark:divide-slate-800/70"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- [기능 9] 남은 기간(4주 / 8주 / 12주) 자동 주간 훈련 스케줄 표 생성기 -->
+      <div id="lab-schedule" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              🗓️ 9. 맞춤형 주간 훈련 스케줄 자동 생성기 (4주 · 8주 · 12주 플랜)
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              산출된 내 <strong>E · M · T · I 훈련 페이스</strong>를 기반으로 요일별 핵심 훈련 프로그램과 일요일 LSD 보급 리허설을 자동 구성합니다.
+            </p>
+          </div>
+          <div class="flex items-center gap-1.5" id="schedule-weeks-group">
+            <button type="button" data-weeks="4" class="sched-week-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              4주 단기 완성
+            </button>
+            <button type="button" data-weeks="8" class="sched-week-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm">
+              8주 표준 빌드업
+            </button>
+            <button type="button" data-weeks="12" class="sched-week-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              12주 마스터즈 정석
+            </button>
+          </div>
+        </div>
+
+        <div id="weekly-schedule-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      </div>
+
+      <!-- [기능 10] 대회 전날 밤 '마라톤 필수 준비물 체크리스트' (진척도 % + 미보유 기어 즉시 구매) -->
+      <div id="checklist-section" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              ✅ 10. 대회 전날 밤 '마라톤 필수 준비물 체크리스트'
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">
+              하나씩 챙기면서 체크해 보세요! 아직 준비하지 못한 보급품이나 레이스 기어는 우측 버튼으로 바로 확인할 수 있습니다.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="checklist-progress-text" class="text-xs font-mono font-extrabold text-brand-600 dark:text-brand-400">준비 완료 0/8 (0%)</span>
+            <button type="button" id="reset-checklist-btn" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+              초기화
+            </button>
+          </div>
+        </div>
+
+        <div class="w-full h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
+          <div id="checklist-progress-bar" class="h-full bg-brand-600 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div id="race-checklist-container" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+      </div>
+
     </section>
 
     <!-- 섹션 4: 수익화(CTA) 모듈 (페이스별 베스트 픽 쇼케이스 + 전체 파트너 스토어 & 인라인 편집기) -->
