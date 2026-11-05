@@ -1717,7 +1717,7 @@
     privacy: {
       title: '개인정보처리방침 및 쿠키(AdSense)·제휴 고지',
       html: `
-        <p class="mb-3">본 웹사이트(이하 "MarathonLab PRO")는 이용자의 개인정보를 보호하며 『개인정보 보호법』, 공정거래위원회 추천·보증 등에 관한 표시·광고 심사지침 및 Google AdSense 정책을 엄격히 준수합니다.</p>
+        <p class="mb-3">본 웹사이트(이하 "Pacecraft Runner")는 이용자의 개인정보를 보호하며 『개인정보 보호법』, 공정거래위원회 추천·보증 등에 관한 표시·광고 심사지침 및 Google AdSense 정책을 엄격히 준수합니다.</p>
         <h4 class="font-bold text-slate-900 dark:text-white mt-4 mb-1">1. 개인정보의 수집 및 로컬 저장 안내</h4>
         <p class="mb-2">본 사이트는 별도의 회원가입 없이 무료로 제공됩니다. 사용자가 입력하는 주행 기록, 체중 및 커스텀 링크 데이터는 서버로 전송되지 않으며 사용자의 브라우저(LocalStorage) 내에서만 처리됩니다.</p>
         <h4 class="font-bold text-slate-900 dark:text-white mt-4 mb-1">2. Google AdSense 광고 및 쿠키(Cookie) 정책</h4>
@@ -1731,7 +1731,7 @@
       title: '서비스 이용약관 및 의학적 면책공고',
       html: `
         <h4 class="font-bold text-slate-900 dark:text-white mb-1">제1조 (목적)</h4>
-        <p class="mb-3">본 약관은 MarathonLab PRO가 제공하는 VDOT 분석, 스플릿 계산기, 에너지젤 보급 가이드 및 훈련 칼럼의 이용 기준을 규정합니다.</p>
+        <p class="mb-3">본 약관은 Pacecraft Runner가 제공하는 VDOT 분석, 스플릿 계산기, 에너지젤 보급 가이드 및 훈련 칼럼의 이용 기준을 규정합니다.</p>
         <h4 class="font-bold text-slate-900 dark:text-white mb-1">제2조 (의학적·전문적 면책 조항)</h4>
         <p class="mb-3">본 사이트가 산출하는 VDOT 레벨, 목표 달성 가능성(%), 권장 훈련 페이스 및 탄수화물·수분 섭취량은 스포츠 생리학 통계 모델(Jack Daniels Running Formula 및 Margaria 공식)에 기반한 참고용 추정치입니다. 당일 기상 조건과 개인의 심폐 건강 상태에 따라 실제 결과는 달라질 수 있으므로 무리한 주행을 피하시고 필요 시 전문의와 상담하시기 바랍니다.</p>
       `
@@ -1739,7 +1739,7 @@
     contact: {
       title: '운영자 소개 및 제휴·광고 문의',
       html: `
-        <p class="mb-3"><strong>MarathonLab PRO</strong>는 데이터 기반 마라톤 훈련 설계와 검증된 러닝 기어 큐레이션을 제공하는 러너 전용 웹 플랫폼입니다.</p>
+        <p class="mb-3"><strong>Pacecraft Runner</strong>는 데이터 기반 마라톤 훈련 설계와 검증된 러닝 기어 큐레이션을 제공하는 러너 전용 웹 플랫폼입니다.</p>
         <h4 class="font-bold text-slate-900 dark:text-white mt-4 mb-1">광고 및 파트너십 안내</h4>
         <p>본 사이트는 Google AdSense 디스플레이 광고, 쿠팡 파트너스, 네이버 쇼핑 커넥트 공식 제휴 프로그램과 함께 운영됩니다. 제휴 상품 등록이나 기능 개선 제안은 운영자 채널을 통해 문의해 주세요.</p>
       `
@@ -1837,10 +1837,26 @@
       const stored = localStorage.getItem(RACES_CUSTOM_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        return Object.assign({}, DEFAULT_MAJOR_RACES, parsed);
+        if (parsed && typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+          return parsed;
+        }
       }
     } catch (e) {}
-    return Object.assign({}, DEFAULT_MAJOR_RACES);
+    return JSON.parse(JSON.stringify(DEFAULT_MAJOR_RACES));
+  }
+
+  function resetDefaultMajorRaces() {
+    if (!isCurrentAdminApproved()) {
+      openAdminAuthModal('기본 대회 목록 초기화');
+      return;
+    }
+    if (!confirm('기본 5대 메이저 마라톤 대회 초기 설정(날짜·홈페이지 주소)으로 복원하시겠습니까?')) return;
+    majorRaces = JSON.parse(JSON.stringify(DEFAULT_MAJOR_RACES));
+    saveCustomRaces(majorRaces);
+    currentSelectedRaceKey = 'seoul';
+    renderRaceButtons();
+    selectRace('seoul');
+    showToast('🔄 기본 5대 메이저 대회 일정 및 주소가 복원되었습니다.');
   }
 
   function saveCustomRaces(races) {
@@ -2476,6 +2492,174 @@
     }
   }
 
+
+  // =========================================================================
+  // [네이버 캘린더 & 구글 캘린더 & 애플·삼성 iCal 일정 등록 모듈]
+  // =========================================================================
+  let calendarTargetRaceKey = 'seoul';
+
+  function getCalendarTargetRace(key) {
+    const k = key || calendarTargetRaceKey || currentSelectedRaceKey;
+    if (k && majorRaces[k]) return majorRaces[k];
+    const firstKey = Object.keys(majorRaces)[0];
+    return majorRaces[firstKey] || {
+      name: '마라톤 대회',
+      date: '2026-11-01',
+      url: 'http://www.marathon.pe.kr/'
+    };
+  }
+
+  function openCalendarExportModal(key) {
+    const race = getCalendarTargetRace(key);
+    calendarTargetRaceKey = (key && majorRaces[key]) ? key : currentSelectedRaceKey;
+
+    const modal = document.getElementById('calendar-export-modal');
+    if (!modal) return;
+
+    const nameEl = document.getElementById('calendar-modal-race-name');
+    const dateEl = document.getElementById('calendar-modal-race-date');
+    const previewEl = document.getElementById('calendar-modal-details-preview');
+
+    if (nameEl) nameEl.textContent = race.name;
+    if (dateEl) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const diffDays = Math.round((new Date(race.date + 'T00:00:00') - today) / (1000 * 60 * 60 * 24));
+      const ddayStr = diffDays > 0 ? `D-${diffDays}` : diffDays === 0 ? 'D-DAY' : `D+${Math.abs(diffDays)} 종료`;
+      dateEl.textContent = `📅 ${race.date} (${ddayStr}) · 오전 07:00 ~ 13:00`;
+    }
+
+    if (previewEl) {
+      previewEl.textContent = `[일정명]: [마라톤] ${race.name} 레이스 데이
+[일시]: ${race.date} 07:00 ~ 13:00 (KST)
+[장소]: ${race.name} 집결지 및 출발지
+[상세]: 대회 공식 홈페이지: ${race.url || 'http://www.marathon.pe.kr/'}
+• 06:30 대회장 도착 및 워밍업
+• 07:00 물품보관소 마감 전 보관 & 에너지젤 1포
+• 08:00 대회 출발 및 실전 페이스 유지!`;
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = 'flex';
+  }
+
+  function closeCalendarExportModal() {
+    const modal = document.getElementById('calendar-export-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      modal.style.display = 'none';
+    }
+  }
+
+  function exportToGoogleCalendar(key) {
+    const race = getCalendarTargetRace(key);
+    const cleanDate = race.date.replace(/-/g, '');
+    const title = `[마라톤] ${race.name} 레이스 데이`;
+    const dates = `${cleanDate}T070000/${cleanDate}T130000`;
+    const location = `${race.name} 집결지 및 출발지`;
+    const details = `[Pacecraft Runner 마라톤 일정]
+🏃 대회명: ${race.name}
+📅 일자: ${race.date} (오전 7시 ~ 오후 1시)
+🔗 공식 웹사이트: ${race.url || 'http://www.marathon.pe.kr/'}
+
+⏱️ 대회 당일 추천 일정:
+• 06:30 대회장 도착 및 환복/워밍업
+• 07:00 물품보관소 짐 보관 & 에너지젤 1포
+• 07:30 출발 그룹 집결
+• 레이스 완주 후 수분/단백질 보충!
+(마라톤 레이스 플래너: Pacecraft Runner)`;
+
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&ctz=Asia/Seoul&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
+    window.open(gcalUrl, '_blank', 'noopener,noreferrer');
+    showToast(`📅 [${race.name}] 구글 캘린더 등록 창이 열렸습니다.`);
+  }
+
+  function generateIcsFileContent(race) {
+    const cleanDate = race.date.replace(/-/g, '');
+    const uid = `marathon-${cleanDate}-${Date.now()}@marathonlab.pro`;
+    const nowStr = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    const title = `[마라톤] ${race.name} 레이스 데이`;
+    const location = `${race.name} 집결지 및 출발지`;
+    const details = `[Pacecraft Runner] ${race.name} 마라톤 일정\n일자: ${race.date}\n공식 사이트: ${race.url || 'http://www.marathon.pe.kr/'}\n\n06:30 대회장 도착 & 워밍업\n07:00 물품보관소 마감\n08:00 출발`;
+
+    return [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Pacecraft Runner//Marathon Race Calendar//KO',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VTIMEZONE',
+      'TZID:Asia/Seoul',
+      'BEGIN:STANDARD',
+      'DTSTART:19700101T000000',
+      'TZOFFSETFROM:+0900',
+      'TZOFFSETTO:+0900',
+      'TZNAME:KST',
+      'END:STANDARD',
+      'END:VTIMEZONE',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${nowStr}`,
+      `DTSTART;TZID=Asia/Seoul:${cleanDate}T070000`,
+      `DTEND;TZID=Asia/Seoul:${cleanDate}T130000`,
+      `SUMMARY:${title}`,
+      `DESCRIPTION:${details}`,
+      `LOCATION:${location}`,
+      `URL:${race.url || 'http://www.marathon.pe.kr/'}`,
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+  }
+
+  function downloadCalendarIcs(key, platformName) {
+    const race = getCalendarTargetRace(key);
+    const icsString = generateIcsFileContent(race);
+    const blob = new Blob([icsString], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const safeName = race.name.replace(/[^a-zA-Z0-9가-힣]/g, '_');
+    link.download = `${safeName}_${race.date}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+
+    const targetPlat = platformName || '캘린더';
+    showToast(`📥 [${race.name}] ${targetPlat} 연동용 일정 파일(.ics)이 저장되었습니다!`);
+  }
+
+  function exportToNaverCalendar(key) {
+    downloadCalendarIcs(key, '네이버 캘린더');
+    setTimeout(() => {
+      if (confirm('네이버 캘린더 웹페이지를 열어 방금 다운로드한 .ics 일정을 등록하시겠습니까?\n(네이버 캘린더 > 내 캘린더 > 가져오기)')) {
+        window.open('https://calendar.naver.com/', '_blank');
+      }
+    }, 400);
+  }
+
+  function copyCalendarDetailsToClipboard(key) {
+    const race = getCalendarTargetRace(key);
+    const text = `[마라톤 일정 등록 안내]
+대회명: ${race.name}
+날짜: ${race.date} (오전 07:00 ~ 13:00)
+공식 홈페이지: ${race.url || 'http://www.marathon.pe.kr/'}
+집결지: ${race.name} 출발지
+
+⏱️ 레이스 타임라인:
+• 06:30 도착 및 준비운동
+• 07:00 짐 보관 완료 & 에너지젤 섭취
+• 08:00 출발`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('📋 캘린더 일정 내용이 클립보드에 복사되었습니다.');
+    }).catch(() => {
+      showToast('📋 복사 완료되었습니다.');
+    });
+  }
+
   function renderRightRaceScheduleSidebar() {
     const listContainer = document.getElementById('right-race-schedule-list');
     const badgeEl = document.getElementById('right-admin-status-badge');
@@ -2569,10 +2753,6 @@
         selectRace(key);
       };
 
-      const adminControlsHtml = (isApproved && isCustom)
-        ? `<button type="button" data-del-race="${key}" class="text-[10px] text-rose-500 hover:underline font-bold ml-1.5" title="대회 삭제">삭제</button>`
-        : '';
-
       const pastTagHtml = isPast
         ? `<span class="text-[10px] font-bold text-rose-500 dark:text-rose-400 opacity-90 ml-0.5">(마감)</span>`
         : '';
@@ -2586,10 +2766,28 @@
           <span class="font-mono text-[10px]">📅 ${race.date}</span>
           <div class="flex items-center gap-1">
             ${race.url ? `<a href="${race.url}" target="_blank" rel="noopener noreferrer" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:underline font-bold" title="공식 홈페이지 바로가기">홈피 ↗</a>` : ''}
-            ${adminControlsHtml}
+            <button type="button" data-cal-race="${key}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 font-bold transition flex items-center gap-0.5" title="구글·네이버 캘린더에 일정 등록"><span>📅</span>일정</button>
+            <button type="button" data-edit-race="${key}" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 font-bold transition" title="대회 날짜·홈페이지 주소 수정">수정</button>
+            <button type="button" data-del-race="${key}" class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 font-bold transition" title="대회 삭제">삭제</button>
           </div>
         </div>
       `;
+
+      const editBtn = card.querySelector('[data-edit-race]');
+      if (editBtn) {
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openEditRaceModal(key);
+        });
+      }
+
+      const calBtn = card.querySelector('[data-cal-race]');
+      if (calBtn) {
+        calBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openCalendarExportModal(key);
+        });
+      }
 
       const delBtn = card.querySelector('[data-del-race]');
       if (delBtn) {
@@ -2610,11 +2808,17 @@
     }
     if (!majorRaces[key]) return;
     const raceName = majorRaces[key].name;
+    const remainingKeys = Object.keys(majorRaces).filter(k => k !== key);
+    if (remainingKeys.length === 0) {
+      alert('최소 1개 이상의 마라톤 대회가 남아있어야 합니다.');
+      return;
+    }
     if (!confirm(`[${raceName}] 대회를 일정 목록에서 삭제하시겠습니까?`)) return;
     delete majorRaces[key];
     saveCustomRaces(majorRaces);
-    if (currentSelectedRaceKey === key) {
-      currentSelectedRaceKey = 'seoul';
+    closeAddRaceModal();
+    if (currentSelectedRaceKey === key || !majorRaces[currentSelectedRaceKey]) {
+      currentSelectedRaceKey = Object.keys(majorRaces)[0];
     }
     renderRaceButtons();
     selectRace(currentSelectedRaceKey);
@@ -2622,6 +2826,7 @@
   }
 
   let pendingActionAfterAuth = null;
+  let editingRaceKey = null; // null이면 신규 추가, 값이 있으면 해당 key 대회 수정 모드
 
   // 관리자 전용 신규 대회 추가 핸들러 (구글 로그인으로 승인받은 아이디만 가능)
   function handleClickAddRaceWithAuth() {
@@ -2629,33 +2834,108 @@
     const email = getLoggedAdminEmail();
 
     if (!isApproved || !email) {
-      pendingActionAfterAuth = 'add_race';
+      pendingActionAfterAuth = { type: 'add_race' };
       openAdminAuthModal('신규 마라톤 대회 추가');
       return;
     }
 
-    // 승인된 관리자는 대회 추가 모달 오픈
     openAddRaceModal();
+  }
+
+  // 기존 대회 정보·날짜·사이트주소 수정 모달 오픈
+  function openEditRaceModal(key) {
+    const targetKey = key || currentSelectedRaceKey;
+    if (!targetKey || !majorRaces[targetKey]) {
+      alert('수정할 대회를 먼저 선택해 주세요.');
+      return;
+    }
+
+    if (!isCurrentAdminApproved()) {
+      pendingActionAfterAuth = { type: 'edit_race', key: targetKey };
+      openAdminAuthModal('대회 날짜·홈페이지 주소 수정');
+      return;
+    }
+
+    editingRaceKey = targetKey;
+    const race = majorRaces[targetKey];
+    const modal = document.getElementById('add-race-modal');
+    if (!modal) return;
+
+    const modalTitle = document.getElementById('race-modal-title');
+    const modalDesc = document.getElementById('race-modal-desc');
+    const submitBtn = document.getElementById('race-modal-submit-btn');
+    const deleteInModalBtn = document.getElementById('race-modal-delete-btn');
+    const nameInput = document.getElementById('new-race-name-input');
+    const fullNameInput = document.getElementById('new-race-fullname-input');
+    const dateInput = document.getElementById('new-race-date-input');
+    const courseSelect = document.getElementById('new-race-course-select');
+    const urlInput = document.getElementById('new-race-url-input');
+
+    if (modalTitle) modalTitle.textContent = `대회 정보·날짜·주소 수정 (${race.name})`;
+    if (modalDesc) modalDesc.textContent = '✏️ 대회 이름, 개최 날짜, 코스 난이도 및 공식 홈페이지 주소(URL)를 자유롭게 수정하거나 삭제할 수 있습니다.';
+    if (submitBtn) submitBtn.textContent = '💾 수정 내용 저장 완료';
+    if (deleteInModalBtn) {
+      deleteInModalBtn.classList.remove('hidden');
+      deleteInModalBtn.onclick = () => deleteCustomRace(targetKey);
+    }
+
+    if (nameInput) nameInput.value = race.name || '';
+    if (fullNameInput) fullNameInput.value = race.fullName || `🏃 ${race.name || ''}`;
+    if (dateInput) dateInput.value = race.date || '2026-11-15';
+    if (courseSelect) courseSelect.value = race.course || 'flat';
+    if (urlInput) urlInput.value = race.url || 'http://www.marathon.pe.kr/';
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = 'flex';
+    if (nameInput) setTimeout(() => nameInput.focus(), 50);
+  }
+
+  function openEditCurrentRaceModal() {
+    openEditRaceModal(currentSelectedRaceKey);
+  }
+
+  function testRaceUrlInModal() {
+    const urlInput = document.getElementById('new-race-url-input');
+    const url = urlInput && urlInput.value.trim() ? urlInput.value.trim() : '';
+    if (!url || (!url.startsWith('http://') && !url.startsWith('https://'))) {
+      alert('http:// 또는 https:// 로 시작하는 올바른 홈페이지 주소를 입력해 주세요.');
+      if (urlInput) urlInput.focus();
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
   }
 
   function openAddRaceModal() {
     if (!isCurrentAdminApproved()) {
-      pendingActionAfterAuth = 'add_race';
+      pendingActionAfterAuth = { type: 'add_race' };
       openAdminAuthModal('신규 마라톤 대회 추가');
       return;
     }
+    editingRaceKey = null;
     const modal = document.getElementById('add-race-modal');
     if (!modal) {
       openAddRacePrompt();
       return;
     }
+    const modalTitle = document.getElementById('race-modal-title');
+    const modalDesc = document.getElementById('race-modal-desc');
+    const submitBtn = document.getElementById('race-modal-submit-btn');
+    const deleteInModalBtn = document.getElementById('race-modal-delete-btn');
     const nameInput = document.getElementById('new-race-name-input');
+    const fullNameInput = document.getElementById('new-race-fullname-input');
     const dateInput = document.getElementById('new-race-date-input');
     const courseSelect = document.getElementById('new-race-course-select');
     const urlInput = document.getElementById('new-race-url-input');
 
+    if (modalTitle) modalTitle.textContent = '신규 마라톤 대회 일정 추가';
+    if (modalDesc) modalDesc.textContent = '✅ 구글 승인 관리자 권한으로 새 대회를 추가합니다. 등록 즉시 중앙 버튼과 우측 일정표에 자동 저장됩니다.';
+    if (submitBtn) submitBtn.textContent = '➕ 대회 일정 등록 완료';
+    if (deleteInModalBtn) deleteInModalBtn.classList.add('hidden');
+
     if (nameInput) nameInput.value = '';
-    if (dateInput && !dateInput.value) dateInput.value = '2026-11-15';
+    if (fullNameInput) fullNameInput.value = '';
+    if (dateInput) dateInput.value = '2026-11-15';
     if (courseSelect) courseSelect.value = 'flat';
     if (urlInput) urlInput.value = 'http://www.marathon.pe.kr/';
 
@@ -2677,21 +2957,23 @@
   function submitAddRaceModal() {
     if (!isCurrentAdminApproved()) {
       closeAddRaceModal();
-      openAdminAuthModal('신규 마라톤 대회 추가');
+      openAdminAuthModal('대회 추가 및 수정');
       return;
     }
     const nameInput = document.getElementById('new-race-name-input');
+    const fullNameInput = document.getElementById('new-race-fullname-input');
     const dateInput = document.getElementById('new-race-date-input');
     const courseSelect = document.getElementById('new-race-course-select');
     const urlInput = document.getElementById('new-race-url-input');
 
     const name = nameInput ? nameInput.value.trim() : '';
+    const fullNameRaw = fullNameInput ? fullNameInput.value.trim() : '';
     const date = dateInput ? dateInput.value.trim() : '';
     const course = courseSelect ? courseSelect.value : 'flat';
     const url = urlInput && urlInput.value.trim() ? urlInput.value.trim() : 'http://www.marathon.pe.kr/';
 
     if (!name) {
-      alert('추가할 마라톤 대회 이름을 입력해 주세요.');
+      alert('마라톤 대회 이름을 입력해 주세요.');
       if (nameInput) nameInput.focus();
       return;
     }
@@ -2701,21 +2983,42 @@
       return;
     }
 
-    const newKey = 'custom_' + Date.now();
-    majorRaces[newKey] = {
-      id: newKey,
-      name: name,
-      fullName: `🏃 ${name}`,
-      date: date,
-      course: course,
-      url: url
-    };
+    const fullName = fullNameRaw || `🏃 ${name}`;
 
-    saveCustomRaces(majorRaces);
-    closeAddRaceModal();
-    renderRaceButtons();
-    selectRace(newKey);
-    showToast(`🎉 [${name}] (${date}) 대회가 일정에 추가되었습니다!`);
+    if (editingRaceKey && majorRaces[editingRaceKey]) {
+      // 기존 대회 수정 모드
+      const targetKey = editingRaceKey;
+      majorRaces[targetKey] = {
+        ...majorRaces[targetKey],
+        id: targetKey,
+        name: name,
+        fullName: fullName,
+        date: date,
+        course: course,
+        url: url
+      };
+      saveCustomRaces(majorRaces);
+      closeAddRaceModal();
+      renderRaceButtons();
+      selectRace(targetKey);
+      showToast(`✅ [${name}] 대회의 날짜(${date}) 및 사이트 주소가 수정되었습니다!`);
+    } else {
+      // 신규 대회 등록 모드
+      const newKey = 'custom_' + Date.now();
+      majorRaces[newKey] = {
+        id: newKey,
+        name: name,
+        fullName: fullName,
+        date: date,
+        course: course,
+        url: url
+      };
+      saveCustomRaces(majorRaces);
+      closeAddRaceModal();
+      renderRaceButtons();
+      selectRace(newKey);
+      showToast(`🎉 [${name}] (${date}) 대회가 일정에 추가되었습니다!`);
+    }
   }
 
   function renderRaceButtons() {
@@ -2759,6 +3062,16 @@
       handleClickAddRaceWithAuth();
     });
     container.appendChild(addBtn);
+
+    // 선택된 대회 수정·삭제 버튼
+    const editCurrentBtn = document.createElement('button');
+    editCurrentBtn.type = 'button';
+    editCurrentBtn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500 hover:text-white border border-amber-500/30 transition flex items-center gap-1 cursor-pointer';
+    editCurrentBtn.innerHTML = '<span>✏️ 선택 대회 수정·삭제</span>';
+    editCurrentBtn.addEventListener('click', () => {
+      openEditCurrentRaceModal();
+    });
+    container.appendChild(editCurrentBtn);
   }
 
   function selectRace(key) {
@@ -2977,9 +3290,13 @@
     renderRightRaceScheduleSidebar();
     closeAdminAuthModal();
     showToast(`👑 관리자(${SUPER_ADMIN_EMAIL}) 구글 로그인 인증이 완료되었습니다!`);
-    if (pendingActionAfterAuth === 'add_race') {
+    if (pendingActionAfterAuth) {
+      const act = pendingActionAfterAuth;
       pendingActionAfterAuth = null;
-      setTimeout(() => openAddRaceModal(), 120);
+      setTimeout(() => {
+        if (act === 'add_race' || act.type === 'add_race') openAddRaceModal();
+        else if (act.type === 'edit_race') openEditRaceModal(act.key);
+      }, 120);
     }
   }
 
@@ -3131,7 +3448,7 @@
 [문의 및 신청 상세 내용]:
 ${content}
 ----------------------------------------
-(수신처: rkstmtk@gmail.com / MarathonLab PRO 문의 시스템)`;
+(수신처: rkstmtk@gmail.com / Pacecraft Runner 문의 시스템)`;
 
     return { subject, body, email, name, content };
   }
@@ -3215,11 +3532,22 @@ ${content}
       });
     }
 
+    // 4. 캘린더 등록 모달 제어
+    const calModal = document.getElementById('calendar-export-modal');
+    const calModalClose = document.getElementById('calendar-export-modal-close');
+    if (calModalClose) calModalClose.addEventListener('click', closeCalendarExportModal);
+    if (calModal) {
+      calModal.addEventListener('click', (e) => {
+        if (e.target === calModal) closeCalendarExportModal();
+      });
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeAdminAuthModal();
         closeContactRequestModal();
         closeAddRaceModal();
+        closeCalendarExportModal();
       }
     });
 
@@ -4047,6 +4375,16 @@ ${content}
   window.submitAddRaceModal = submitAddRaceModal;
   window.verifyGoogleAdminInput = verifyGoogleAdminInput;
   window.deleteCustomRace = deleteCustomRace;
+  window.openEditRaceModal = openEditRaceModal;
+  window.openEditCurrentRaceModal = openEditCurrentRaceModal;
+  window.testRaceUrlInModal = testRaceUrlInModal;
+  window.resetDefaultMajorRaces = resetDefaultMajorRaces;
+  window.openCalendarExportModal = openCalendarExportModal;
+  window.closeCalendarExportModal = closeCalendarExportModal;
+  window.exportToGoogleCalendar = exportToGoogleCalendar;
+  window.exportToNaverCalendar = exportToNaverCalendar;
+  window.downloadCalendarIcs = downloadCalendarIcs;
+  window.copyCalendarDetailsToClipboard = copyCalendarDetailsToClipboard;
   window.openAdminAuthModal = openAdminAuthModal;
   window.closeAdminAuthModal = closeAdminAuthModal;
   window.openContactRequestModal = openContactRequestModal;
