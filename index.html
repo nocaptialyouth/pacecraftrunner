@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="ko" class="dark">
 <head>
+<script>
+window.__errors = [];
+window.onerror = function(msg, url, line, col, err) {
+  window.__errors.push(msg + ' at line ' + line + ':' + col);
+};
+window.addEventListener('load', function() {
+  setTimeout(function() {
+    var out = document.createElement('div');
+    out.id = '__debug_output__';
+    out.innerText = JSON.stringify({
+      errors: window.__errors,
+      activeTab: typeof currentActiveTabId !== 'undefined' ? currentActiveTabId : 'undefined',
+      buttonsCount: document.querySelectorAll('.dash-tab-btn').length
+    });
+    document.body.appendChild(out);
+  }, 500);
+});
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>마라톤 페이스 계산기 & VDOT 레이스 전략 플래너 PRO | 구간별 스플릿·에너지젤 보급 가이드</title>
@@ -75,19 +94,21 @@
 
   <!-- 상단 고정 네비게이션 바 (애드센스 심사 시 명확한 사이트 탐색 구조 제공) -->
   <nav class="sticky top-0 z-40 backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border-b border-slate-200 dark:border-slate-800">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="max-w-[1440px] mx-auto px-4 py-3 flex items-center justify-between">
       <a href="#" class="flex items-center gap-2 font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white">
         <span class="w-7 h-7 rounded-lg bg-brand-600 text-white flex items-center justify-center text-sm">🏃</span>
         <span>MarathonLab <span class="text-brand-600 dark:text-brand-400">PRO</span></span>
       </a>
 
-      <div class="hidden md:flex items-center gap-4 text-xs font-bold text-slate-600 dark:text-slate-300">
-        <a href="#calculator-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">VDOT·스플릿</a>
-        <a href="#fueling-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">에너지젤 보급표</a>
-        <a href="#pro-lab-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition text-brand-600 dark:text-brand-400">🔬 10대 레이스 연구소</a>
-        <a href="#gear-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">추천 레이스 기어</a>
-        <a href="#checklist-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">대회 체크리스트</a>
-        <a href="#faq-section" class="hover:text-brand-600 dark:hover:text-brand-400 transition">FAQ</a>
+      <div class="hidden md:flex items-center gap-3.5 text-xs font-bold text-slate-600 dark:text-slate-300">
+        <a href="#calculator-section" onclick="switchDashboardTab('tab-calc'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition text-brand-600 dark:text-brand-400">🏃‍♂️ VDOT·스플릿</a>
+        <a href="#panel-daily" onclick="switchDashboardTab('tab-daily'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition">💧 수분·습관체크</a>
+        <a href="#lab-dday" onclick="switchDashboardTab('tab-dday'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition">📆 대회 D-Day·일정</a>
+        <a href="#fueling-section" onclick="switchDashboardTab('tab-fueling'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition">에너지젤 보급표</a>
+        <a href="#pro-lab-section" onclick="switchDashboardTab('tab-lab'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition text-brand-600 dark:text-brand-400">🔬 10대 레이스 연구소</a>
+        <a href="#gear-section" onclick="switchDashboardTab('tab-gear'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition">추천 레이스 기어</a>
+        <a href="#checklist-section" onclick="switchDashboardTab('tab-checklist'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition">대회 체크리스트</a>
+        <a href="#faq-section" onclick="switchDashboardTab('tab-faq'); return false;" class="hover:text-brand-600 dark:hover:text-brand-400 transition">FAQ</a>
       </div>
 
       <button
@@ -103,7 +124,7 @@
   </nav>
 
   <!-- 메인 컨테이너 -->
-  <main id="marathon-planner-app" class="max-w-4xl mx-auto p-3 sm:p-6 lg:p-8">
+  <main id="marathon-planner-app" class="max-w-[1440px] mx-auto p-3 sm:p-6 lg:p-8">
 
     <!-- 히어로 헤더 -->
     <header class="pb-6 border-b border-slate-200 dark:border-slate-800">
@@ -136,7 +157,112 @@
     -->
 
     <!-- 사용자 입력 섹션 (1~3단계) -->
-    <section id="calculator-section" class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4">
+    <!-- [반응형 대시보드 내비게이션 컨트롤러] -->
+    <!-- 1. 모바일 전용: 상단 가로 스크롤 탭 바 (화면이 좁을 때 위에서 원클릭 전환) -->
+    <div id="mobile-tabs-bar" class="flex lg:hidden overflow-x-auto no-scrollbar gap-1.5 pb-2.5 mb-4 sticky top-14 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 pt-1 -mx-3 px-3 sm:-mx-6 sm:px-6">
+      <button type="button" data-dash-tab="tab-calc" onclick="switchDashboardTab('tab-calc')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition">
+        🏃‍♂️ 1. VDOT·스플릿
+      </button>
+      <button type="button" data-dash-tab="tab-daily" onclick="switchDashboardTab('tab-daily')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        💧 2. 수분·습관체크
+      </button>
+      <button type="button" data-dash-tab="tab-dday" onclick="switchDashboardTab('tab-dday')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        📆 3. 대회 D-Day
+      </button>
+      <button type="button" data-dash-tab="tab-fueling" onclick="switchDashboardTab('tab-fueling')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        ⚡ 에너지젤 보급
+      </button>
+      <button type="button" data-dash-tab="tab-lab" onclick="switchDashboardTab('tab-lab')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        🔬 10대 연구소
+      </button>
+      <button type="button" data-dash-tab="tab-checklist" onclick="switchDashboardTab('tab-checklist')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        ✅ 준비물 체크
+      </button>
+      <button type="button" data-dash-tab="tab-gear" onclick="switchDashboardTab('tab-gear')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        🛍️ 추천 기어
+      </button>
+      <button type="button" data-dash-tab="tab-faq" onclick="switchDashboardTab('tab-faq')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        ❓ FAQ
+      </button>
+    </div>
+
+    <!-- 대시보드 래퍼 (PC: 좌측 사이드바 + 우측 메인 콘텐츠 / 모바일: 상하 배치) -->
+    <div id="dashboard-wrapper" class="lg:flex lg:gap-6 lg:items-start mt-4">
+
+      <!-- 2. PC 전용: 좌측 세로 사이드바 메뉴 (이미지 요청 레이아웃) -->
+      <aside id="dashboard-sidebar" class="hidden lg:flex flex-col w-64 shrink-0 sticky top-20 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
+        <div>
+          <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 px-2 flex items-center justify-between">
+            <span>대시보드 메뉴</span>
+            <span class="text-[10px] text-brand-600 dark:text-brand-400 font-bold">1클릭 전환</span>
+          </div>
+
+          <nav class="flex flex-col gap-1.5" id="pc-sidebar-menu">
+            <button type="button" data-dash-tab="tab-calc" onclick="switchDashboardTab('tab-calc')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">🏃‍♂️</span>
+              <span>1. VDOT 페이스·스플릿</span>
+            </button>
+            <button type="button" data-dash-tab="tab-daily" onclick="switchDashboardTab('tab-daily')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">💧</span>
+              <span>2. 수분·습관 체크리스트</span>
+            </button>
+            <button type="button" data-dash-tab="tab-dday" onclick="switchDashboardTab('tab-dday')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">📆</span>
+              <span>3. 목표 대회 D-Day·코스</span>
+            </button>
+            <button type="button" data-dash-tab="tab-fueling" onclick="switchDashboardTab('tab-fueling')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">⚡</span>
+              <span>4. 에너지젤 보급 타임라인</span>
+            </button>
+            <button type="button" data-dash-tab="tab-lab" onclick="switchDashboardTab('tab-lab')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">🔬</span>
+              <span>5. 10대 레이스 연구소</span>
+            </button>
+            <button type="button" data-dash-tab="tab-checklist" onclick="switchDashboardTab('tab-checklist')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">✅</span>
+              <span>6. 대회 준비물 체크리스트</span>
+            </button>
+            <button type="button" data-dash-tab="tab-gear" onclick="switchDashboardTab('tab-gear')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">🛍️</span>
+              <span>7. 추천 레이스 기어</span>
+            </button>
+            <button type="button" data-dash-tab="tab-faq" onclick="switchDashboardTab('tab-faq')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">❓</span>
+              <span>8. FAQ &amp; 정책 안내</span>
+            </button>
+          </nav>
+        </div>
+
+        <!-- 보기 모드 전환 토글 버튼 -->
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div class="text-[11px] font-semibold text-slate-400 mb-1.5 px-1">화면 표시 방식</div>
+          <button type="button" id="toggle-view-mode-btn" onclick="toggleViewMode()" class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 transition flex items-center justify-between">
+            <span id="view-mode-text">📑 한 화면씩 보기 (탭)</span>
+            <span class="text-[10px] text-brand-600 dark:text-brand-400">변경 ⇄</span>
+          </button>
+        </div>
+
+        <!-- 최고 관리자 상태 & 승인/문의 신청 -->
+        <div id="sidebar-admin-status-box" class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[11px] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-extrabold text-slate-800 dark:text-slate-200">👑 관리자 권한</span>
+            <span id="left-admin-status-badge" class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300">미인증 (게스트)</span>
+          </div>
+          <div id="left-admin-email-text" class="font-mono text-slate-500 dark:text-slate-400 truncate">구글 관리자 로그인 필요</div>
+          <button type="button" id="left-admin-login-toggle-btn" onclick="openAdminAuthModal()" class="w-full py-1.5 px-2.5 rounded-xl bg-slate-200/80 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 text-[11px] font-extrabold transition flex items-center justify-center gap-1">
+            🔑 관리자 구글 로그인
+          </button>
+          <button type="button" id="open-contact-from-sidebar-btn" onclick="openContactRequestModal('admin_approval')" class="w-full py-2 px-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
+            <span>✉️ 문의·승인·광고 신청</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- 3. 메인 콘텐츠 영역 (PC 우측 75% / 모바일 100%) -->
+      <div id="dashboard-content-area" class="flex-1 min-w-0 space-y-6">
+      <!-- [대시보드 패널 1] VDOT 페이스 & 5km 구간별 스플릿 계산기 -->
+      <div id="panel-calc" class="dash-panel space-y-6">
+        <section id="calculator-section" class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4">
       <!-- 좌측: 최근 기록 및 체중 입력 (5 cols) -->
       <div class="lg:col-span-5 flex flex-col gap-5">
         <!-- 카드 1: 최근 완주 기록 -->
@@ -334,150 +460,398 @@
           </div>
         </div>
       </div>
+    
+      <!-- 우측: 분석 결과 및 스플릿 시간표 (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-5">
+        <!-- 캡처 대상 컨테이너 -->
+        <div id="capture-dashboard" class="space-y-5">
+          <!-- 카드 1: VDOT 달성 확률 & 난이도 판정 -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-bold flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-brand-600 text-white text-xs flex items-center justify-center font-bold">3</span>
+                목표 달성 확률 &amp; VDOT 난이도 분석
+              </h3>
+              <span id="feasibility-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                도전적 페이스
+              </span>
+            </div>
+
+            <!-- 확률 게이지 바 -->
+            <div class="mb-4">
+              <div class="flex justify-between items-end mb-1.5">
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">달성 성공 확률</span>
+                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono"><span id="prob-val">68</span>%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden p-0.5">
+                <div id="prob-bar" class="bg-gradient-to-r from-amber-500 to-brand-600 h-full rounded-full transition-all duration-500" style="width: 68%;"></div>
+              </div>
+            </div>
+
+            <!-- VDOT 비교 요약 그리드 -->
+            <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center mb-3">
+              <div>
+                <div class="text-[11px] text-slate-400 font-medium mb-0.5">현재 VDOT</div>
+                <div id="current-vdot-val" class="text-base font-black font-mono text-slate-800 dark:text-slate-200">46.5</div>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-400 font-medium mb-0.5">목표 VDOT</div>
+                <div id="target-vdot-val" class="text-base font-black font-mono text-brand-600 dark:text-brand-400">48.2</div>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-400 font-medium mb-0.5">VDOT 차이</div>
+                <div id="vdot-diff-val" class="text-base font-black font-mono text-amber-600 dark:text-amber-400">+1.7</div>
+              </div>
+            </div>
+
+            <!-- 코치 피드백 박스 -->
+            <div id="coach-advice-box" class="text-xs p-3 rounded-xl bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 text-slate-700 dark:text-slate-300 leading-relaxed">
+              최근 기록 대비 목표 페이스를 안정적으로 완주하기 위해 8~12주의 체계적인 인터벌 및 지속주 훈련이 권장됩니다.
+            </div>
+          </div>
+
+          <!-- 카드 2: 5대 훈련 페이스 존 (Jack Daniels) -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>⏱️</span> VDOT 기반 5대 권장 훈련 페이스
+              </h4>
+              <span id="target-pace-summary" class="text-xs font-mono font-bold text-brand-600 dark:text-brand-400">목표 4'45"/km</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-slate-500 dark:text-slate-400 text-[11px]">이지런 (E-Pace)</div>
+                <div id="pace-e" class="font-mono font-extrabold text-sm text-slate-800 dark:text-slate-200 mt-1">5'35" ~ 6'05"</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-brand-600 dark:text-brand-400 text-[11px]">마라톤 (M-Pace)</div>
+                <div id="pace-m" class="font-mono font-extrabold text-sm text-brand-600 dark:text-brand-400 mt-1">4'45"/km</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-amber-600 dark:text-amber-400 text-[11px]">역치주 (T-Pace)</div>
+                <div id="pace-t" class="font-mono font-extrabold text-sm text-amber-600 dark:text-amber-400 mt-1">4'28"/km</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-red-600 dark:text-red-400 text-[11px]">인터벌 (I-Pace)</div>
+                <div id="pace-i" class="font-mono font-extrabold text-sm text-red-600 dark:text-red-400 mt-1">4'08"/km</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500">
+              <span id="equiv-time-text">예상 완주 기록: 3시간 20분 15초</span>
+              <span id="carb-need-text">소모 열량: <strong id="kcal-val" class="text-slate-800 dark:text-slate-200">2,650</strong> kcal</span>
+            </div>
+          </div>
+
+          <!-- 카드 3: 5km 구간별 스플릿 시간표 -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <div>
+                <h4 id="split-table-title" class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>🏁</span> 풀코스 5km 구간별 스플릿 시간표
+                </h4>
+                <p class="text-xs text-slate-400 mt-0.5">실전 레이스에서 각 5km 체크포인트 통과 목표 시간표입니다.</p>
+              </div>
+              <div class="flex items-center gap-1.5 self-start sm:self-auto">
+                <span id="split-strategy-chip" class="px-2.5 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/60 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+                  ⚖️ 이븐 페이스 전략
+                </span>
+              </div>
+            </div>
+
+            <!-- 스플릿 테이블 -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
+              <table class="w-full text-left text-xs font-mono">
+                <thead class="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-sans border-b border-slate-200 dark:border-slate-800">
+                  <tr>
+                    <th class="py-2.5 px-2 sm:px-3">구간</th>
+                    <th class="py-2.5 px-2 sm:px-3">구간 페이스</th>
+                    <th class="py-2.5 px-2 sm:px-3">구간 소요</th>
+                    <th class="py-2.5 px-2 sm:px-3">누적 통과 시간</th>
+                    <th class="py-2.5 px-2 sm:px-3 hidden sm:table-cell font-sans">실전 가이드</th>
+                  </tr>
+                </thead>
+                <tbody id="split-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
+                  <!-- JS 동적 렌더링 -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- 공유 및 이미지 저장 버튼 -->
+            <div class="flex flex-wrap items-center justify-end gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <button id="copy-kakao-btn" type="button" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5">
+                <span>📋 전략 텍스트 복사</span>
+              </button>
+              <button id="save-image-btn" type="button" class="px-3.5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <span>📸 결과 이미지 저장</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </section>
+      </div>
 
-    <!-- 캡처 대상 결과 대시보드 시작 -->
-    <div id="capture-dashboard" class="mt-6 space-y-6 bg-slate-100 dark:bg-slate-950 rounded-2xl p-1 sm:p-2">
-
-      <!-- 섹션 1: VDOT 분석 & 목표 달성 가능성 -->
-      <section class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+      <!-- [대시보드 패널 2] 데일리 러너 수분 충전 트래커 & 나만의 체크리스트 -->
+      <div id="panel-daily" class="dash-panel space-y-6 hidden" style="display: none;">
+        <!-- [신규 기능] 게스트 누구나 가능한 데일리 수분 섭취 & 습관 체크리스트 -->
+      <div id="daily-checklist-card" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm mt-5">
+        <!-- 헤더 및 날짜 선택 바 -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/70 dark:border-slate-800">
           <div>
-            <h2 class="text-lg font-extrabold flex items-center gap-2">
-              📊 VDOT 퍼포먼스 분석 &amp; 목표 달성 가능성
-            </h2>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              Jack Daniels Running Formula 산소섭취량(VO₂) 근사 모델 기반 정밀 진단
+            <div class="flex items-center gap-2">
+              <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2 text-slate-900 dark:text-white">
+                💧 데일리 러너 수분 섭취 &amp; 나만의 체크리스트
+              </h3>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold">게스트 자유 이용</span>
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              마라톤 완주를 위한 하루 수분 충전(L)과 시간대별 루틴, 데일리 습관을 매일 체크하세요. (날짜 자동 반영 &amp; 기기 자동 저장)
             </p>
           </div>
-          <div id="feasibility-badge" class="self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold">
-            적정 도전 목표
+
+          <!-- 날짜 네비게이션 -->
+          <div class="flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+            <button id="daily-prev-date-btn" type="button" class="px-2 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition" title="어제">◀</button>
+            <input id="daily-date-picker" type="date" class="px-2 py-1 rounded-lg text-xs font-bold font-mono bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 border-0 focus:ring-1 focus:ring-brand-500" />
+            <button id="daily-today-btn" type="button" class="px-2 py-1 rounded-lg text-xs font-extrabold bg-brand-600 text-white transition">오늘</button>
+            <button id="daily-next-date-btn" type="button" class="px-2 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition" title="내일">▶</button>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-5">
-          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">현재 VDOT 레벨</div>
-            <div class="mt-1 flex items-baseline gap-1.5">
-              <span id="current-vdot-val" class="text-2xl sm:text-3xl font-extrabold font-mono text-slate-900 dark:text-white">42.1</span>
-              <span class="text-xs text-slate-400">ml/kg/min</span>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-5">
+          <!-- 좌측: 수분 섭취 트래커 (6 cols) -->
+          <div class="lg:col-span-6 bg-slate-50 dark:bg-slate-800/40 rounded-xl p-4 sm:p-5 border border-slate-200/70 dark:border-slate-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🥤</span>
+                  <span class="text-sm font-extrabold text-slate-900 dark:text-white">하루 수분 충전 트래커</span>
+                </div>
+                <div class="flex items-center gap-1 text-xs">
+                  <span class="text-slate-500">목표:</span>
+                  <select id="water-goal-select" class="px-2 py-0.5 rounded-md font-bold text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200">
+                    <option value="1500">1.5 L</option>
+                    <option value="2000" selected>2.0 L (표준)</option>
+                    <option value="2500">2.5 L (러닝 데이)</option>
+                    <option value="3000">3.0 L (강훈련·여름)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- 게이지 및 현재 섭취량 -->
+              <div class="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 mb-4 shadow-2xs">
+                <div class="flex items-baseline justify-between mb-2">
+                  <div class="flex items-baseline gap-1">
+                    <span id="water-current-text" class="text-2xl font-black font-mono text-cyan-500">0</span>
+                    <span class="text-xs font-bold text-slate-500">/ <span id="water-goal-text">2,000</span> ml</span>
+                  </div>
+                  <span id="water-percent-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-cyan-500/15 text-cyan-600 dark:text-cyan-400">
+                    0% 달성
+                  </span>
+                </div>
+                <div class="w-full h-3 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                  <div id="water-progress-bar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full transition-all duration-300" style="width: 0%;"></div>
+                </div>
+              </div>
+
+              <!-- 원클릭 물 추가 퀵 버튼 -->
+              <div class="flex flex-wrap gap-2 mb-4">
+                <button type="button" data-water-add="250" class="water-quick-btn flex-1 min-w-[90px] py-2 px-3 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1">
+                  <span>💧 +250ml</span>
+                  <span class="text-[10px] opacity-80">(1컵)</span>
+                </button>
+                <button type="button" data-water-add="500" class="water-quick-btn flex-1 min-w-[90px] py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1">
+                  <span>🍶 +500ml</span>
+                  <span class="text-[10px] opacity-80">(텀블러)</span>
+                </button>
+                <button type="button" data-water-add="-250" class="water-quick-btn py-2 px-3 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-bold transition">
+                  -250ml
+                </button>
+                <button id="water-reset-btn" type="button" class="py-2 px-3 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-rose-100 dark:hover:bg-rose-950 text-slate-500 dark:text-slate-400 hover:text-rose-600 text-xs font-bold transition" title="오늘 수분 0으로 리셋">
+                  🔄
+                </button>
+              </div>
+
+              <!-- 시간대별 수분 체크 안내 (몇 시간마다 몇 번) -->
+              <div class="text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-2 flex items-center justify-between">
+                <span>⏰ 하루 권장 시간대별 수분 체크 (클릭 시 자동 +섭취)</span>
+                <span class="text-[10px] text-slate-400">약 2~3시간 간격</span>
+              </div>
+              <div id="water-time-slots" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-xs">
+                <!-- JS로 시간대별 체크 버튼 렌더링 -->
+              </div>
             </div>
-            <div id="equiv-time-text" class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">동등 풀코스: 3:24:10</div>
           </div>
 
-          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">요구 목표 VDOT</div>
-            <div class="mt-1 flex items-baseline gap-1.5">
-              <span id="target-vdot-val" class="text-2xl sm:text-3xl font-extrabold font-mono text-brand-600 dark:text-brand-400">44.6</span>
-              <span id="vdot-diff-val" class="text-xs font-mono font-bold text-amber-500">+2.5</span>
-            </div>
-            <div id="target-pace-summary" class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">요구 페이스: 4'58"/km</div>
-          </div>
+          <!-- 우측: 나만의 러너 데일리 습관 체크리스트 (6 cols) -->
+          <div class="lg:col-span-6 bg-slate-50 dark:bg-slate-800/40 rounded-xl p-4 sm:p-5 border border-slate-200/70 dark:border-slate-800 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">✅</span>
+                  <span class="text-sm font-extrabold text-slate-900 dark:text-white">나만의 데일리 러닝 루틴 체크</span>
+                </div>
+                <span id="daily-task-summary-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+                  0/5 완료
+                </span>
+              </div>
 
-          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">목표 달성 가능성</div>
-            <div class="mt-1 flex items-baseline gap-1">
-              <span id="prob-val" class="text-2xl sm:text-3xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400">78</span>
-              <span class="text-sm font-bold text-emerald-600 dark:text-emerald-400">%</span>
-            </div>
-            <div class="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-full mt-2 overflow-hidden">
-              <div id="prob-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 78%"></div>
-            </div>
-          </div>
+              <!-- 새 항목 직접 추가 폼 -->
+              <div class="flex gap-2 mb-3">
+                <input id="daily-new-task-input" type="text" placeholder="나만의 루틴 추가 (예: 족저근막 마사지)" class="flex-1 px-3 py-1.5 rounded-lg text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500" />
+                <button id="daily-add-task-btn" type="button" class="px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold transition">
+                  + 추가
+                </button>
+              </div>
 
-          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800">
-            <div class="text-xs text-slate-500 dark:text-slate-400 font-medium">예상 소모 에너지 (키·체중·속도)</div>
-            <div class="mt-1 flex items-baseline gap-1">
-              <span id="kcal-val" class="text-2xl sm:text-3xl font-extrabold font-mono text-orange-500">2,920</span>
-              <span class="text-xs font-bold text-slate-400">kcal</span>
+              <!-- 체크리스트 목록 영역 -->
+              <div id="daily-tasks-container" class="space-y-1.5 max-h-[260px] overflow-y-auto pr-1">
+                <!-- JS로 동적 렌더링 -->
+              </div>
             </div>
-            <div id="carb-need-text" class="mt-1 text-[11px] text-slate-500 dark:text-slate-400">권장 탄수화물: 총 210g</div>
+
+            <!-- 하단 루틴 팁 -->
+            <div class="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+              <span>💡 매일 자정에 새 날짜로 갱신되며 지난 날짜도 언제든 확인 가능합니다.</span>
+              <button id="daily-reset-tasks-btn" type="button" class="text-[10px] text-slate-400 hover:text-rose-500 hover:underline">
+                기본 루틴 복원
+              </button>
+            </div>
           </div>
         </div>
+      </div>
+      </div>
 
-        <div id="coach-advice-box" class="p-3.5 rounded-xl bg-brand-50/80 dark:bg-brand-950/40 border border-brand-200/60 dark:border-brand-800/60 text-xs sm:text-sm text-slate-700 dark:text-slate-200 mb-5"></div>
-
-        <div>
-          <div class="flex items-center justify-between mb-2.5">
-            <h3 class="text-sm font-bold text-slate-800 dark:text-slate-200">
-              🎯 현재 기량(VDOT) 기준 권장 훈련 페이스 (E · M · T · I)
-            </h3>
-            <span class="text-[11px] text-slate-400">현재 VDOT 기준 안전 훈련 강도</span>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div class="p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400">E 페이스 (Easy)</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-300">65~78%</span>
-              </div>
-              <div id="pace-e" class="text-lg font-mono font-extrabold mt-1.5">5'40" ~ 6'10"</div>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">조깅·회복주·LSD 유산소 기반</p>
-            </div>
-
-            <div class="p-3.5 rounded-xl border border-sky-500/30 bg-sky-500/5">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold text-sky-600 dark:text-sky-400">M 페이스 (Marathon)</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-600 dark:text-sky-300">80~84%</span>
-              </div>
-              <div id="pace-m" class="text-lg font-mono font-extrabold mt-1.5">5'02"/km</div>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">실전 레이스 페이스 적응주</p>
-            </div>
-
-            <div class="p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold text-amber-600 dark:text-amber-400">T 페이스 (Threshold)</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-300">88~90%</span>
-              </div>
-              <div id="pace-t" class="text-lg font-mono font-extrabold mt-1.5">4'42"/km</div>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">젖산역치 향상 지속주(20~40분)</p>
-            </div>
-
-            <div class="p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/5">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-extrabold text-rose-600 dark:text-rose-400">I 페이스 (Interval)</span>
-                <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-300">97~100%</span>
-              </div>
-              <div id="pace-i" class="text-lg font-mono font-extrabold mt-1.5">4'19"/km</div>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">VO₂max 극대화 인터벌(800~1000m)</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 섹션 2: 5km 구간별 목표 통과 시간표 (Split Table) -->
-      <section class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <!-- [대시보드 패널 3] 목표 마라톤 대회 D-Day & 코스 난이도 분석 & 관리자 공지 -->
+      <div id="panel-dday" class="dash-panel space-y-6 hidden" style="display: none;">
+        <!-- [기능 1] 국내 주요 마라톤 대회 D-Day 카운트다운 & 코스 난이도 -->
+      <div id="lab-dday" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
-            <h2 id="split-table-title" class="text-lg font-extrabold flex items-center gap-2">
-              ⏱️ 5km 구간별 목표 통과 시간표 (Split Table)
-            </h2>
+            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
+              📆 3. 목표 마라톤 대회 D-Day 카운트다운 &amp; 코스 난이도 분석
+            </h3>
             <p class="text-xs text-slate-500 dark:text-slate-400">
-              선택한 목표 종목(10km/하프/풀코스)과 주행 전략에 맞춘 구간별 목표 페이스 및 누적 통과 시간입니다.
+              참가 예정인 메이저 대회를 선택하거나 직접 대회 날짜를 지정해 남은 훈련 기간과 코스 특성을 확인하세요.
             </p>
           </div>
-          <span id="split-strategy-chip" class="self-start sm:self-auto px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-xs font-bold">
-            이븐 페이스 전략
-          </span>
+          <div id="dday-counter-badge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-brand-600 text-white font-mono text-sm font-extrabold shadow-sm transition-all">
+            D-Day 계산 중
+          </div>
         </div>
 
-        <div class="overflow-x-auto -mx-2 px-2">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider text-slate-400">
-                <th class="py-2.5 px-2 sm:px-3">구간 (km)</th>
-                <th class="py-2.5 px-2 sm:px-3">구간 평균 페이스</th>
-                <th class="py-2.5 px-2 sm:px-3">구간 소요 시간</th>
-                <th class="py-2.5 px-2 sm:px-3">누적 통과 시간</th>
-                <th class="py-2.5 px-2 sm:px-3 hidden sm:table-cell">페이스 배분 가이드</th>
-              </tr>
-            </thead>
-            <tbody id="split-table-body" class="divide-y divide-slate-100 dark:divide-slate-800/70 text-xs sm:text-sm font-mono"></tbody>
-          </table>
+        <!-- 대회 프리셋 버튼들 -->
+        <div class="flex flex-wrap gap-1.5 mb-3" id="major-race-buttons">
+          <button type="button" data-race="seoul" data-date="2027-03-21" data-course="flat" data-url="http://www.seoul-marathon.com/" data-name="서울마라톤 (동아)" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white transition">
+            🏆 서울마라톤 (동아·평탄 고속)
+          </button>
+          <button type="button" data-race="jtbc" data-date="2026-11-01" data-course="rolling" data-url="https://marathon.jtbc.com/" data-name="JTBC 서울마라톤" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🔥 JTBC 서울마라톤 (후반 완만 언덕)
+          </button>
+          <button type="button" data-race="chuncheon" data-date="2026-10-25" data-course="hilly" data-url="http://marathon.chosun.com/" data-name="춘천마라톤" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🍁 춘천마라톤 (호반 업다운 코어)
+          </button>
+          <button type="button" data-race="daegu" data-date="2027-02-21" data-course="flat" data-url="https://daegumarathon.or.kr/" data-name="대구국제마라톤" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            ⚡ 대구국제마라톤 (초고속 순환)
+          </button>
+          <button type="button" data-race="gyeongju" data-date="2026-10-17" data-course="rolling" data-url="http://www.gyeongjumarathon.com/" data-name="경주마라톤" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+            🌸 경주마라톤 (완만 구릉지)
+          </button>
         </div>
-      </section>
 
-      <!-- 섹션 3: 레이스 보급(Fueling) 타임라인 -->
-      <section id="fueling-section" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+        <!-- 대회 공식 사이트 바로가기 바 -->
+        <div class="flex flex-wrap items-center justify-between gap-2.5 p-3 mb-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50/70 dark:from-slate-800 dark:to-slate-800/60 border border-blue-100 dark:border-slate-700">
+          <div class="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-200">
+            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-600 text-white text-[10px]">🌐</span>
+            <span>대회 웹사이트:</span>
+            <span id="selected-race-name" class="text-brand-600 dark:text-brand-400 font-extrabold">서울마라톤 (동아)</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <a id="race-official-link" href="http://www.seoul-marathon.com/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-sm transition">
+              <span>공식 홈페이지 바로가기</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            </a>
+            <a href="http://www.marathon.pe.kr/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-xs font-semibold border border-slate-200 dark:border-slate-600 transition" title="마라톤온라인 전체 일정 조회">
+              <span>전국 마라톤 일정 ↗</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="race-date-input" class="block text-[11px] font-bold text-slate-500">대회 날짜 직접 선택</label>
+              <span id="race-date-status-tag" class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">실시간 자동 반영</span>
+            </div>
+            <input id="race-date-input" type="date" value="2027-03-21" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition" />
+          </div>
+          <div>
+            <label for="race-course-select" class="block text-[11px] font-bold text-slate-500 mb-1">코스 지형 난이도</label>
+            <select id="race-course-select" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+              <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
+              <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
+              <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
+            </select>
+          </div>
+          <div id="dday-course-summary" class="flex flex-col justify-center text-xs text-slate-600 dark:text-slate-300"></div>
+        </div>
+
+        <!-- [관리자 전용] 대회 메모 & 운영 공지 -->
+        <div class="mt-4 pt-4 border-t border-slate-200/80 dark:border-slate-800">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                📝 대회 기타 메모 &amp; 주요 공지
+              </span>
+              <span id="admin-auth-status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">구글 승인 관리자 전용</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button id="open-contact-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 hover:bg-brand-100 dark:hover:bg-brand-900/60 border border-brand-200 dark:border-brand-800 transition">
+                <span>✉️ 문의·승인신청</span>
+              </button>
+              <button id="admin-memo-edit-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300/70 dark:border-slate-700 transition">
+                <span>🔒 관리자 인증</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 게스트/일반 사용자용 메모 보기 -->
+          <div id="admin-memo-display" class="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed min-h-[44px]">
+          </div>
+
+          <!-- 관리자 수정 폼 (초기 hidden) -->
+          <div id="admin-memo-form" class="hidden mt-2 p-3.5 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-300/60 dark:border-amber-500/30">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1">
+                ✏️ 관리자 모드: 메모 작성 및 공지 수정
+              </span>
+              <button id="admin-memo-template-btn" type="button" class="text-[11px] text-brand-600 dark:text-brand-400 font-semibold hover:underline">
+                📄 추천 템플릿 불러오기
+              </button>
+            </div>
+            <textarea id="admin-memo-input" rows="4" class="w-full p-2.5 rounded-lg text-xs font-sans bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="대회 집결 시간, 셔틀버스, 물품보관소 마감, 코스 공지사항 등을 자유롭게 작성하세요."></textarea>
+            <div class="flex items-center justify-between mt-2.5">
+              <button id="admin-change-pw-btn" type="button" class="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 underline">
+                🔑 비밀번호 변경
+              </button>
+              <div class="flex items-center gap-2">
+                <button id="admin-memo-cancel-btn" type="button" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 transition">
+                  취소
+                </button>
+                <button id="admin-memo-save-btn" type="button" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white shadow-sm transition">
+                  저장하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+
+      <!-- [대시보드 패널 4] 체중 맞춤형 에너지젤 보급 플래너 -->
+      <div id="panel-fueling" class="dash-panel space-y-6 hidden" style="display: none;">
+        <section id="fueling-section" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <h2 class="text-lg font-extrabold flex items-center gap-2">
@@ -495,45 +869,11 @@
 
         <div id="fueling-timeline" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
       </section>
-
-    </div>
-    <!-- 캡처 대상 영역 끝 -->
-
-    <!-- 바이럴 공유 액션 바 -->
-    <section class="mt-4 bg-gradient-to-r from-brand-600 to-indigo-700 rounded-2xl p-4 sm:p-5 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div>
-        <h3 class="text-sm sm:text-base font-extrabold flex items-center gap-2">
-          📢 러닝 크루 단톡방에 내 레이스 전략 공유하기
-        </h3>
-        <p class="text-xs text-indigo-100 mt-0.5">
-          오늘 설계한 스플릿 시간표와 보급 플랜을 이미지로 저장하거나 카카오톡 요약 텍스트로 바로 복사하세요!
-        </p>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-        <button
-          id="save-image-btn"
-          type="button"
-          class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-white text-brand-700 hover:bg-indigo-50 transition shadow-sm"
-        >
-          <span>📸 결과 이미지로 저장</span>
-        </button>
-        <button
-          id="copy-kakao-btn"
-          type="button"
-          class="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition shadow-sm"
-        >
-          <span>💬 카카오톡 공유용 텍스트 복사</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- =====================================================================
-         [신규 10대 PRO 확장 기능] 마라톤 올인원 레이스 연구소 (10-in-1 Lab)
-         ===================================================================== -->
-    <section id="pro-lab-section" class="mt-6 space-y-6">
-
-      <!-- 연구소 헤더 & 빠른 이동 앵커 바 -->
+      <!-- [대시보드 패널 5] 10대 레이스 시뮬레이터 연구소 -->
+      <div id="panel-lab" class="dash-panel space-y-6 hidden" style="display: none;">
+        <!-- 연구소 헤더 & 빠른 이동 앵커 바 -->
       <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-brand-500/30 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div>
@@ -551,6 +891,7 @@
 
         <div class="flex flex-wrap gap-1.5 text-xs font-bold">
           <a href="#lab-dday" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">1. 📆 대회 D-Day·코스</a>
+          <a href="#daily-checklist-card" class="px-2.5 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 text-cyan-700 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-800 hover:bg-cyan-600 hover:text-white transition">💧 데일리 수분·루틴 체크</a>
           <a href="#lab-weather" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">2. 🌡️ 날씨 페이스 보정</a>
           <a href="#lab-outfit" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">3. 🎽 기온별 러닝 복장</a>
           <a href="#lab-paceband" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">4. ⌚ 손목 페이스 밴드</a>
@@ -559,62 +900,10 @@
           <a href="#lab-cadence" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">7. 👟 키·보폭·케이던스</a>
           <a href="#lab-weight-sim" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">8. 📉 체중 감량 시뮬레이터</a>
           <a href="#lab-schedule" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">9. 🗓️ 주간 훈련 스케줄표</a>
-          <a href="#checklist-section" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">10. ✅ 준비물 체크리스트</a>
+          <a href="#checklist-section" onclick="switchDashboardTab('tab-checklist'); return false;" class="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition">10. ✅ 준비물 체크리스트</a>
         </div>
       </div>
-
-      <!-- [기능 1] 국내 주요 마라톤 대회 D-Day 카운트다운 & 코스 난이도 -->
-      <div id="lab-dday" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-          <div>
-            <h3 class="text-base sm:text-lg font-extrabold flex items-center gap-2">
-              📆 1. 목표 마라톤 대회 D-Day 카운트다운 &amp; 코스 난이도 분석
-            </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
-              참가 예정인 메이저 대회를 선택하거나 직접 대회 날짜를 지정해 남은 훈련 기간과 코스 특성을 확인하세요.
-            </p>
-          </div>
-          <div id="dday-counter-badge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-brand-600 text-white font-mono text-sm font-extrabold shadow-sm">
-            D-Day 계산 중
-          </div>
-        </div>
-
-        <div class="flex flex-wrap gap-1.5 mb-4" id="major-race-buttons">
-          <button type="button" data-race="seoul" data-date="2027-03-21" data-course="flat" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white transition">
-            🏆 서울마라톤 (동아·평탄 고속)
-          </button>
-          <button type="button" data-race="jtbc" data-date="2026-11-08" data-course="rolling" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
-            🔥 JTBC 서울마라톤 (후반 완만 언덕)
-          </button>
-          <button type="button" data-race="chuncheon" data-date="2026-10-25" data-course="hilly" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
-            🍁 춘천마라톤 (호반 업다운 코어)
-          </button>
-          <button type="button" data-race="daegu" data-date="2027-02-21" data-course="flat" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
-            ⚡ 대구국제마라톤 (초고속 순환)
-          </button>
-          <button type="button" data-race="gyeongju" data-date="2026-10-17" data-course="rolling" class="race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
-            🌸 경주마라톤 (완만 구릉지)
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/70 dark:border-slate-800">
-          <div>
-            <label for="race-date-input" class="block text-[11px] font-bold text-slate-500 mb-1">대회 날짜 직접 선택</label>
-            <input id="race-date-input" type="date" value="2027-03-21" class="w-full px-3 py-1.5 rounded-lg text-xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700" />
-          </div>
-          <div>
-            <label for="race-course-select" class="block text-[11px] font-bold text-slate-500 mb-1">코스 지형 난이도</label>
-            <select id="race-course-select" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700">
-              <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
-              <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
-              <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
-            </select>
-          </div>
-          <div id="dday-course-summary" class="flex flex-col justify-center text-xs text-slate-600 dark:text-slate-300"></div>
-        </div>
-      </div>
-
-      <!-- [기능 2 & 3] 대회 당일 날씨(기온·습도·풍속) 페이스 보정기 & 기온별 러닝 복장 코디네이터 -->
+        <!-- [기능 2 & 3] 대회 당일 날씨(기온·습도·풍속) 페이스 보정기 & 기온별 러닝 복장 코디네이터 -->
       <div id="lab-weather" class="grid grid-cols-1 lg:grid-cols-12 gap-5">
         <!-- 좌측: 날씨 페이스 보정기 (6 cols) -->
         <div class="lg:col-span-6 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
@@ -894,8 +1183,11 @@
 
         <div id="weekly-schedule-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
       </div>
+      </div>
 
-      <!-- [기능 10] 대회 전날 밤 '마라톤 필수 준비물 체크리스트' (진척도 % + 미보유 기어 즉시 구매) -->
+      <!-- [대시보드 패널 6] 마라톤 대회 당일 준비물 체크리스트 -->
+      <div id="panel-checklist" class="dash-panel space-y-6 hidden" style="display: none;">
+        <!-- [기능 10] 대회 전날 밤 '마라톤 필수 준비물 체크리스트' (진척도 % + 미보유 기어 즉시 구매) -->
       <div id="checklist-section" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
           <div>
@@ -920,11 +1212,11 @@
 
         <div id="race-checklist-container" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
       </div>
+      </div>
 
-    </section>
-
-    <!-- 섹션 4: 수익화(CTA) 모듈 (페이스별 베스트 픽 쇼케이스 + 전체 파트너 스토어 & 인라인 편집기) -->
-    <section id="gear-section" class="mt-6 bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <!-- [대시보드 패널 7] 추천 레이스 기어 쇼케이스 -->
+      <div id="panel-gear" class="dash-panel space-y-6 hidden" style="display: none;">
+        <section id="gear-section" class="mt-6 bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-sm">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
         <div>
           <div class="inline-flex flex-wrap items-center gap-1.5 text-xs font-extrabold text-brand-600 dark:text-brand-400 mb-1">
@@ -1136,78 +1428,11 @@
         </p>
       </div>
     </section>
-
-    <!-- [AdSense 슬롯 #2] 본문 중간 인아티클 광고 영역 (승인 후 주석을 해제하여 노출하세요)
-    <aside aria-label="스폰서 광고" class="my-6">
-      <div class="ad-slot-container bg-white/60 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-3 text-center">
-        <span class="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">ADVERTISEMENT</span>
-        <ins class="adsbygoogle"
-             style="display:block; text-align:center;"
-             data-ad-layout="in-article"
-             data-ad-format="fluid"
-             data-ad-client="ca-pub-0000000000000000"
-             data-ad-slot="2222222222"></ins>
-        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-      </div>
-    </aside>
-    -->
-
-    <!-- =====================================================================
-         애드센스 승인 필수 요소: 고품질 독창적 전문 아티클 & 훈련 가이드 섹션
-         (단순 계산기 사이트의 '가치 없는 콘텐츠: Low Value Content' 거절 방지용)
-         ===================================================================== -->
-    <article id="training-guide" class="seo-article mt-8 bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm text-sm text-slate-700 dark:text-slate-300">
-      <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold mb-2">
-        📚 마라톤 데이터 사이언스 칼럼
-      </div>
-      <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mb-4">
-        VDOT 지수의 과학적 원리와 풀코스 마라톤 완주를 위한 페이스·보급 전략 가이드
-      </h2>
-
-      <p>
-        풀코스 마라톤(42.195km)과 하프 마라톤(21.0975km)에서 목표 기록(Sub-3, Sub-3:30, Sub-4)을 달성하기 위해 가장 중요한 것은 <strong>객관적인 현재 유산소 능력 측정</strong>과 <strong>체내 글리코겐 고갈을 막는 정밀한 페이스·영양 배분</strong>입니다. 본 플래너는 세계적인 운동생리학자 잭 다니엘스(Jack Daniels) 박사의 <em>Running Formula</em>와 스포츠 영양학 가이드라인을 결합하여 러너 맞춤형 데이터를 제공합니다.
-      </p>
-
-      <h3 class="text-base sm:text-lg text-slate-900 dark:text-white">1. VDOT이란 무엇이며 왜 중요한가요?</h3>
-      <p>
-        <strong>VDOT</strong>은 최대산소섭취량(VO₂max)에 러너의 주행 경제성(Running Economy)과 젖산역치(Lactate Threshold) 효율을 반영한 실질적 유산소 퍼포먼스 지표입니다. 단순히 심폐 기능만 보는 것이 아니라, 실제 도로 위에서 산소 1ml당 얼마나 빠른 속도를 유지할 수 있는지를 정량화합니다.
-      </p>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">
-        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
-          <div class="font-bold text-slate-900 dark:text-white mb-1">✅ E 페이스 (Easy, 최대산소섭취량의 65~78%)</div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 m-0">
-            모세혈관 밀도를 높이고 미토콘드리아 수를 증가시키는 유산소 기초 훈련입니다. 주간 주행 거리(마일리지)의 70~80%를 E 페이스로 채워야 부상 없이 장거리 내구성을 기를 수 있습니다.
-          </p>
-        </div>
-        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200/60 dark:border-slate-800">
-          <div class="font-bold text-slate-900 dark:text-white mb-1">✅ M &amp; T 페이스 (Marathon 80~84% / Threshold 88~90%)</div>
-          <p class="text-xs text-slate-500 dark:text-slate-400 m-0">
-            T 페이스(젖산역치주)는 혈중 젖산이 급격히 쌓이기 직전의 임계 속도를 높여주며, M 페이스는 실전 대회 페이스에서의 탄수화물·지방 대사 비율과 착지 리듬을 체화합니다.
-          </p>
-        </div>
       </div>
 
-      <h3 class="text-base sm:text-lg text-slate-900 dark:text-white">2. 이븐 페이스 vs 네거티브 스플릿: 나에게 맞는 주행 전략은?</h3>
-      <p>
-        세계 메이저 마라톤 대회의 엘리트 및 마스터즈 상위권 기록 달성자들의 데이터를 분석하면, 전반 하프보다 후반 하프를 약 1~2% 빠르게 달리는 <strong>네거티브 스플릿(Negative Split)</strong> 또는 오차 1% 이내의 <strong>이븐 페이스(Even Pace)</strong>가 가장 높은 성공률을 보입니다.
-      </p>
-      <p>
-        출발 직후 아드레날린 분비로 인해 목표 페이스보다 km당 10~15초 빠르게 달리면, 근육 내 글리코겐 소모 속도가 기하급수적으로 증가해 30~32km 지점에서 급격한 페이스가 떨어지는 일명 <strong>'마라톤 벽(Hitting the Wall / Bonking)'</strong> 현상을 겪게 됩니다. 따라서 첫 5km는 워밍업 구간으로 설정하고 목표 페이스보다 2~3초 여유 있게 진입하는 것이 현명합니다.
-      </p>
-
-      <h3 class="text-base sm:text-lg text-slate-900 dark:text-white">3. 30km 이후 퍼짐을 막는 스포츠 영양학 에너지젤 보급 프로토콜</h3>
-      <p>
-        성인 러너가 간과 근육에 저장할 수 있는 글리코겐 총량은 약 1,600~2,000kcal 수준입니다. 반면 68kg 러너가 풀코스를 완주할 때 소모하는 에너지는 약 2,900kcal 이상이므로, 레이스 도중 외부 탄수화물 공급이 이루어지지 않으면 후반부 에너지 고갈은 필연적입니다.
-      </p>
-      <ul class="list-disc pl-5 space-y-1.5 mb-4 text-xs sm:text-sm">
-        <li><strong>출발 30분 전 사전 보급:</strong> 에너지젤 1포와 아미노산(BCAA)을 섭취하여 출발 시점의 혈당과 간 글리코겐을 최상으로 유지합니다.</li>
-        <li><strong>7km 주기 선제적 섭취:</strong> 갈증이나 배고픔을 느낀 뒤에는 이미 위장관 흡수 속도가 늦습니다. 7km, 14km, 21km, 28km, 35km마다 규칙적으로 탄수화물 25~30g을 보충하세요.</li>
-        <li><strong>급수대 물과 함께 섭취:</strong> 고농축 에너지젤을 단독 섭취하면 삼투압 현상으로 위장 장애가 발생할 수 있으므로 반드시 맹물 150~200ml와 함께 섭취해야 빠르게 소장으로 흡수됩니다.</li>
-      </ul>
-    </article>
-
-    <!-- 자주 묻는 질문 (FAQ 섹션 - 애드센스 및 검색엔진 최적화) -->
-    <section id="faq-section" class="mt-6 bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+      <!-- [대시보드 패널 8] 러너 FAQ & 운영 정책 -->
+      <div id="panel-faq" class="dash-panel space-y-6 hidden" style="display: none;">
+        <section id="faq-section" class="mt-6 bg-white dark:bg-slate-900 rounded-2xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800 shadow-sm">
       <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white mb-4">
         ❓ 마라톤 페이스 &amp; 전략 자주 묻는 질문 (FAQ)
       </h2>
@@ -1243,9 +1468,62 @@
         </details>
       </div>
     </section>
+      </div>
 
-    <!-- 푸터 (애드센스 심사 필수 항목: 개인정보처리방침 / 이용약관 / 운영자 안내 링크) -->
-    <footer class="mt-10 pt-6 pb-10 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
+    </div> <!-- end #dashboard-content-area -->
+
+      <!-- 4. 우측 세로 사이드바 (전국 마라톤 대회 일정 및 관리 & 실시간 D-Day & 승인 관리자 대회 추가) -->
+      <aside id="right-race-schedule-sidebar" class="flex flex-col w-full lg:w-64 xl:w-72 shrink-0 lg:sticky lg:top-20 mt-6 lg:mt-0 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
+        <!-- 상단 헤더 -->
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-1.5">
+            <span class="text-base">🏃</span>
+            <h3 class="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">대회 일정 및 관리</h3>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold">클릭 시 선택</span>
+        </div>
+
+        <!-- 메이저 대회 리스트 컨테이너 (실시간 D-Day + 공식링크 + 클릭 시 목표 대회 즉시 선택) -->
+        <div id="right-race-schedule-list" class="flex flex-col gap-2 max-h-[58vh] overflow-y-auto pr-0.5 space-y-0.5">
+          <div onclick="selectRace('seoul')" class="p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50/70 dark:bg-brand-950/40 shadow-xs transition cursor-pointer">
+            <div class="flex items-center justify-between gap-1.5 mb-1">
+              <span class="text-xs font-extrabold text-brand-600 dark:text-brand-400 truncate">🎯 서울마라톤 (동아)</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-mono bg-brand-500/15 text-brand-600 dark:text-brand-400 font-extrabold">2027-03-21</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 전국 마라톤 일정 종합 사이트 바로가기 버튼 -->
+        <a href="http://www.marathon.pe.kr/" target="_blank" rel="noopener noreferrer" class="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center justify-center gap-1.5">
+          <span>🌐 전국 마라톤 종합 일정표 ↗</span>
+        </a>
+
+        <!-- 하단: 관리자 전용 신규 대회 추가 섹션 -->
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-extrabold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+              <span>🛡️</span> 대회 추가 권한
+            </span>
+            <span id="right-admin-status-badge" onclick="openAdminAuthModal()" class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 cursor-pointer" title="클릭하여 관리자 구글 인증">🔒 구글 승인 필요</span>
+          </div>
+
+          <!-- [+ 신규 대회 등록] 버튼 (구글 로그인으로 승인받은 아이디만 가능) -->
+          <button type="button" id="right-add-race-btn" onclick="handleClickAddRaceWithAuth()" class="w-full py-2.5 px-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer">
+            <span>➕ 신규 대회 등록 (관리자)</span>
+          </button>
+          <button type="button" onclick="openAdminAuthModal()" class="w-full py-1.5 px-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+            <span>🔑 구글 관리자 로그인 / 승인 확인</span>
+          </button>
+          <p class="text-[10px] text-slate-400 text-center leading-tight">
+            * 대회 추가는 구글 로그인으로 관리 승인받은 아이디(rkstmtk@gmail.com 외 승인 계정)만 가능합니다.
+          </p>
+        </div>
+      </aside>
+
+
+    </div> <!-- end #dashboard-wrapper -->
+
+<footer class="mt-10 pt-6 pb-10 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-500 dark:text-slate-400">
       <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <div class="font-extrabold text-slate-800 dark:text-slate-200 mb-1">
@@ -1285,7 +1563,308 @@
     </div>
   </div>
 
-  <!-- 메인 애플리케이션 스크립트 -->
+
+  <!-- [모달] 관리자 구글 로그인 및 승인 확인 모달 -->
+  <div id="admin-auth-modal" onclick="if(event.target === this) closeAdminAuthModal()" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🔒</span>
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-white">관리자 구글 인증</h3>
+        </div>
+        <button id="admin-auth-modal-close" type="button" onclick="closeAdminAuthModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold px-3 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs text-blue-800 dark:text-blue-200 leading-relaxed">
+          <div class="font-bold flex items-center gap-1 mb-1">
+            <span>🛡️ 승인된 관리자 전용 기능</span>
+          </div>
+          대회 공지 수정 및 신규 대회 추가는 <strong>구글 계정으로 직접 승인받은 관리자</strong>만 이용할 수 있습니다.
+        </div>
+
+        <div id="admin-auth-login-view">
+          <!-- 최고 관리자 1초 즉시 인증 -->
+          <div class="mb-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+            <div class="text-[11px] text-amber-800 dark:text-amber-300 font-bold">
+              👑 최고 관리자 (rkstmtk@gmail.com) 본인이신가요?
+            </div>
+            <button
+              type="button"
+              onclick="quickLoginAsOwner()"
+              class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-extrabold transition shadow-xs whitespace-nowrap"
+            >
+              1초 인증
+            </button>
+          </div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            구글(Google) 계정 이메일 확인
+          </label>
+          <div class="flex gap-2 mb-3">
+            <input
+              id="admin-google-email-input"
+              type="email"
+              placeholder="예: rkstmtk@gmail.com"
+              class="flex-1 px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+            <button
+              id="admin-google-verify-btn"
+              type="button"
+              class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold transition shadow-sm whitespace-nowrap"
+            >
+              승인 확인
+            </button>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500">아직 승인받지 않으셨나요?</span>
+            <button
+              id="open-approval-request-from-auth-btn"
+              type="button"
+              class="text-xs font-bold text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1"
+            >
+              <span>📨 관리자 승인 요청 보내기 ↗</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 로그인 완료된 상태 뷰 -->
+        <div id="admin-auth-logged-view" class="hidden space-y-3">
+          <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-200">
+            <div class="font-extrabold mb-0.5">✅ 관리자 인증 완료</div>
+            <div id="admin-logged-email-display" class="font-mono text-[11px] opacity-90"></div>
+          </div>
+          <div class="flex items-center justify-between pt-2">
+            <button
+              id="admin-manage-perm-btn"
+              type="button"
+              class="hidden text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline"
+            >
+              + 추가 관리자 이메일 승인 관리
+            </button>
+            <button
+              id="admin-logout-btn"
+              type="button"
+              class="px-3.5 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 text-xs font-bold transition ml-auto"
+            >
+              로그아웃
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- [모달] 운영자 문의 / 승인 요청 / 광고 신청 모달 -->
+  <div id="contact-request-modal" onclick="if(event.target === this) closeContactRequestModal()" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+            📬 운영자 문의 &amp; 승인·신청
+          </h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            수신자: <strong class="text-brand-600 dark:text-brand-400 font-mono">rkstmtk@gmail.com</strong>
+          </p>
+        </div>
+        <button id="contact-request-modal-close" type="button" onclick="closeContactRequestModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold px-3 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
+      </div>
+
+      <form id="contact-request-form" class="space-y-3.5" onsubmit="return false;">
+        <!-- 문의 유형 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            신청 및 문의 구분 <span class="text-rose-500">*</span>
+          </label>
+          <select
+            id="contact-type-select"
+            class="w-full px-3 py-2 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <option value="admin_approval" selected>👑 관리자 권한 승인 요청 (대회 추가 &amp; 공지 작성 권한)</option>
+            <option value="advertising">📢 광고 및 파트너십 / 스폰서 제휴 문의</option>
+            <option value="race_register">🏃 신규 마라톤 대회 등록 및 코스 분석 신청</option>
+            <option value="general_inquiry">💬 일반 문의 및 기능 개선 건의</option>
+          </select>
+        </div>
+
+        <!-- 신청자 이름 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            신청자 성명 또는 닉네임 <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="contact-name-input"
+            type="text"
+            required
+            placeholder="예: 홍길동 (러너스클럽)"
+            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+
+        <!-- 신청자 구글 이메일 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            신청자 구글(Google) 계정 이메일 <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="contact-email-input"
+            type="email"
+            required
+            placeholder="예: yourname@gmail.com"
+            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          <p class="text-[10px] text-slate-400 mt-0.5">
+            ※ 관리자 승인 시 해당 구글 계정으로 권한이 부여되며 승인 완료 메일이 회신됩니다.
+          </p>
+        </div>
+
+        <!-- 문의 상세 내용 -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            상세 문의 및 신청 내용 <span class="text-rose-500">*</span>
+          </label>
+          <textarea
+            id="contact-content-textarea"
+            rows="5"
+            required
+            class="w-full p-3 rounded-xl text-xs font-sans bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 leading-relaxed"
+            placeholder="승인 요청 사유, 소속 러닝 크루/대회 주최측 정보, 광고 문의 내용 등을 자유롭게 적어주세요."
+          ></textarea>
+        </div>
+
+        <!-- 메일 발송 액션 버튼들 -->
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="text-[11px] font-bold text-slate-500 mb-1.5 flex items-center justify-between">
+            <span>새로운 창으로 메일 작성하기</span>
+            <span class="text-[10px] text-slate-400">클릭 즉시 새 창 열림</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <!-- 웹 Gmail 새 창 작성 -->
+            <button
+              id="send-via-web-gmail-btn"
+              type="button"
+              class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <span>🌐 웹 Gmail로 작성 (새 창) ↗</span>
+            </button>
+
+            <!-- 기본 메일 앱 (mailto) -->
+            <button
+              id="send-via-mailto-btn"
+              type="button"
+              class="w-full py-2.5 px-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
+            >
+              <span>📧 기본 메일 앱으로 발송 ↗</span>
+            </button>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <button
+              id="copy-contact-content-btn"
+              type="button"
+              class="text-[11px] text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 underline"
+            >
+              📋 작성 내용 클립보드 복사
+            </button>
+            <span class="text-[11px] text-slate-400">
+              수신: rkstmtk@gmail.com
+            </span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- [모달] 신규 마라톤 대회 일정 추가 모달 (구글 승인 관리자 전용) -->
+  <div id="add-race-modal" onclick="if(event.target === this) closeAddRaceModal()" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🏃</span>
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-white">신규 마라톤 대회 일정 추가</h3>
+        </div>
+        <button id="add-race-modal-close" type="button" onclick="closeAddRaceModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-xl font-bold px-3 py-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition">✕</button>
+      </div>
+
+      <form onsubmit="submitAddRaceModal(); return false;" class="space-y-3.5">
+        <div class="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-800 dark:text-emerald-200 font-bold">
+          ✅ 구글 승인 관리자 권한으로 대회를 추가합니다. 등록 즉시 중앙 버튼과 우측 일정표에 자동 저장됩니다.
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            대회 공식 명칭 <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="new-race-name-input"
+            type="text"
+            required
+            placeholder="예: 2026 손기정평화마라톤"
+            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            대회 개최 날짜 <span class="text-rose-500">*</span>
+          </label>
+          <input
+            id="new-race-date-input"
+            type="date"
+            required
+            value="2026-11-15"
+            class="w-full px-3 py-2 rounded-xl text-xs font-mono font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            코스 지형 난이도
+          </label>
+          <select
+            id="new-race-course-select"
+            class="w-full px-3 py-2 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
+            <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
+            <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+            대회 공식 홈페이지 주소 (URL)
+          </label>
+          <input
+            id="new-race-url-input"
+            type="url"
+            value="http://www.marathon.pe.kr/"
+            placeholder="https://..."
+            class="w-full px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onclick="closeAddRaceModal()"
+            class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-300 transition"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold shadow-sm transition cursor-pointer"
+          >
+            ➕ 대회 일정 등록 완료
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 메인 애플리케이션 스크립트 (모든 모달 DOM 로드 후 실행) -->
   <script src="./app.js"></script>
 </body>
 </html>

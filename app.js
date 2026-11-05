@@ -1778,11 +1778,105 @@
   // =========================================================================
   // 11. 신규 10대 PRO 레이스 연구소 (10-in-1 Marathon Lab) 상태 및 렌더링
   // =========================================================================
+  // [마라톤 랩 PRO 대회 커스텀 및 영구 저장 시스템]
+  // =========================================================================
   const CHECKLIST_STORAGE_KEY = 'marathon_pro_checklist_v1';
+  const RACE_DATE_STORAGE_KEY = 'marathon_pro_race_date_v1';
+  const RACE_COURSE_STORAGE_KEY = 'marathon_pro_course_type_v1';
+  const RACE_SELECTED_STORAGE_KEY = 'marathon_pro_selected_race_v2';
+  const RACES_CUSTOM_STORAGE_KEY = 'marathon_pro_races_custom_v2';
+  const ADMIN_PW_STORAGE_KEY = 'marathon_pro_admin_pw_v1';
+  const ADMIN_MEMO_STORAGE_KEY = 'marathon_pro_admin_memo_v1';
+  const DAILY_STORAGE_KEY = 'marathon_pro_daily_checklist_v1';
+
+  const DEFAULT_MAJOR_RACES = {
+    jtbc: {
+      id: 'jtbc',
+      name: 'JTBC 서울마라톤',
+      fullName: '🔥 JTBC 서울마라톤 (후반 완만 언덕)',
+      date: '2026-11-01',
+      course: 'rolling',
+      url: 'https://marathon.jtbc.com/'
+    },
+    seoul: {
+      id: 'seoul',
+      name: '서울마라톤 (동아)',
+      fullName: '🏆 서울마라톤 (동아·평탄 고속)',
+      date: '2027-03-21',
+      course: 'flat',
+      url: 'http://www.seoul-marathon.com/'
+    },
+    chuncheon: {
+      id: 'chuncheon',
+      name: '춘천마라톤',
+      fullName: '🍁 춘천마라톤 (호반 업다운 코어)',
+      date: '2026-10-25',
+      course: 'hilly',
+      url: 'http://marathon.chosun.com/'
+    },
+    daegu: {
+      id: 'daegu',
+      name: '대구국제마라톤',
+      fullName: '⚡ 대구국제마라톤 (초고속 순환)',
+      date: '2027-02-21',
+      course: 'flat',
+      url: 'https://daegumarathon.or.kr/'
+    },
+    gyeongju: {
+      name: '경주마라톤',
+      id: 'gyeongju',
+      fullName: '🌸 경주마라톤 (완만 구릉지)',
+      date: '2026-10-17',
+      course: 'rolling',
+      url: 'http://www.gyeongjumarathon.com/'
+    }
+  };
+
+  function getCustomRaces() {
+    try {
+      const stored = localStorage.getItem(RACES_CUSTOM_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return Object.assign({}, DEFAULT_MAJOR_RACES, parsed);
+      }
+    } catch (e) {}
+    return Object.assign({}, DEFAULT_MAJOR_RACES);
+  }
+
+  function saveCustomRaces(races) {
+    try {
+      localStorage.setItem(RACES_CUSTOM_STORAGE_KEY, JSON.stringify(races));
+    } catch (e) {}
+  }
+
+  let majorRaces = getCustomRaces();
+  let currentSelectedRaceKey = 'jtbc';
+
+  try {
+    const savedKey = localStorage.getItem(RACE_SELECTED_STORAGE_KEY);
+    if (savedKey && (majorRaces[savedKey] || savedKey === 'custom')) {
+      currentSelectedRaceKey = savedKey;
+    }
+  } catch (e) {}
+
+  let initialRaceDate = '2026-11-01';
+  let initialCourseType = 'rolling';
+
+  if (currentSelectedRaceKey !== 'custom' && majorRaces[currentSelectedRaceKey]) {
+    initialRaceDate = majorRaces[currentSelectedRaceKey].date;
+    initialCourseType = majorRaces[currentSelectedRaceKey].course;
+  } else {
+    try {
+      const savedDate = localStorage.getItem(RACE_DATE_STORAGE_KEY);
+      if (savedDate) initialRaceDate = savedDate;
+      const savedCourse = localStorage.getItem(RACE_COURSE_STORAGE_KEY);
+      if (savedCourse) initialCourseType = savedCourse;
+    } catch (e) {}
+  }
 
   const labState = {
-    raceDate: '2027-03-21',
-    courseType: 'flat',   // 'flat' | 'rolling' | 'hilly'
+    raceDate: initialRaceDate,
+    courseType: initialCourseType,
     tempC: 10,            // -5 ~ 30
     humidity: 55,         // 30 ~ 95
     windMs: 2,            // 0 ~ 10
@@ -1791,6 +1885,7 @@
     cadenceSpm: 180,
     schedWeeks: 8
   };
+
 
   const CHECKLIST_ITEMS = [
     {
@@ -2334,36 +2429,1510 @@
     });
   }
 
-  function initProLabEvents() {
-    // 1. 메이저 대회 프리셋 버튼 및 날짜·코스 변경
+
+  // --- [대회 버튼 렌더링 및 실시간 동기화/자동 저장] ---
+  
+  // =========================================================================
+  // [우측 사이드바: 전국 마라톤 대회 일정 목록 & 실시간 D-Day & 승인 관리자 제어]
+  // =========================================================================
+  function updateDDayBadge() {
+    const ddayBadge = document.getElementById('dday-counter-badge');
+    const ddayCourseSummary = document.getElementById('dday-course-summary');
+    if (!ddayBadge) return;
+
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const targetDate = new Date(labState.raceDate + 'T00:00:00');
+      const diffTime = targetDate.getTime() - today.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 0) {
+        const weeksLeft = (diffDays / 7).toFixed(1);
+        ddayBadge.textContent = `D-${diffDays} (${weeksLeft}주 남음)`;
+        ddayBadge.className = 'self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-brand-600 text-white font-mono text-sm font-extrabold shadow-sm transition-all';
+      } else if (diffDays === 0) {
+        ddayBadge.textContent = '🔥 D-DAY (오늘 대회!)';
+        ddayBadge.className = 'self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-red-600 text-white font-mono text-sm font-extrabold shadow-sm animate-pulse';
+      } else {
+        ddayBadge.textContent = `D+${Math.abs(diffDays)} (대회 종료·날짜 변경 가능)`;
+        ddayBadge.className = 'self-start sm:self-auto px-3.5 py-1.5 rounded-xl bg-slate-700 text-slate-300 font-mono text-sm font-extrabold shadow-sm';
+      }
+
+      if (ddayCourseSummary) {
+        const cType = labState.courseType || 'flat';
+        let desc = '<strong>평지 고속 코스:</strong> 고도 편차가 적어 목표 기록 달성에 최적입니다.';
+        if (cType === 'rolling' || cType === 'gentle_hills') {
+          desc = '<strong>완만한 언덕 코스:</strong> 언덕 구간 페이스 저하(+2~3초/km) 감안 시 후반 페이스 안배가 중요합니다.';
+        } else if (cType === 'hilly' || cType === 'lake_updown') {
+          desc = '<strong>호반 업다운 코스:</strong> 잦은 언덕과 맞바람에 대비하여 체력 비축 및 코어 유지가 필수입니다.';
+        } else if (cType === 'super_flat') {
+          desc = '<strong>초고속 순환 코스:</strong> 초반 내리막 오버페이스만 주의하면 최고 기록 경신에 유리합니다.';
+        }
+        ddayCourseSummary.innerHTML = desc;
+      }
+    } catch (e) {
+      console.error('updateDDayBadge error:', e);
+    }
+  }
+
+  function renderRightRaceScheduleSidebar() {
+    const listContainer = document.getElementById('right-race-schedule-list');
+    const badgeEl = document.getElementById('right-admin-status-badge');
+    const leftStatusBadge = document.getElementById('left-admin-status-badge');
+    const leftAdminEmailEl = document.getElementById('left-admin-email-text');
+    const leftAdminLoginBtn = document.getElementById('left-admin-login-toggle-btn');
+
+    const isApproved = isCurrentAdminApproved();
+    const email = getLoggedAdminEmail();
+
+    // 우측 및 좌측 관리자 상태 뱃지 동기화
+    if (badgeEl) {
+      if (isApproved && email) {
+        badgeEl.textContent = `🟢 승인됨 (${email.split('@')[0]})`;
+        badgeEl.className = 'text-[10px] px-1.5 py-0.5 rounded font-extrabold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 cursor-pointer';
+      } else {
+        badgeEl.textContent = '🔒 구글 승인 필요';
+        badgeEl.className = 'text-[10px] px-1.5 py-0.5 rounded font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400 cursor-pointer';
+      }
+    }
+
+    if (leftStatusBadge) {
+      if (isApproved && email) {
+        leftStatusBadge.textContent = '인증 완료';
+        leftStatusBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400';
+      } else {
+        leftStatusBadge.textContent = '미인증 (게스트)';
+        leftStatusBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
+      }
+    }
+    if (leftAdminEmailEl) {
+      leftAdminEmailEl.textContent = (isApproved && email) ? email : '구글 관리자 로그인 필요';
+    }
+    if (leftAdminLoginBtn) {
+      leftAdminLoginBtn.textContent = (isApproved && email) ? '🔓 관리자 계정 관리 / 로그아웃' : '🔑 관리자 구글 로그인';
+    }
+
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const keys = Object.keys(majorRaces);
+    keys.forEach(key => {
+      const race = majorRaces[key];
+      const targetDate = new Date(race.date + 'T00:00:00');
+      const diffDays = Math.round((targetDate - today) / (1000 * 60 * 60 * 24));
+      const isPast = diffDays < 0;
+      const isSelected = (currentSelectedRaceKey === key);
+      const isCustom = key.startsWith('custom_');
+
+      let ddayText = '';
+      let badgeColor = '';
+      if (diffDays > 0) {
+        ddayText = `D-${diffDays}`;
+        badgeColor = 'bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 font-extrabold border border-indigo-500/30';
+      } else if (diffDays === 0) {
+        ddayText = 'D-DAY';
+        badgeColor = 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-black animate-pulse border border-emerald-500/40';
+      } else {
+        ddayText = `D+${Math.abs(diffDays)} 종료`;
+        badgeColor = 'bg-rose-500/15 text-rose-600 dark:text-rose-400 font-bold border border-rose-500/30';
+      }
+
+      // 날짜가 지난 대회는 제목 색상을 로즈/코랄 계열로 뚜렷하게 구분
+      let titleColorClass = '';
+      if (isPast) {
+        titleColorClass = isSelected
+          ? 'text-rose-600 dark:text-rose-300'
+          : 'text-rose-500 dark:text-rose-400';
+      } else {
+        titleColorClass = isSelected
+          ? 'text-indigo-600 dark:text-indigo-300'
+          : 'text-slate-900 dark:text-white';
+      }
+
+      const card = document.createElement('div');
+      if (isSelected) {
+        card.className = isPast
+          ? 'p-2.5 rounded-xl border-2 border-rose-500 bg-rose-500/10 dark:bg-rose-950/40 shadow-xs transition cursor-pointer'
+          : 'p-2.5 rounded-xl border-2 border-indigo-500 bg-indigo-500/10 dark:bg-indigo-950/50 shadow-xs transition cursor-pointer';
+      } else {
+        card.className = isPast
+          ? 'p-2.5 rounded-xl border border-rose-200/70 dark:border-rose-900/40 bg-rose-50/30 dark:bg-slate-800/30 hover:bg-rose-50/70 dark:hover:bg-slate-800/70 transition cursor-pointer'
+          : 'p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/40 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer';
+      }
+
+      card.onclick = (e) => {
+        if (e.target.closest('a') || e.target.closest('button')) return;
+        selectRace(key);
+      };
+
+      const adminControlsHtml = (isApproved && isCustom)
+        ? `<button type="button" data-del-race="${key}" class="text-[10px] text-rose-500 hover:underline font-bold ml-1.5" title="대회 삭제">삭제</button>`
+        : '';
+
+      const pastTagHtml = isPast
+        ? `<span class="text-[10px] font-bold text-rose-500 dark:text-rose-400 opacity-90 ml-0.5">(마감)</span>`
+        : '';
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between gap-1.5 mb-1">
+          <span class="text-xs font-extrabold ${titleColorClass} truncate">${isSelected ? '🎯 ' : ''}${race.name}${pastTagHtml}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded font-mono shrink-0 ${badgeColor}">${ddayText}</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px] ${isPast ? 'text-rose-400/90 dark:text-rose-400/75' : 'text-slate-500 dark:text-slate-400'}">
+          <span class="font-mono text-[10px]">📅 ${race.date}</span>
+          <div class="flex items-center gap-1">
+            ${race.url ? `<a href="${race.url}" target="_blank" rel="noopener noreferrer" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:underline font-bold" title="공식 홈페이지 바로가기">홈피 ↗</a>` : ''}
+            ${adminControlsHtml}
+          </div>
+        </div>
+      `;
+
+      const delBtn = card.querySelector('[data-del-race]');
+      if (delBtn) {
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteCustomRace(key);
+        });
+      }
+
+      listContainer.appendChild(card);
+    });
+  }
+
+  function deleteCustomRace(key) {
+    if (!isCurrentAdminApproved()) {
+      openAdminAuthModal('대회 일정 삭제');
+      return;
+    }
+    if (!majorRaces[key]) return;
+    const raceName = majorRaces[key].name;
+    if (!confirm(`[${raceName}] 대회를 일정 목록에서 삭제하시겠습니까?`)) return;
+    delete majorRaces[key];
+    saveCustomRaces(majorRaces);
+    if (currentSelectedRaceKey === key) {
+      currentSelectedRaceKey = 'seoul';
+    }
+    renderRaceButtons();
+    selectRace(currentSelectedRaceKey);
+    showToast(`🗑️ [${raceName}] 대회가 삭제되었습니다.`);
+  }
+
+  let pendingActionAfterAuth = null;
+
+  // 관리자 전용 신규 대회 추가 핸들러 (구글 로그인으로 승인받은 아이디만 가능)
+  function handleClickAddRaceWithAuth() {
+    const isApproved = isCurrentAdminApproved();
+    const email = getLoggedAdminEmail();
+
+    if (!isApproved || !email) {
+      pendingActionAfterAuth = 'add_race';
+      openAdminAuthModal('신규 마라톤 대회 추가');
+      return;
+    }
+
+    // 승인된 관리자는 대회 추가 모달 오픈
+    openAddRaceModal();
+  }
+
+  function openAddRaceModal() {
+    if (!isCurrentAdminApproved()) {
+      pendingActionAfterAuth = 'add_race';
+      openAdminAuthModal('신규 마라톤 대회 추가');
+      return;
+    }
+    const modal = document.getElementById('add-race-modal');
+    if (!modal) {
+      openAddRacePrompt();
+      return;
+    }
+    const nameInput = document.getElementById('new-race-name-input');
+    const dateInput = document.getElementById('new-race-date-input');
+    const courseSelect = document.getElementById('new-race-course-select');
+    const urlInput = document.getElementById('new-race-url-input');
+
+    if (nameInput) nameInput.value = '';
+    if (dateInput && !dateInput.value) dateInput.value = '2026-11-15';
+    if (courseSelect) courseSelect.value = 'flat';
+    if (urlInput) urlInput.value = 'http://www.marathon.pe.kr/';
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = 'flex';
+    if (nameInput) setTimeout(() => nameInput.focus(), 50);
+  }
+
+  function closeAddRaceModal() {
+    const modal = document.getElementById('add-race-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      modal.style.display = 'none';
+    }
+  }
+
+  function submitAddRaceModal() {
+    if (!isCurrentAdminApproved()) {
+      closeAddRaceModal();
+      openAdminAuthModal('신규 마라톤 대회 추가');
+      return;
+    }
+    const nameInput = document.getElementById('new-race-name-input');
+    const dateInput = document.getElementById('new-race-date-input');
+    const courseSelect = document.getElementById('new-race-course-select');
+    const urlInput = document.getElementById('new-race-url-input');
+
+    const name = nameInput ? nameInput.value.trim() : '';
+    const date = dateInput ? dateInput.value.trim() : '';
+    const course = courseSelect ? courseSelect.value : 'flat';
+    const url = urlInput && urlInput.value.trim() ? urlInput.value.trim() : 'http://www.marathon.pe.kr/';
+
+    if (!name) {
+      alert('추가할 마라톤 대회 이름을 입력해 주세요.');
+      if (nameInput) nameInput.focus();
+      return;
+    }
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      alert('대회 개최 날짜(YYYY-MM-DD)를 선택해 주세요.');
+      if (dateInput) dateInput.focus();
+      return;
+    }
+
+    const newKey = 'custom_' + Date.now();
+    majorRaces[newKey] = {
+      id: newKey,
+      name: name,
+      fullName: `🏃 ${name}`,
+      date: date,
+      course: course,
+      url: url
+    };
+
+    saveCustomRaces(majorRaces);
+    closeAddRaceModal();
+    renderRaceButtons();
+    selectRace(newKey);
+    showToast(`🎉 [${name}] (${date}) 대회가 일정에 추가되었습니다!`);
+  }
+
+  function renderRaceButtons() {
+    const container = document.getElementById('major-race-buttons');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    Object.keys(majorRaces).forEach(key => {
+      const race = majorRaces[key];
+      const targetDate = new Date(race.date + 'T00:00:00');
+      const isPast = Math.round((targetDate - today) / (1000 * 60 * 60 * 24)) < 0;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('data-race', key);
+      const isSelected = currentSelectedRaceKey === key;
+      if (isSelected) {
+        btn.className = isPast
+          ? 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-rose-600 text-white shadow-sm transition cursor-pointer'
+          : 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition cursor-pointer';
+      } else {
+        btn.className = isPast
+          ? 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 transition cursor-pointer'
+          : 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer';
+      }
+      const baseTitle = race.fullName || `🏃 ${race.name}`;
+      btn.textContent = isPast ? `${baseTitle} (종료)` : baseTitle;
+      btn.addEventListener('click', () => {
+        selectRace(key);
+      });
+      container.appendChild(btn);
+    });
+
+    // 새 대회 추가 버튼 (승인된 구글 관리자 전용)
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-200/80 dark:bg-slate-800/80 text-brand-600 dark:text-brand-400 hover:bg-brand-500 hover:text-white border border-dashed border-slate-300 dark:border-slate-700 transition flex items-center gap-1 cursor-pointer';
+    addBtn.innerHTML = '<span>➕ 대회 추가</span>';
+    addBtn.addEventListener('click', () => {
+      handleClickAddRaceWithAuth();
+    });
+    container.appendChild(addBtn);
+  }
+
+  function selectRace(key) {
+    if (!majorRaces[key]) return;
+    currentSelectedRaceKey = key;
+    try { localStorage.setItem(RACE_SELECTED_STORAGE_KEY, key); } catch (e) {}
+
+    const race = majorRaces[key];
+    labState.raceDate = race.date;
+    labState.courseType = race.course;
+    try {
+      localStorage.setItem(RACE_DATE_STORAGE_KEY, race.date);
+      localStorage.setItem(RACE_COURSE_STORAGE_KEY, race.course);
+    } catch (e) {}
+
+    updateRaceDOM();
+    updateDDayBadge();
+    renderRightRaceScheduleSidebar();
+    calculateAndRender();
+    showToast(`🎯 [${race.name}] ${race.date} 대회가 선택되었습니다.`);
+  }
+
+  function updateRaceDOM() {
     const raceDateInput = document.getElementById('race-date-input');
     const raceCourseSelect = document.getElementById('race-course-select');
-    document.querySelectorAll('.race-preset-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        labState.raceDate = btn.getAttribute('data-date');
-        labState.courseType = btn.getAttribute('data-course');
-        if (raceDateInput) raceDateInput.value = labState.raceDate;
-        if (raceCourseSelect) raceCourseSelect.value = labState.courseType;
+    const nameEl = document.getElementById('selected-race-name');
+    const linkEl = document.getElementById('race-official-link');
+    const statusTag = document.getElementById('race-date-status-tag');
 
-        document.querySelectorAll('.race-preset-btn').forEach(b => {
-          b.className = b === btn
-            ? 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white transition'
-            : 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+    if (raceDateInput && raceDateInput.value !== labState.raceDate) {
+      raceDateInput.value = labState.raceDate;
+    }
+    if (raceCourseSelect && raceCourseSelect.value !== labState.courseType) {
+      raceCourseSelect.value = labState.courseType;
+    }
+
+    if (currentSelectedRaceKey !== 'custom' && majorRaces[currentSelectedRaceKey]) {
+      const race = majorRaces[currentSelectedRaceKey];
+      if (nameEl) nameEl.textContent = `${race.name} (${race.date})`;
+      if (linkEl) {
+        linkEl.href = race.url || 'http://www.marathon.pe.kr/';
+        linkEl.innerHTML = `<span>${race.name} 공식 홈페이지 바로가기</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>`;
+      }
+      if (statusTag) {
+        statusTag.textContent = `${race.name} 날짜 자동 저장됨`;
+        statusTag.className = 'text-[10px] text-emerald-600 dark:text-emerald-400 font-bold';
+      }
+    } else {
+      if (nameEl) nameEl.textContent = `직접 지정 대회 (${labState.raceDate})`;
+      if (linkEl) {
+        linkEl.href = 'http://www.marathon.pe.kr/';
+        linkEl.innerHTML = `<span>전국 마라톤 대회 일정 조회 ↗</span>`;
+      }
+      if (statusTag) {
+        statusTag.textContent = '직접 날짜 자동 저장';
+        statusTag.className = 'text-[10px] text-cyan-600 dark:text-cyan-400 font-bold';
+      }
+    }
+
+    // 버튼 스타일 동기화 (날짜가 지난 대회 색상 구분 포함)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    document.querySelectorAll('.race-preset-btn').forEach(btn => {
+      const bKey = btn.getAttribute('data-race');
+      const isMatch = (currentSelectedRaceKey === bKey);
+      const rObj = majorRaces[bKey];
+      const isPast = rObj ? (Math.round((new Date(rObj.date + 'T00:00:00') - today) / (1000 * 60 * 60 * 24)) < 0) : false;
+      if (isMatch) {
+        btn.className = isPast
+          ? 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-rose-600 text-white shadow-sm transition cursor-pointer'
+          : 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition cursor-pointer';
+      } else {
+        btn.className = isPast
+          ? 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-500/10 border border-rose-500/30 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 transition cursor-pointer'
+          : 'race-preset-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer';
+      }
+      if (rObj) {
+        const baseTitle = rObj.fullName || `🏃 ${rObj.name}`;
+        btn.textContent = isPast ? `${baseTitle} (종료)` : baseTitle;
+      }
+    });
+  }
+
+  // 사용자가 날짜를 변경했을 때: 현재 대회의 날짜로 자동 영구 저장!
+  function handleRaceDateManualChange(newDate, isFinal) {
+    if (!newDate) return;
+    labState.raceDate = newDate;
+    try { localStorage.setItem(RACE_DATE_STORAGE_KEY, newDate); } catch (e) {}
+
+    if (currentSelectedRaceKey !== 'custom' && majorRaces[currentSelectedRaceKey]) {
+      majorRaces[currentSelectedRaceKey].date = newDate;
+      saveCustomRaces(majorRaces);
+      if (isFinal) {
+        showToast(`💾 [${majorRaces[currentSelectedRaceKey].name}] 날짜가 ${newDate}로 자동 저장되었습니다!`);
+      }
+    } else {
+      if (isFinal) {
+        showToast(`💾 대회 날짜가 ${newDate}로 자동 저장되었습니다.`);
+      }
+    }
+
+    updateRaceDOM();
+    updateDDayBadge();
+    renderRightRaceScheduleSidebar();
+    calculateAndRender();
+  }
+
+  // 사용자가 코스 난이도를 변경했을 때: 현재 대회에 자동 영구 저장!
+  function handleCourseManualChange(newCourse) {
+    if (!newCourse) return;
+    labState.courseType = newCourse;
+    try { localStorage.setItem(RACE_COURSE_STORAGE_KEY, newCourse); } catch (e) {}
+
+    if (currentSelectedRaceKey !== 'custom' && majorRaces[currentSelectedRaceKey]) {
+      majorRaces[currentSelectedRaceKey].course = newCourse;
+      saveCustomRaces(majorRaces);
+    }
+
+    updateDDayBadge();
+    calculateAndRender();
+  }
+
+  function openAddRacePrompt() {
+    if (!checkAdminPermissionOrPrompt('대회 추가')) return;
+    const modal = document.getElementById('add-race-modal');
+    if (modal) {
+      openAddRaceModal();
+      return;
+    }
+    const name = prompt('새로 추가할 마라톤 대회 이름을 입력하세요:\n(예: 손기정평화마라톤)');
+    if (!name || !name.trim()) return;
+
+    const date = prompt(`[${name.trim()}] 대회 날짜를 입력하세요 (YYYY-MM-DD):\n(예: 2026-11-15)`);
+    if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date.trim())) {
+      alert('❌ 날짜 형식이 올바르지 않습니다. (예: 2026-11-15)');
+      return;
+    }
+
+    const url = prompt(`[${name.trim()}] 공식 사이트 주소 (생략 시 기본 일정 사이트):`, 'http://www.marathon.pe.kr/');
+
+    const newKey = 'custom_' + Date.now();
+    majorRaces[newKey] = {
+      id: newKey,
+      name: name.trim(),
+      fullName: `🏃 ${name.trim()}`,
+      date: date.trim(),
+      course: 'flat',
+      url: url ? url.trim() : 'http://www.marathon.pe.kr/'
+    };
+
+    saveCustomRaces(majorRaces);
+    renderRaceButtons();
+    selectRace(newKey);
+    showToast(`🎉 [${name.trim()}] 대회가 성공적으로 추가되었습니다!`);
+  }
+
+
+  // =========================================================================
+  // [구글 승인 관리자 인증 & rkstmtk@gmail.com 문의/신청 시스템]
+  // =========================================================================
+  const SUPER_ADMIN_EMAIL = 'rkstmtk@gmail.com';
+  const APPROVED_ADMINS_STORAGE_KEY = 'marathon_pro_approved_admins_v2';
+  const LOGGED_ADMIN_STORAGE_KEY = 'marathon_pro_logged_admin_email_v3';
+
+  function getApprovedAdminEmails() {
+    try {
+      const stored = localStorage.getItem(APPROVED_ADMINS_STORAGE_KEY);
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list)) {
+          if (!list.map(e => e.toLowerCase()).includes(SUPER_ADMIN_EMAIL.toLowerCase())) {
+            list.push(SUPER_ADMIN_EMAIL);
+          }
+          return list;
+        }
+      }
+    } catch (e) {}
+    return [SUPER_ADMIN_EMAIL];
+  }
+
+  function saveApprovedAdminEmails(list) {
+    try {
+      localStorage.setItem(APPROVED_ADMINS_STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  function getLoggedAdminEmail() {
+    try {
+      return localStorage.getItem(LOGGED_ADMIN_STORAGE_KEY) || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function isCurrentAdminApproved() {
+    const email = getLoggedAdminEmail();
+    if (!email) return false;
+    const approvedList = getApprovedAdminEmails().map(e => e.toLowerCase().trim());
+    return approvedList.includes(email.toLowerCase().trim()) || email.toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase();
+  }
+
+  function checkAdminPermissionOrPrompt(actionName) {
+    if (isCurrentAdminApproved()) {
+      return true;
+    }
+    openAdminAuthModal(actionName || '관리자 전용 권한');
+    return false;
+  }
+
+  // 소유자(rkstmtk@gmail.com) 구글 인증 로그인 완료 처리
+  function quickLoginAsOwner() {
+    try {
+      localStorage.setItem(LOGGED_ADMIN_STORAGE_KEY, SUPER_ADMIN_EMAIL);
+    } catch (e) {}
+    updateAdminAuthModalView();
+    renderRightRaceScheduleSidebar();
+    closeAdminAuthModal();
+    showToast(`👑 관리자(${SUPER_ADMIN_EMAIL}) 구글 로그인 인증이 완료되었습니다!`);
+    if (pendingActionAfterAuth === 'add_race') {
+      pendingActionAfterAuth = null;
+      setTimeout(() => openAddRaceModal(), 120);
+    }
+  }
+
+  function openAdminAuthModal(actionName) {
+    const modal = document.getElementById('admin-auth-modal');
+    if (!modal) return;
+    updateAdminAuthModalView();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = 'flex';
+    const emailInput = document.getElementById('admin-google-email-input');
+    if (emailInput && !isCurrentAdminApproved()) {
+      setTimeout(() => emailInput.focus(), 50);
+    }
+    if (actionName) {
+      showToast(`🔒 [${actionName}] 기능은 구글 로그인으로 승인받은 관리자만 가능합니다.`);
+    }
+  }
+
+  function closeAdminAuthModal() {
+    const modal = document.getElementById('admin-auth-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      modal.style.display = 'none';
+    }
+  }
+
+  function updateAdminAuthModalView() {
+    const loginView = document.getElementById('admin-auth-login-view');
+    const loggedView = document.getElementById('admin-auth-logged-view');
+    const emailDisplay = document.getElementById('admin-logged-email-display');
+    const managePermBtn = document.getElementById('admin-manage-perm-btn');
+    const badge = document.getElementById('admin-auth-status-badge');
+    const memoBtn = document.getElementById('admin-memo-edit-btn');
+
+    const email = getLoggedAdminEmail();
+    const approved = isCurrentAdminApproved();
+
+    if (approved && email) {
+      if (loginView) loginView.classList.add('hidden');
+      if (loggedView) loggedView.classList.remove('hidden');
+      if (emailDisplay) emailDisplay.textContent = `승인된 구글 계정: ${email}`;
+      if (managePermBtn) {
+        if (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+          managePermBtn.classList.remove('hidden');
+        } else {
+          managePermBtn.classList.add('hidden');
+        }
+      }
+      if (badge) {
+        badge.textContent = `🟢 관리자 (${email})`;
+        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-extrabold';
+      }
+      if (memoBtn) {
+        memoBtn.innerHTML = '<span>✏️ 공지 수정</span>';
+      }
+    } else {
+      if (loginView) loginView.classList.remove('hidden');
+      if (loggedView) loggedView.classList.add('hidden');
+      if (badge) {
+        badge.textContent = '구글 승인 관리자 전용';
+        badge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold';
+      }
+      if (memoBtn) {
+        memoBtn.innerHTML = '<span>🔒 관리자 인증</span>';
+      }
+    }
+  }
+
+  // --- [운영자 문의 & 승인요청 모달] ---
+  function openContactRequestModal(presetType) {
+    const modal = document.getElementById('contact-request-modal');
+    if (!modal) return;
+    const typeSelect = document.getElementById('contact-type-select');
+    if (typeSelect && presetType) {
+      const validTypes = ['admin_approval', 'advertising', 'race_register', 'general_inquiry'];
+      const mapped = validTypes.includes(presetType) ? presetType : 'admin_approval';
+      typeSelect.value = mapped;
+      triggerContactTypePlaceholder(mapped);
+    }
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    modal.style.display = 'flex';
+  }
+
+  function closeContactRequestModal() {
+    const modal = document.getElementById('contact-request-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      modal.style.display = 'none';
+    }
+  }
+
+  function triggerContactTypePlaceholder(type) {
+    const textarea = document.getElementById('contact-content-textarea');
+    if (!textarea) return;
+    const placeholders = {
+      admin_approval: '1. 신청 사유:\n2. 소속 러닝 크루/동호회 또는 역할:\n3. 관리 희망 대회/권한:\n(승인 완료 시 해당 구글 계정으로 관리자 권한이 활성화됩니다)',
+      advertising: '1. 광고/제휴 형태 (배너, 제품 협찬, 스폰서십 등):\n2. 브랜드명 및 웹사이트 URL:\n3. 희망 기간 및 제안 내용:',
+      race_register: '1. 추가 희망 대회 공식 명칭:\n2. 개최 일자 및 장소:\n3. 대회 공식 홈페이지 링크:\n4. 종목 (풀코스, 하프, 10km 등):',
+      general_inquiry: '마라톤 플래너에 대한 문의 사항 또는 개선 건의 내용을 자유롭게 적어주세요.'
+    };
+    if (placeholders[type]) {
+      textarea.placeholder = placeholders[type].replace(/\\n/g, '\n');
+    }
+  }
+
+  function getMailPayload() {
+    const typeSelect = document.getElementById('contact-type-select');
+    const nameInput = document.getElementById('contact-name-input');
+    const emailInput = document.getElementById('contact-email-input');
+    const contentTextarea = document.getElementById('contact-content-textarea');
+
+    const type = typeSelect ? typeSelect.value : 'general_inquiry';
+    const name = nameInput ? nameInput.value.trim() : '';
+    const email = emailInput ? emailInput.value.trim() : '';
+    const content = contentTextarea ? contentTextarea.value.trim() : '';
+
+    if (!name) {
+      alert('신청자 성명 또는 닉네임을 입력해 주세요.');
+      if (nameInput) nameInput.focus();
+      return null;
+    }
+    if (!email || !email.includes('@')) {
+      alert('올바른 구글(Google) 이메일 주소를 입력해 주세요.');
+      if (emailInput) emailInput.focus();
+      return null;
+    }
+    if (!content) {
+      alert('신청 및 문의 상세 내용을 입력해 주세요.');
+      if (contentTextarea) contentTextarea.focus();
+      return null;
+    }
+
+    const typeTitles = {
+      admin_approval: '[마라톤플래너] 관리자 권한 승인 요청',
+      advertising: '[마라톤플래너] 광고 및 제휴/스폰서십 문의',
+      race_register: '[마라톤플래너] 신규 마라톤 대회 등록 신청',
+      general_inquiry: '[마라톤플래너] 일반 문의 및 건의'
+    };
+
+    const subject = `${typeTitles[type] || '[마라톤플래너 문의]'} - ${name}`;
+    const body = `[신청 및 문의 구분]: ${typeTitles[type] || type}
+[신청자 성명/닉네임]: ${name}
+[신청자 구글 이메일]: ${email}
+----------------------------------------
+[문의 및 신청 상세 내용]:
+${content}
+----------------------------------------
+(수신처: rkstmtk@gmail.com / MarathonLab PRO 문의 시스템)`;
+
+    return { subject, body, email, name, content };
+  }
+
+  function sendContactMail(isWebGmail) {
+    const payload = getMailPayload();
+    if (!payload) return;
+
+    const encSubject = encodeURIComponent(payload.subject);
+    const encBody = encodeURIComponent(payload.body);
+
+    if (isWebGmail) {
+      const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${SUPER_ADMIN_EMAIL}&su=${encSubject}&body=${encBody}`;
+      window.open(gmailUrl, '_blank');
+      showToast('📬 새 창에서 웹 Gmail 작성 화면이 열렸습니다.');
+    } else {
+      const mailtoUrl = `mailto:${SUPER_ADMIN_EMAIL}?subject=${encSubject}&body=${encBody}`;
+      window.open(mailtoUrl, '_blank');
+      showToast('📧 메일 앱 발송 창이 열렸습니다.');
+    }
+  }
+
+  function verifyGoogleAdminInput() {
+    const emailInput = document.getElementById('admin-google-email-input');
+    const val = emailInput ? emailInput.value.trim() : '';
+    if (!val || !val.includes('@')) {
+      alert('구글(Google) 이메일 주소를 입력해 주세요.\n(최고 관리자: rkstmtk@gmail.com)');
+      if (emailInput) emailInput.focus();
+      return;
+    }
+
+    const approvedList = getApprovedAdminEmails().map(e => e.toLowerCase().trim());
+    if (approvedList.includes(val.toLowerCase())) {
+      try {
+        localStorage.setItem(LOGGED_ADMIN_STORAGE_KEY, val.toLowerCase());
+      } catch (e) {}
+      updateAdminAuthModalView();
+      renderRightRaceScheduleSidebar();
+      closeAdminAuthModal();
+      showToast(`🎉 구글 관리자(${val}) 승인 확인 완료!`);
+      if (pendingActionAfterAuth === 'add_race') {
+        pendingActionAfterAuth = null;
+        setTimeout(() => openAddRaceModal(), 120);
+      }
+    } else {
+      alert(`❌ [${val}] 계정은 승인된 관리자 목록에 없습니다.\n\n대회 추가 및 공지 작성은 승인받은 구글 계정(rkstmtk@gmail.com 외 승인 아이디)만 가능합니다.\n하단 '관리자 승인 요청 보내기'를 통해 신청해 주세요.`);
+    }
+  }
+
+  function initAdminAndContactSystem() {
+    updateAdminAuthModalView();
+    renderRightRaceScheduleSidebar();
+
+    // 1. 관리자 인증 모달 제어
+    const authModal = document.getElementById('admin-auth-modal');
+    const authModalClose = document.getElementById('admin-auth-modal-close');
+    if (authModalClose) authModalClose.addEventListener('click', closeAdminAuthModal);
+    if (authModal) {
+      authModal.addEventListener('click', (e) => {
+        if (e.target === authModal) closeAdminAuthModal();
+      });
+    }
+
+    // 2. 문의 / 승인신청 모달 제어
+    const contactModal = document.getElementById('contact-request-modal');
+    const contactModalClose = document.getElementById('contact-request-modal-close');
+    if (contactModalClose) contactModalClose.addEventListener('click', closeContactRequestModal);
+    if (contactModal) {
+      contactModal.addEventListener('click', (e) => {
+        if (e.target === contactModal) closeContactRequestModal();
+      });
+    }
+
+    // 3. 신규 대회 등록 모달 제어
+    const addRaceModal = document.getElementById('add-race-modal');
+    const addRaceModalClose = document.getElementById('add-race-modal-close');
+    if (addRaceModalClose) addRaceModalClose.addEventListener('click', closeAddRaceModal);
+    if (addRaceModal) {
+      addRaceModal.addEventListener('click', (e) => {
+        if (e.target === addRaceModal) closeAddRaceModal();
+      });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAdminAuthModal();
+        closeContactRequestModal();
+        closeAddRaceModal();
+      }
+    });
+
+    const emailInput = document.getElementById('admin-google-email-input');
+    const verifyBtn = document.getElementById('admin-google-verify-btn');
+    if (verifyBtn) {
+      verifyBtn.addEventListener('click', verifyGoogleAdminInput);
+    }
+    if (emailInput) {
+      emailInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          verifyGoogleAdminInput();
+        }
+      });
+    }
+
+    const logoutBtn = document.getElementById('admin-logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        try { localStorage.removeItem(LOGGED_ADMIN_STORAGE_KEY); } catch (e) {}
+        updateAdminAuthModalView();
+        renderRightRaceScheduleSidebar();
+        closeAdminAuthModal();
+        const formEl = document.getElementById('admin-memo-form');
+        if (formEl) formEl.classList.add('hidden');
+        showToast('🔒 관리자 계정에서 로그아웃되었습니다.');
+      });
+    }
+
+    const managePermBtn = document.getElementById('admin-manage-perm-btn');
+    if (managePermBtn) {
+      managePermBtn.addEventListener('click', () => {
+        const currentList = getApprovedAdminEmails();
+        const addEmail = prompt(`[최고 관리자 전용] 현재 대회 추가·관리 승인된 구글 계정 목록:\n- ${currentList.join('\n- ')}\n\n새로 추가 승인할 구글 이메일을 입력하세요:`);
+        if (addEmail && addEmail.includes('@')) {
+          const trimmed = addEmail.trim().toLowerCase();
+          if (!currentList.map(e => e.toLowerCase()).includes(trimmed)) {
+            currentList.push(trimmed);
+            saveApprovedAdminEmails(currentList);
+            alert(`✅ [${trimmed}] 구글 계정이 관리자로 추가 승인되었습니다.`);
+          } else {
+            alert('이미 승인되어 있는 구글 계정입니다.');
+          }
+        }
+      });
+    }
+
+    const openReqFromAuthBtn = document.getElementById('open-approval-request-from-auth-btn');
+    if (openReqFromAuthBtn) {
+      openReqFromAuthBtn.addEventListener('click', () => {
+        closeAdminAuthModal();
+        openContactRequestModal('admin_approval');
+      });
+    }
+
+    const openContactBtn = document.getElementById('open-contact-modal-btn');
+    if (openContactBtn) {
+      openContactBtn.addEventListener('click', () => {
+        openContactRequestModal('admin_approval');
+      });
+    }
+
+    const typeSelect = document.getElementById('contact-type-select');
+    if (typeSelect) {
+      typeSelect.addEventListener('change', () => {
+        triggerContactTypePlaceholder(typeSelect.value);
+      });
+    }
+
+    const webGmailBtn = document.getElementById('send-via-web-gmail-btn');
+    if (webGmailBtn) {
+      webGmailBtn.addEventListener('click', () => sendContactMail(true));
+    }
+
+    const mailtoBtn = document.getElementById('send-via-mailto-btn');
+    if (mailtoBtn) {
+      mailtoBtn.addEventListener('click', () => sendContactMail(false));
+    }
+
+    const copyBtn = document.getElementById('copy-contact-content-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        const payload = getMailPayload();
+        if (!payload) return;
+        navigator.clipboard.writeText(`[제목]: ${payload.subject}\n\n${payload.body}`).then(() => {
+          showToast('📋 메일 내용이 클립보드에 복사되었습니다.');
+        }).catch(() => {
+          showToast('📋 복사 완료되었습니다.');
         });
-        calculateAndRender();
+      });
+    }
+
+    // 푸터의 '운영자 소개·문의' 버튼도 문의 모달로 연동
+    document.querySelectorAll('[data-policy="contact"]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openContactRequestModal('advertising');
+      });
+    });
+  }
+
+  // =========================================================================
+  // [반응형 대시보드 탭 컨트롤러 & 레이아웃 관리자 (8개 독립 패널 원클릭 전환)]
+  // =========================================================================
+  const DASH_TAB_TO_PANEL = {
+    'tab-calc': 'panel-calc',
+    'tab-daily': 'panel-daily',
+    'tab-dday': 'panel-dday',
+    'tab-fueling': 'panel-fueling',
+    'tab-lab': 'panel-lab',
+    'tab-checklist': 'panel-checklist',
+    'tab-gear': 'panel-gear',
+    'tab-faq': 'panel-faq'
+  };
+
+  let currentActiveTabId = 'tab-calc';
+  let isAllViewMode = false; // 기본: 한 화면씩 탭 모드
+
+  function switchDashboardTab(tabId, shouldScroll = true) {
+    if (!DASH_TAB_TO_PANEL[tabId]) tabId = 'tab-calc';
+    currentActiveTabId = tabId;
+    isAllViewMode = false;
+    updateViewModeButtonUI();
+
+    try {
+      localStorage.setItem('marathon_active_tab_v3', tabId);
+    } catch (e) {}
+
+    // 1. 모든 패널 숨김 및 선택 패널만 즉시 표시 (0.001초 전환)
+    const targetPanelId = DASH_TAB_TO_PANEL[tabId];
+    document.querySelectorAll('.dash-panel').forEach(panel => {
+      if (panel.id === targetPanelId) {
+        panel.style.display = 'block';
+        panel.classList.remove('hidden');
+      } else {
+        panel.style.display = 'none';
+        panel.classList.add('hidden');
+      }
+    });
+
+    // 2. PC 좌측 사이드바 & 모바일 상단 가로 탭 버튼 활성화 스타일 갱신
+    document.querySelectorAll('.dash-tab-btn').forEach(btn => {
+      const bTab = btn.getAttribute('data-dash-tab');
+      const isMatch = (bTab === tabId);
+      if (btn.classList.contains('dash-pc-btn')) {
+        // PC 사이드바 메뉴 버튼 스타일
+        btn.className = isMatch
+          ? 'dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition flex items-center gap-2.5 text-left'
+          : 'dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left';
+      } else {
+        // 모바일 상단 가로 스크롤 탭 버튼 스타일
+        btn.className = isMatch
+          ? 'dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition'
+          : 'dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition';
+      }
+    });
+
+    // 3. 뷰포트 스크롤: 사용자 클릭 전환 시 부드럽게 정렬
+    if (!shouldScroll) return;
+    if (window.innerWidth < 1024) {
+      const topBar = document.getElementById('mobile-tabs-bar');
+      if (topBar) {
+        topBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      const area = document.getElementById('dashboard-content-area');
+      if (area) {
+        const y = area.getBoundingClientRect().top + window.pageYOffset - 80;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      }
+    }
+  }
+
+  function toggleViewMode() {
+    setAllViewMode(!isAllViewMode);
+  }
+
+  function setAllViewMode(enabled) {
+    isAllViewMode = enabled;
+    updateViewModeButtonUI();
+
+    document.querySelectorAll('.dash-panel').forEach(panel => {
+      if (enabled) {
+        panel.style.display = 'block';
+        panel.classList.remove('hidden');
+      }
+    });
+
+    if (!enabled) {
+      switchDashboardTab(currentActiveTabId);
+    } else {
+      showToast('📜 전체 화면 펼쳐보기 모드로 전환되었습니다.');
+    }
+  }
+
+  function updateViewModeButtonUI() {
+    const textEl = document.getElementById('view-mode-text');
+    if (textEl) {
+      textEl.textContent = isAllViewMode
+        ? '📜 전체 펼쳐보기 모드'
+        : '📑 한 화면씩 보기 (탭)';
+    }
+  }
+
+  function initDashboardNavigation() {
+    // 탭 버튼 클릭 이벤트 바인딩
+    document.querySelectorAll('.dash-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.getAttribute('data-dash-tab');
+        if (tabId) switchDashboardTab(tabId);
       });
     });
 
-    if (raceDateInput) {
-      raceDateInput.addEventListener('change', () => {
-        labState.raceDate = raceDateInput.value;
-        calculateAndRender();
+    // 화면 보기 방식 토글 버튼
+    const toggleBtn = document.getElementById('toggle-view-mode-btn');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', toggleViewMode);
+    }
+
+    // 상단 네비게이션 헤더 앵커 연결
+    const navMap = {
+      '#calculator-section': 'tab-calc',
+      '#fueling-section': 'tab-fueling',
+      '#pro-lab-section': 'tab-lab',
+      '#gear-section': 'tab-gear',
+      '#checklist-section': 'tab-checklist',
+      '#faq-section': 'tab-faq'
+    };
+
+    Object.keys(navMap).forEach(href => {
+      document.querySelectorAll(`header a[href="${href}"], nav a[href="${href}"]`).forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          switchDashboardTab(navMap[href]);
+        });
+      });
+    });
+
+    const openContactFromSidebar = document.getElementById('open-contact-from-sidebar-btn');
+    if (openContactFromSidebar) {
+      openContactFromSidebar.addEventListener('click', () => {
+        openContactRequestModal('admin_approval');
       });
     }
+
+    // 기본 첫 화면은 1. VDOT 페이스·스플릿 (tab-calc)
+    let savedTab = 'tab-calc';
+    try {
+      const s = localStorage.getItem('marathon_active_tab_v3');
+      if (s && DASH_TAB_TO_PANEL[s]) savedTab = s;
+    } catch (e) {}
+
+    switchDashboardTab(savedTab, false);
+  }
+
+  // --- [관리자 전용 대회 메모 및 운영 공지 모듈] ---
+  const DEFAULT_ADMIN_MEMO = `[관리자 대회 안내 & 메모]
+• 대회 집결: 오전 07:00까지 배정 그룹 집결지 도착 권장
+• 물품보관소 마감: 출발 30분 전 보관 마감되니 여유 있게 보관하세요.
+• 에너지젤 보급: 7km, 14km, 21km, 28km, 35km 지점 전후 급수대에서 섭취 추천
+• 레이스 후 회복: 결승선 통과 직후 수분 및 바나나/초코우유 보충 필수`;
+
+  function initAdminMemo() {
+    const displayEl = document.getElementById('admin-memo-display');
+    const formEl = document.getElementById('admin-memo-form');
+    const editBtn = document.getElementById('admin-memo-edit-btn');
+    const inputEl = document.getElementById('admin-memo-input');
+    const saveBtn = document.getElementById('admin-memo-save-btn');
+    const cancelBtn = document.getElementById('admin-memo-cancel-btn');
+    const templateBtn = document.getElementById('admin-memo-template-btn');
+    const changePwBtn = document.getElementById('admin-change-pw-btn');
+
+    function getAdminPw() {
+      try {
+        return localStorage.getItem(ADMIN_PW_STORAGE_KEY) || 'admin1234';
+      } catch (e) {
+        return 'admin1234';
+      }
+    }
+
+    function renderMemo() {
+      let memo = '';
+      try {
+        memo = localStorage.getItem(ADMIN_MEMO_STORAGE_KEY);
+      } catch (e) {}
+      if (!memo) memo = DEFAULT_ADMIN_MEMO;
+
+      if (displayEl) {
+        displayEl.textContent = memo;
+      }
+      if (inputEl) {
+        inputEl.value = memo;
+      }
+    }
+
+    renderMemo();
+
+    if (editBtn) {
+      editBtn.addEventListener('click', () => {
+        if (!isCurrentAdminApproved()) {
+          openAdminAuthModal('대회 공지 수정');
+          return;
+        }
+        if (formEl) {
+          formEl.classList.toggle('hidden');
+          if (!formEl.classList.contains('hidden') && inputEl) {
+            inputEl.focus();
+          }
+        }
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        if (formEl) formEl.classList.add('hidden');
+        renderMemo();
+      });
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        const val = inputEl ? inputEl.value.trim() : '';
+        try {
+          localStorage.setItem(ADMIN_MEMO_STORAGE_KEY, val);
+          showToast('✅ 관리자 메모가 저장되었습니다.');
+        } catch (e) {}
+        renderMemo();
+        if (formEl) formEl.classList.add('hidden');
+      });
+    }
+
+    if (templateBtn) {
+      templateBtn.addEventListener('click', () => {
+        if (inputEl) inputEl.value = DEFAULT_ADMIN_MEMO;
+      });
+    }
+
+    if (changePwBtn) {
+      changePwBtn.addEventListener('click', () => {
+        const currPw = prompt('현재 관리자 비밀번호를 입력하세요:');
+        if (currPw === null) return;
+        if (currPw.trim() !== getAdminPw()) {
+          alert('❌ 현재 비밀번호가 일치하지 않습니다.');
+          return;
+        }
+        const newPw = prompt('새로운 관리자 비밀번호를 입력하세요 (4자 이상):');
+        if (newPw && newPw.trim().length >= 4) {
+          try {
+            localStorage.setItem(ADMIN_PW_STORAGE_KEY, newPw.trim());
+            alert('✅ 관리자 비밀번호가 성공적으로 변경되었습니다.');
+          } catch (e) {}
+        } else {
+          alert('비밀번호 변경이 취소되었거나 너무 짧습니다.');
+        }
+      });
+    }
+  }
+
+  // --- [게스트 이용 가능: 데일리 러너 수분 섭취 & 나만의 체크리스트 모듈] ---
+  const DEFAULT_ROUTINE_TASKS = [
+    '🏃 오늘의 목표 러닝 / 가벼운 조깅 완료',
+    '🧘 폼롤러 & 발목·햄스트링 스트레칭 15분',
+    '💊 비타민 / 마그네슘 / 영양제 섭취',
+    '🥗 탄수화물·단백질 균형 식단 유지',
+    '😴 7시간 이상 충분한 숙면과 휴식'
+  ];
+
+  const WATER_TIME_SLOTS = [
+    { id: 'wake', label: '기상 직후', desc: '체내 수분 보충', ml: 250 },
+    { id: 'am10', label: '오전 10시', desc: '갈증·피로 예방', ml: 250 },
+    { id: 'lunch', label: '점심 식후', desc: '소화 흡수 돕기', ml: 250 },
+    { id: 'pm3', label: '오후 3시', desc: '활력 충전', ml: 250 },
+    { id: 'preRun', label: '러닝 1시간 전', desc: '근경련(쥐) 예방', ml: 350 },
+    { id: 'postRun', label: '러닝 직후', desc: '땀 손실 보충', ml: 400 },
+    { id: 'sleep', label: '취침 1시간 전', desc: '수면 중 회복', ml: 250 }
+  ];
+
+  function getTodayDateStr() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  let currentDailyDate = getTodayDateStr();
+
+  function getDailyStore() {
+    try {
+      return JSON.parse(localStorage.getItem(DAILY_STORAGE_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function saveDailyStore(store) {
+    try {
+      localStorage.setItem(DAILY_STORAGE_KEY, JSON.stringify(store));
+    } catch (e) {}
+  }
+
+  function getDayData(dateStr) {
+    const store = getDailyStore();
+    if (!store[dateStr]) {
+      store[dateStr] = {
+        waterGoalMl: 2000,
+        waterCurrentMl: 0,
+        timeSlots: {},
+        tasks: DEFAULT_ROUTINE_TASKS.map((t, idx) => ({ id: 'def_' + idx, text: t, done: false }))
+      };
+      saveDailyStore(store);
+    }
+    return store[dateStr];
+  }
+
+  function updateDayData(dateStr, updater) {
+    const store = getDailyStore();
+    const cur = store[dateStr] || getDayData(dateStr);
+    updater(cur);
+    store[dateStr] = cur;
+    saveDailyStore(store);
+    renderDailyChecklistUI();
+  }
+
+  function renderDailyChecklistUI() {
+    const datePicker = document.getElementById('daily-date-picker');
+    if (datePicker) datePicker.value = currentDailyDate;
+
+    const data = getDayData(currentDailyDate);
+
+    // 수분 렌더링
+    const currentText = document.getElementById('water-current-text');
+    const goalText = document.getElementById('water-goal-text');
+    const percentBadge = document.getElementById('water-percent-badge');
+    const progressBar = document.getElementById('water-progress-bar');
+    const goalSelect = document.getElementById('water-goal-select');
+
+    const goal = data.waterGoalMl || 2000;
+    const current = Math.max(0, data.waterCurrentMl || 0);
+    const pct = Math.min(100, Math.round((current / goal) * 100));
+
+    if (currentText) currentText.textContent = current.toLocaleString();
+    if (goalText) goalText.textContent = goal.toLocaleString();
+    if (percentBadge) {
+      percentBadge.textContent = `${pct}% 달성 (${(current / 1000).toFixed(1)}L / ${(goal / 1000).toFixed(1)}L)`;
+      if (pct >= 100) {
+        percentBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
+      } else {
+        percentBadge.className = 'px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-cyan-500/15 text-cyan-600 dark:text-cyan-400';
+      }
+    }
+    if (progressBar) {
+      progressBar.style.width = `${pct}%`;
+      progressBar.className = pct >= 100
+        ? 'h-full bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full transition-all duration-300'
+        : 'h-full bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full transition-all duration-300';
+    }
+    if (goalSelect && goalSelect.value != goal) {
+      goalSelect.value = String(goal);
+    }
+
+    // 시간대별 체크박스 버튼 렌더링
+    const slotsContainer = document.getElementById('water-time-slots');
+    if (slotsContainer) {
+      slotsContainer.innerHTML = '';
+      const slots = data.timeSlots || {};
+      WATER_TIME_SLOTS.forEach(slot => {
+        const isChecked = !!slots[slot.id];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = isChecked
+          ? 'p-2 rounded-lg text-left border transition flex items-center justify-between bg-cyan-50 dark:bg-cyan-950/40 border-cyan-300 dark:border-cyan-800 text-cyan-800 dark:text-cyan-200 font-bold'
+          : 'p-2 rounded-lg text-left border transition flex items-center justify-between bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800';
+        btn.innerHTML = `
+          <div>
+            <div class="text-[11px] font-extrabold">${slot.label}</div>
+            <div class="text-[10px] opacity-70">${slot.ml}ml · ${slot.desc}</div>
+          </div>
+          <span class="text-xs">${isChecked ? '✅' : '⚪'}</span>
+        `;
+        btn.addEventListener('click', () => {
+          updateDayData(currentDailyDate, d => {
+            if (!d.timeSlots) d.timeSlots = {};
+            const nextCheck = !d.timeSlots[slot.id];
+            d.timeSlots[slot.id] = nextCheck;
+            if (nextCheck) {
+              d.waterCurrentMl = (d.waterCurrentMl || 0) + slot.ml;
+              showToast(`💧 ${slot.label} 수분 +${slot.ml}ml 체크 완료!`);
+            } else {
+              d.waterCurrentMl = Math.max(0, (d.waterCurrentMl || 0) - slot.ml);
+              showToast(`↩️ ${slot.label} 수분 체크 해제`);
+            }
+          });
+        });
+        slotsContainer.appendChild(btn);
+      });
+    }
+
+    // 루틴 태스크 렌더링
+    const tasksContainer = document.getElementById('daily-tasks-container');
+    const taskSummaryBadge = document.getElementById('daily-task-summary-badge');
+    const tasks = data.tasks || [];
+    const completedCount = tasks.filter(t => t.done).length;
+
+    if (taskSummaryBadge) {
+      taskSummaryBadge.textContent = `${completedCount}/${tasks.length} 완료`;
+      taskSummaryBadge.className = completedCount === tasks.length && tasks.length > 0
+        ? 'px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+        : 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300';
+    }
+
+    if (tasksContainer) {
+      tasksContainer.innerHTML = '';
+      if (tasks.length === 0) {
+        tasksContainer.innerHTML = '<div class="text-center py-4 text-xs text-slate-400">등록된 데일리 루틴이 없습니다. 위에서 추가해보세요!</div>';
+      } else {
+        tasks.forEach(task => {
+          const item = document.createElement('div');
+          item.className = 'flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-xs transition';
+
+          const left = document.createElement('label');
+          left.className = 'flex items-center gap-2.5 flex-1 cursor-pointer select-none';
+
+          const chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.checked = !!task.done;
+          chk.className = 'w-4 h-4 rounded text-brand-600 border-slate-300 focus:ring-brand-500';
+
+          const textSpan = document.createElement('span');
+          textSpan.className = task.done
+            ? 'line-through text-slate-400 dark:text-slate-500'
+            : 'text-slate-800 dark:text-slate-200 font-semibold';
+          textSpan.textContent = task.text;
+
+          chk.addEventListener('change', () => {
+            updateDayData(currentDailyDate, d => {
+              const target = d.tasks.find(t => t.id === task.id);
+              if (target) target.done = chk.checked;
+            });
+            if (chk.checked) showToast(`🎯 [${task.text}] 완료!`);
+          });
+
+          left.appendChild(chk);
+          left.appendChild(textSpan);
+
+          const delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'text-slate-400 hover:text-rose-500 px-1.5 py-0.5 text-xs font-bold transition';
+          delBtn.textContent = '✕';
+          delBtn.title = '항목 삭제';
+          delBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            updateDayData(currentDailyDate, d => {
+              d.tasks = d.tasks.filter(t => t.id !== task.id);
+            });
+          });
+
+          item.appendChild(left);
+          item.appendChild(delBtn);
+          tasksContainer.appendChild(item);
+        });
+      }
+    }
+  }
+
+  function initDailyRoutineChecklist() {
+    // 날짜 조작
+    const datePicker = document.getElementById('daily-date-picker');
+    const todayBtn = document.getElementById('daily-today-btn');
+    const prevBtn = document.getElementById('daily-prev-date-btn');
+    const nextBtn = document.getElementById('daily-next-date-btn');
+
+    function shiftDate(days) {
+      const parts = currentDailyDate.split('-');
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      d.setDate(d.getDate() + days);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      currentDailyDate = `${yyyy}-${mm}-${dd}`;
+      renderDailyChecklistUI();
+    }
+
+    if (datePicker) {
+      datePicker.value = currentDailyDate;
+      datePicker.addEventListener('change', () => {
+        if (datePicker.value) {
+          currentDailyDate = datePicker.value;
+          renderDailyChecklistUI();
+        }
+      });
+    }
+
+    if (todayBtn) {
+      todayBtn.addEventListener('click', () => {
+        currentDailyDate = getTodayDateStr();
+        renderDailyChecklistUI();
+      });
+    }
+
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => shiftDate(-1));
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => shiftDate(1));
+    }
+
+    // 수분 목표 셀렉트
+    const goalSelect = document.getElementById('water-goal-select');
+    if (goalSelect) {
+      goalSelect.addEventListener('change', () => {
+        const val = parseInt(goalSelect.value, 10);
+        updateDayData(currentDailyDate, d => {
+          d.waterGoalMl = val;
+        });
+      });
+    }
+
+    // 퀵 버튼 (+250, +500, -250)
+    document.querySelectorAll('.water-quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const addMl = parseInt(btn.getAttribute('data-water-add'), 10) || 0;
+        updateDayData(currentDailyDate, d => {
+          d.waterCurrentMl = Math.max(0, (d.waterCurrentMl || 0) + addMl);
+        });
+        if (addMl > 0) {
+          showToast(`💧 수분 +${addMl}ml 추가 완료!`);
+        }
+      });
+    });
+
+    // 수분 리셋 버튼
+    const waterResetBtn = document.getElementById('water-reset-btn');
+    if (waterResetBtn) {
+      waterResetBtn.addEventListener('click', () => {
+        if (confirm('오늘의 수분 섭취 기록을 0ml로 초기화하시겠습니까?')) {
+          updateDayData(currentDailyDate, d => {
+            d.waterCurrentMl = 0;
+            d.timeSlots = {};
+          });
+          showToast('🔄 수분 섭취 기록이 초기화되었습니다.');
+        }
+      });
+    }
+
+    // 새 루틴 추가
+    const newTaskInput = document.getElementById('daily-new-task-input');
+    const addTaskBtn = document.getElementById('daily-add-task-btn');
+
+    function addNewTask() {
+      if (!newTaskInput) return;
+      const text = newTaskInput.value.trim();
+      if (!text) return;
+      updateDayData(currentDailyDate, d => {
+        if (!d.tasks) d.tasks = [];
+        d.tasks.push({
+          id: 'custom_' + Date.now(),
+          text: text,
+          done: false
+        });
+      });
+      newTaskInput.value = '';
+      showToast('✨ 새 데일리 루틴이 추가되었습니다.');
+    }
+
+    if (addTaskBtn) addTaskBtn.addEventListener('click', addNewTask);
+    if (newTaskInput) {
+      newTaskInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addNewTask();
+        }
+      });
+    }
+
+    // 기본 루틴 복원
+    const resetTasksBtn = document.getElementById('daily-reset-tasks-btn');
+    if (resetTasksBtn) {
+      resetTasksBtn.addEventListener('click', () => {
+        if (confirm('기본 5대 러너 루틴으로 복원하시겠습니까? (현재 체크 상태는 초기화됩니다)')) {
+          updateDayData(currentDailyDate, d => {
+            d.tasks = DEFAULT_ROUTINE_TASKS.map((t, idx) => ({ id: 'def_' + idx, text: t, done: false }));
+          });
+          showToast('🔄 기본 러너 루틴이 복원되었습니다.');
+        }
+      });
+    }
+
+    renderDailyChecklistUI();
+  }
+
+
+  function initProLabEvents() {
+    // 1. 메이저 대회 프리셋 버튼 및 날짜·코스 실시간 즉시 변경 & 자동 영구 저장
+    renderRaceButtons();
+
+    const raceDateInput = document.getElementById('race-date-input');
+    const raceCourseSelect = document.getElementById('race-course-select');
+
+    if (raceDateInput) {
+      raceDateInput.addEventListener('input', () => {
+        handleRaceDateManualChange(raceDateInput.value, false);
+      });
+      raceDateInput.addEventListener('change', () => {
+        handleRaceDateManualChange(raceDateInput.value, true);
+      });
+    }
+
     if (raceCourseSelect) {
       raceCourseSelect.addEventListener('change', () => {
-        labState.courseType = raceCourseSelect.value;
-        calculateAndRender();
+        handleCourseManualChange(raceCourseSelect.value);
       });
     }
 
@@ -2463,10 +4032,46 @@
     }
   }
 
-  // 초기 실행
-  initAffiliateLinkManager();
-  initProLabEvents();
-  syncRecentInputsFromSec();
-  syncTargetInputsFromSec();
-  calculateAndRender();
+    // 전역 윈도우 객체 바인딩 (인라인 onclick 지원)
+  window.quickLoginAsOwner = quickLoginAsOwner;
+  window.handleClickAddRaceWithAuth = handleClickAddRaceWithAuth;
+  window.updateDDayBadge = updateDDayBadge;
+  window.renderRightRaceScheduleSidebar = renderRightRaceScheduleSidebar;
+  window.selectRace = selectRace;
+  window.switchDashboardTab = switchDashboardTab;
+  window.toggleViewMode = toggleViewMode;
+  window.setAllViewMode = setAllViewMode;
+  window.openAddRacePrompt = openAddRacePrompt;
+  window.openAddRaceModal = openAddRaceModal;
+  window.closeAddRaceModal = closeAddRaceModal;
+  window.submitAddRaceModal = submitAddRaceModal;
+  window.verifyGoogleAdminInput = verifyGoogleAdminInput;
+  window.deleteCustomRace = deleteCustomRace;
+  window.openAdminAuthModal = openAdminAuthModal;
+  window.closeAdminAuthModal = closeAdminAuthModal;
+  window.openContactRequestModal = openContactRequestModal;
+  window.closeContactRequestModal = closeContactRequestModal;
+
+  // 초기 실행 (개별 try-catch로 무중단 실행 보장)
+  [
+    ['AffiliateLinkManager', initAffiliateLinkManager],
+    ['AdminAndContactSystem', initAdminAndContactSystem],
+    ['DashboardNavigation', initDashboardNavigation],
+    ['AdminMemo', initAdminMemo],
+    ['DailyRoutineChecklist', initDailyRoutineChecklist],
+    ['ProLabEvents', initProLabEvents],
+    ['syncRecentInputsFromSec', syncRecentInputsFromSec],
+    ['syncTargetInputsFromSec', syncTargetInputsFromSec],
+    ['renderRaceButtons', renderRaceButtons],
+    ['updateRaceDOM', updateRaceDOM],
+    ['updateDDayBadge', updateDDayBadge],
+    ['renderRightRaceScheduleSidebar', renderRightRaceScheduleSidebar],
+    ['calculateAndRender', calculateAndRender]
+  ].forEach(([name, fn]) => {
+    try {
+      if (typeof fn === 'function') fn();
+    } catch (err) {
+      console.warn(`[SafeInit warning in ${name}]:`, err);
+    }
+  });
 })();
