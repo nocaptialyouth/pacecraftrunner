@@ -1801,7 +1801,7 @@ window.addEventListener('load', function() {
                 </span>
               </div>
               <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                매일 업데이트되는 신상 러닝화 발매, 메이저 마라톤 접수 속보, 보급·훈련 과학 트렌드를 클릭 한 번에 확인하세요!
+                실제 러너들의 네이버·티스토리 블로그 실착 리뷰, 신상 러닝화 분석, 메이저 마라톤 코스 공략, 유튜브 명품 특강을 한눈에 확인하세요!
               </p>
             </div>
 
@@ -1906,10 +1906,13 @@ window.addEventListener('load', function() {
               <!-- 카테고리 필터 버튼 -->
               <div class="flex flex-wrap items-center gap-1.5" id="news-category-filter-group">
                 <button type="button" data-news-cat="all" onclick="setRunningNewsCategoryFilter('all')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer">
-                  🔥 전체 핫이슈 TOP 20
+                  🔥 전체 핫이슈 24선
+                </button>
+                <button type="button" data-news-cat="blog" onclick="setRunningNewsCategoryFilter('blog')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-extrabold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                  📝 블로그 실착 리뷰 (티스토리·네이버)
                 </button>
                 <button type="button" data-news-cat="shoes" onclick="setRunningNewsCategoryFilter('shoes')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
-                  👟 신상 러닝화·기어
+                  👟 러닝화·기어 분석
                 </button>
                 <button type="button" data-news-cat="race" onclick="setRunningNewsCategoryFilter('race')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
                   🏃 마라톤 대회 &amp; 접수 속보
@@ -8000,352 +8003,471 @@ ${content}
   // [신규] 10. 데일리 러닝 뉴스 & 트렌드 핫이슈 TOP 20 시스템
   // =========================================================================
   const DEFAULT_RUNNING_NEWS = [
-    // [신규] 유튜브 러닝 데일리 최신 특강 & 속보 아이템 4종
-    {
-      id: 'news-yt-01',
-      rank: 5,
-      category: 'youtube',
-      categoryLabel: '🎬 유튜브 러닝',
-      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-      title: '[황영조형] 올림픽 금메달리스트가 전하는 마라톤 30km 사점(Dead Point) 극복법 & 후반 페이스 특강',
-      snippet: '황영조 감독이 직접 밝히는 마라톤 후반 30km 이후 체력 고갈 시 팔치기와 호흡 리듬을 재정비해 피니시까지 기록을 밀고 나가는 실전 노하우입니다.',
-      date: '2026.11.06 데일리 특강',
-      source: '황영조형 공식 유튜브',
-      tags: ['#황영조형', '#올림픽금메달', '#마라톤30km', '#사점극복', '#러닝자세'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%ED%99%A9%EC%98%81%EC%A1%B0+%EB%A7%88%EB%9D%BC%ED%86%A4',
-      googleUrl: 'https://news.google.com/search?q=%ED%99%A9%EC%98%81%EC%A1%B0%20%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako',
-      youtubeUrl: 'https://www.youtube.com/watch?v=aMZhjckQTuw',
-      channelUrl: 'https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95/videos'
-    },
-    {
-      id: 'news-yt-02',
-      rank: 6,
-      category: 'youtube',
-      categoryLabel: '🎬 유튜브 러닝',
-      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-      title: '[방구석 운동가 디어] 2026 러닝화 계급도 & 카테고리 바이블: 알파플라이부터 슈퍼블라스트까지 완벽 총정리',
-      snippet: '러너들이 가장 신뢰하는 방구석 운동가 디어의 2026 러닝화 티어표 분석! 레이싱화, 슈퍼트레이너, 안정화, 쿠션화 브랜드를 한눈에 비교 분석합니다.',
-      date: '2026.11.06 데일리 리뷰',
-      source: '방구석 운동가 디어 채널',
-      tags: ['#방구석운동가디어', '#러닝화바이블', '#러닝화계급도', '#신발추천', '#슈퍼블라스트'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80+%EB%94%94%EC%96%B4+%EB%9F%AC%EB%8B%9D%ED%99%94',
-      googleUrl: 'https://news.google.com/search?q=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80%20%EB%94%94%EC%96%B4&hl=ko&gl=KR&ceid=KR%3Ako',
-      youtubeUrl: 'https://www.youtube.com/watch?v=u913M5LxTvQ',
-      channelUrl: 'https://www.youtube.com/@daily__dear/videos'
-    },
-    {
-      id: 'news-yt-03',
-      rank: 7,
-      category: 'youtube',
-      categoryLabel: '🎬 유튜브 러닝',
-      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-      title: '[런클리어] 무릎·발목 통증 싹 없애는 체간 착지(Mid-foot)와 지면 반력 활용 테크닉',
-      snippet: '육상 선수 출신 김영복 코치의 부상 없는 착지 메커니즘! 힐스트라이크 충격을 분산하고 체간 중심 착지로 기록을 5분 단축하는 핵심 훈련법입니다.',
-      date: '2026.11.06 데일리 훈련',
-      source: '런클리어 러닝아카데미',
-      tags: ['#런클리어', '#김영복코치', '#체간착지', '#미드풋', '#무릎통증예방'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4+%EB%A7%88%EB%9D%BC%ED%86%A4',
-      googleUrl: 'https://news.google.com/search?q=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4%20%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako',
-      youtubeUrl: 'https://www.youtube.com/watch?v=imHoSkJU06w',
-      channelUrl: 'https://www.youtube.com/@runclear_running/videos'
-    },
-    {
-      id: 'news-yt-04',
-      rank: 8,
-      category: 'youtube',
-      categoryLabel: '🎬 유튜브 러닝',
-      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-      title: '[썬코치 42.195] 마라톤 호흡이 터지는 2:2 리듬 복식호흡 & 심박수 낮추는 페이싱 비법',
-      snippet: '마라톤 전문 썬코치가 전수하는 호흡 안정화 훈련! 발걸음에 맞춘 2:2 흡흡호호 리듬과 횡격막 호흡으로 심박 과열을 막고 체력을 비축하는 실전 가이드입니다.',
-      date: '2026.11.06 데일리 팁',
-      source: '썬코치 마라톤 채널',
-      tags: ['#썬코치', '#마라톤호흡법', '#복식호흡', '#심박수안정', '#마라톤완주'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%8D%AC%EC%BD%94%EC%B9%98+%EB%A7%88%EB%9D%BC%ED%86%A4',
-      googleUrl: 'https://news.google.com/search?q=%EC%8D%AC%EC%BD%94%EC%B9%98%20%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako',
-      youtubeUrl: 'https://www.youtube.com/watch?v=c_n_ust4pDI',
-      channelUrl: 'https://www.youtube.com/@suncoach42.195/videos'
-    },
-    {
-      id: 'news-01',
-      rank: 1,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-      title: '나이키 알파플라이 4 공식 런칭 & 마스터즈 마라토너 실착 피드백 분석',
-      snippet: '초경량 줌X 폼과 공기역학적 에어 팟 설계를 고도화한 플래그십 레이서 알파플라이 4가 정식 공개되었습니다. 42.195km 풀코스 서브3 러너들의 반발력 메커니즘과 착지감 분석이 뜨거운 화제입니다.',
-      date: '2026.11.06 데일리 최신',
-      source: '네이버 뉴스 & 구글 속보',
-      tags: ['#알파플라이4', '#나이키', '#카본플레이트', '#서브3레이서'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%82%98%EC%9D%B4%ED%82%A4+%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B44',
-      googleUrl: 'https://news.google.com/search?q=%EB%82%98%EC%9D%B4%ED%82%A4%20%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B44&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-02',
-      rank: 2,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20',
-      title: '아디다스 아디제로 EVO SL(에보 SL) 품절 대란 & 2차 리오더 발매 일정',
-      snippet: '카본 플레이트 없이도 최상위 레이싱 폼 라이트스트라이크 프로를 풀렝스로 탑재해 러너들의 찬사를 받은 EVO SL이 전 사이즈 품절을 기록하며 추가 입고 일정이 공지되었습니다.',
-      date: '2026.11.06 데일리 최신',
-      source: '네이버 쇼핑 & 러닝 매거진',
-      tags: ['#아디제로', '#EVOSL', '#슈퍼트레이너', '#오픈런'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4+%EC%95%84%EB%94%94%EC%A0%9C%EB%A1%9C+EVO+SL',
-      googleUrl: 'https://news.google.com/search?q=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4%20EVO%20SL&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-03',
-      rank: 3,
-      category: 'race',
-      categoryLabel: '🏃 대회 속보',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-      title: '2027 서울마라톤(동아) 얼리버드 및 마스터즈 참가 접수 가이드라인 확정',
-      snippet: '세계육상연맹 플래티넘 라벨 서울마라톤이 광화문 광장 출발 잠실종합운동장 코스로 접수 일정을 발표했습니다. 동호인 러너들을 위한 그룹 배정 기준과 얼리버드 티켓팅 팁이 공개되었습니다.',
-      date: '2026.11.06 데일리 속보',
-      source: '동아일보 마라톤 사무국',
-      tags: ['#서울마라톤', '#동아마라톤', '#마스터즈접수', '#풀코스'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%8F%99%EC%95%84%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%A0%91%EC%88%98',
-      googleUrl: 'https://news.google.com/search?q=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%A0%91%EC%88%98&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-04',
-      rank: 4,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
-      title: '아식스 슈퍼블라스트 3(Superblast 3) 사전 유출 스펙 & FF 터보 플러스 적용',
-      snippet: '논플레이트 슈퍼트레이너의 최강자 슈퍼블라스트 3가 메타스피드 파리의 초고반발 폼을 탑재하여 더욱 가볍고 푹신한 에너지 리턴을 제공할 예정입니다.',
-      date: '2026.11.05 최신 뉴스',
-      source: '글로벌 러닝 인사이더',
-      tags: ['#아식스', '#슈퍼블라스트3', '#FF터보플러스', '#조깅화'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%95%84%EC%8B%9D%EC%8A%A4+%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B8',
-      googleUrl: 'https://news.google.com/search?q=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B83&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-05',
-      rank: 5,
-      category: 'trend',
-      categoryLabel: '🔬 훈련·영양',
-      badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20',
-      title: '에너지젤 시간당 90g 고탄수화물 보급 혁명: 30km 벽을 깨는 과학적 섭취법',
-      snippet: '기존 시간당 30~60g 한계를 넘어 2:1 말토덱스트린·과당 조합으로 위장 장애 없이 글리코겐 고갈을 막는 최신 마라톤 영양 섭취 프로토콜이 마스터즈 러너들 사이에 확산되고 있습니다.',
-      date: '2026.11.05 연구 보고',
-      source: '스포츠 뉴트리션 사이언스',
-      tags: ['#에너지젤', '#카보로딩', '#파워젤섭취법', '#30km벽'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EB%B3%B4%EA%B8%89',
-      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EB%B3%B4%EA%B8%89&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-06',
-      rank: 6,
-      category: 'race',
-      categoryLabel: '🏃 대회 속보',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-      title: 'JTBC 서울마라톤 성료: 3만 러너 상암·잠실 질주 및 완주자 기념 메달 화제',
-      snippet: '가을 최대 러닝 축제 JTBC 서울마라톤이 성공적으로 마무리되며 완주자들의 기록 분석과 입체 디자인 완주 메달이 SNS 상에서 뜨거운 호평을 받았습니다.',
-      date: '2026.11.04 현장 리포트',
-      source: 'JTBC 스포츠 뉴스',
-      tags: ['#JTBC서울마라톤', '#마라톤완주', '#가을마라톤', '#기록갱신'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=JTBC+%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4',
-      googleUrl: 'https://news.google.com/search?q=JTBC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-07',
-      rank: 7,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20',
-      title: '가민(Garmin) 포러너 시리즈 대규모 펌웨어 업데이트: 스마트 심박 & 페이스메이커 기능 강화',
-      snippet: '포러너 265 및 165 사용자를 대상으로 실시간 체간 상하진동비 측정과 러닝 파워 메트릭스, 랩 타임 음성 안내 고도화 패치가 공식 배포되었습니다.',
-      date: '2026.11.04 테크 뉴스',
-      source: '가민 코리아 공식',
-      tags: ['#가민', '#포러너265', '#스마트워치', '#GPS러닝'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EA%B0%80%EB%AF%BC+%ED%8F%AC%EB%9F%AC%EB%84%88+%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8',
-      googleUrl: 'https://news.google.com/search?q=%EA%B0%80%EB%AF%BC%20%ED%8F%AC%EB%9F%AC%EB%84%88&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-08',
-      rank: 8,
-      category: 'trend',
-      categoryLabel: '🔬 훈련·영양',
-      badgeColor: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
-      title: '체간 착지(Mid-foot Core Landing) 주법: 무릎 관절 부상 40% 감소 임상 결과',
-      snippet: '육상 국가대표 코치진이 강조하는 척추-골반 정렬과 무게중심 착지가 힐스트라이크 대비 무릎 충격 하중을 40% 이상 줄인다는 스포츠의학회 연구가 발표되었습니다.',
-      date: '2026.11.03 의학 리포트',
-      source: '대한스포츠의학회지',
-      tags: ['#체간착지', '#미드풋', '#무릎통증예방', '#러닝자세'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EB%9F%AC%EB%8B%9D%ED%8F%BC',
-      googleUrl: 'https://news.google.com/search?q=%EB%9F%AC%EB%8B%9D%ED%8F%BC%20%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-09',
-      rank: 9,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20',
-      title: '써코니 엔돌핀 프로 5 & 엘리트 3 공개: 10g 경량화와 향상된 스피드로 압도',
-      snippet: '써코니의 인기 카본 레이싱화 라인업 엔돌핀 프로 5가 PWRRUN HG 폼을 최적화해 더욱 가볍고 날렵한 롤링감을 선사하며 글로벌 러너들의 관심을 모으고 있습니다.',
-      date: '2026.11.03 장비 리뷰',
-      source: '러너스월드 코리아',
-      tags: ['#써코니', '#엔돌핀프로5', '#카본화', '#스피드훈련'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%8D%A8%EC%BD%94%EB%8B%88+%EC%97%94%EB%8F%8C%ED%95%80+%ED%94%84%EB%A1%9C',
-      googleUrl: 'https://news.google.com/search?q=%EC%8D%A8%EC%BD%94%EB%8B%88%20%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C5&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-10',
-      rank: 10,
-      category: 'race',
-      categoryLabel: '🏃 대회 속보',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-      title: '2027 대구국제마라톤 코스 전면 개편: 도심 평지 고속 루프로 세계 신기록 정조준',
-      snippet: '세계육상연맹 최고 등급 대구국제마라톤이 언덕 구간을 대폭 축소하고 평지 직선 루프 코스로 코스를 전면 재설계해 2시간 2분대 신기록 도전을 선언했습니다.',
-      date: '2026.11.02 속보',
-      source: '대구광역시 체육회',
-      tags: ['#대구마라톤', '#고속코스', '#세계기록도전', '#평지코스'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%8C%80%EA%B5%AC%EA%B5%AD%EC%A0%9C%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4',
-      googleUrl: 'https://news.google.com/search?q=%EB%8C%80%EA%B5%AC%EA%B5%AD%EC%A0%9C%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-11',
-      rank: 11,
-      category: 'trend',
-      categoryLabel: '🔬 훈련·영양',
-      badgeColor: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20',
-      title: '겨울철 동계 러닝 방한 체크리스트: 기모 장갑·넥워머·방풍 윈드브레이커 가이드',
-      snippet: '기온 5도 이하 환경에서 말초혈관 수축과 체온 손실을 방지하는 스마트 레이어링 기법과 터치 기능성 기모 장갑 선택법이 러닝 매거진을 통해 소개되었습니다.',
-      date: '2026.11.02 기획',
-      source: '네이버 쇼핑 패션/레저',
-      tags: ['#겨울러닝', '#방한장갑', '#넥워머', '#러닝바람막이'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EA%B2%A8%EC%9A%B8+%EB%9F%AC%EB%8B%9D+%EB%B0%A9%ED%95%9C+%EC%9E%A5%EA%B0%91',
-      googleUrl: 'https://news.google.com/search?q=%EA%B2%A8%EC%9A%B8%20%EB%9F%AC%EB%8B%9D%20%EC%9A%A9%ED%92%88&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-12',
-      rank: 12,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-pink-500/15 text-pink-600 dark:text-pink-400 border border-pink-500/20',
-      title: '뉴발란스 SC 엘리트 v6(FuelCell SuperComp Elite) 국내 상륙',
-      snippet: '퓨어셀 고밀도 탄성 미드솔과 3D 굴곡 카본 플레이트를 결합한 뉴발란스의 플래그십 레이싱화 SC 엘리트 v6가 주요 러닝 전문 샵에 입고되었습니다.',
-      date: '2026.11.01 신제품',
-      source: '뉴발란스 코리아',
-      tags: ['#뉴발란스', '#SC엘리트v6', '#카본화', '#퓨어셀'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4+SC+%EC%97%98%EB%A6%AC%ED%8A%B8',
-      googleUrl: 'https://news.google.com/search?q=%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4%20SC%20%EC%97%98%EB%A6%AC%ED%8A%B8&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-13',
-      rank: 13,
-      category: 'race',
-      categoryLabel: '🏃 대회 속보',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-      title: '춘천마라톤 호반 코스 단풍 속 성황리 개최: 1만 5천 건각 완주 레이스',
-      snippet: '가을의 전설 춘천마라톤이 의암호 순환 코스에서 단풍 절경과 함께 성황리에 치러졌으며, 완주자들의 서브3·서브4 달성률이 전년 대비 12% 증가했습니다.',
-      date: '2026.10.31 대회 결산',
-      source: '조선일보 춘천마라톤',
-      tags: ['#춘천마라톤', '#가을의전설', '#호반코스', '#완주자'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4',
-      googleUrl: 'https://news.google.com/search?q=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-14',
-      rank: 14,
-      category: 'trend',
-      categoryLabel: '🔬 훈련·영양',
-      badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20',
-      title: '러닝 후 30분 골든타임: 글리코겐 초회복을 위한 4:1 탄수화물·단백질 공식',
-      snippet: '고강도 인터벌이나 20km 이상 LSD 훈련 직후 30분 이내에 탄수화물과 유청 단백질을 4:1 비율로 섭취하면 근육통과 피로도가 50% 이상 빠르게 회복됩니다.',
-      date: '2026.10.30 영양 가이드',
-      source: '운동생리학 아카데미',
-      tags: ['#리커버리', '#글리코겐회복', '#단백질보충', '#LSD회복'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%9F%AC%EB%8B%9D+%ED%9A%8C%EB%B3%B5+%ED%83%84%EC%88%98%ED%99%94%EB%AC%BC+%EB%8B%A8%EB%B0%B1%EC%A7%88',
-      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9A%8C%EB%B3%B5%20%EC%8B%9D%EB%8B%A8&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-15',
-      rank: 15,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-      title: '나이키 베이퍼플라이 4(Vaporfly 4) 출시 일정 확정: 더 얇아진 어퍼와 통기성',
-      snippet: '로드 10km부터 풀코스까지 전천후로 사랑받는 베이퍼플라이의 4세대 모델이 플라이니트 통기성 개선과 미드풋 지지력 강화 설계를 갖추고 출격을 앞두고 있습니다.',
-      date: '2026.10.29 발매 예고',
-      source: '스니커즈 데일리',
-      tags: ['#베이퍼플라이4', '#나이키러닝', '#레이싱화', '#10km추천'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%82%98%EC%9D%B4%ED%82%A4+%EB%B2%A0%EC%9D%B4%ED%8D%BC%ED%94%8C%EB%9D%BC%EC%9D%B44',
-      googleUrl: 'https://news.google.com/search?q=%EB%B2%A0%EC%9D%B4%ED%8D%BC%ED%94%8C%EB%9D%BC%EC%9D%B44&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-16',
-      rank: 16,
-      category: 'trend',
-      categoryLabel: '🔬 훈련·영양',
-      badgeColor: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
-      title: '기능성 컴프레션 종아리 압박양말의 효과: 마라톤 후반 쥐(경련) 방지 실증',
-      snippet: '단계적 압박 설계를 적용한 의료용 컴프레션 삭스가 정맥혈 회귀를 촉진해 30km 지점 이후 종아리 근육 경련과 붓기를 유의미하게 억제한다는 필드 테스트 결과입니다.',
-      date: '2026.10.28 임상 분석',
-      source: '러닝 사이언스 랩',
-      tags: ['#압박양말', '#컴프레션삭스', '#근육경련예방', '#삭피엔스'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%95%95%EB%B0%95%EC%96%91%EB%A7%90+%ED%9A%A8%EA%B3%BC',
-      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BB%B4%ED%94%84%EB%A0%88%EC%85%98%20%EC%96%91%EB%A7%90&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-17',
-      rank: 17,
-      category: 'race',
-      categoryLabel: '🏃 대회 속보',
-      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-      title: '경주국제마라톤 천년고도 레이스 마감: 가을 경주 유적지 통과 코스 대인기',
-      snippet: '첨성대와 월정교를 가로지르는 역사문화 마라톤 코스로 전국 러너들의 큰 호응을 얻으며 하프 및 풀코스 전 부문 성공적으로 레이스가 종료되었습니다.',
-      date: '2026.10.25 결산',
-      source: '동아일보 경주마라톤',
-      tags: ['#경주마라톤', '#천년고도', '#가을레이스', '#월정교코스'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EA%B2%BD%EC%A3%BC%EA%B5%AD%EC%A0%9C%EB%A7%88%EB%9D%BC%ED%86%A4',
-      googleUrl: 'https://news.google.com/search?q=%EA%B2%BD%EC%A3%BC%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-18',
-      rank: 18,
-      category: 'shoes',
-      categoryLabel: '👟 신상 러닝화',
-      badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20',
-      title: '아식스 노바블라스트 6(Novablast 6) 출시 예고: 국민 트레이너의 귀환',
-      snippet: '아마추어 러너들의 원픽 데일리 트레이너 노바블라스트의 차세대 모델이 트램펄린 지오메트리를 보강해 부드러운 착지와 튕겨나가는 반발 탄성을 극대화합니다.',
-      date: '2026.10.24 장비 뉴스',
-      source: '아식스 재팬/글로벌',
-      tags: ['#노바블라스트6', '#아식스', '#데일리트레이너', '#쿠션화'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%95%84%EC%8B%9D%EC%8A%A4+%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B8',
-      googleUrl: 'https://news.google.com/search?q=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B86&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-19',
-      rank: 19,
-      category: 'trend',
-      categoryLabel: '🔬 훈련·영양',
-      badgeColor: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/20',
-      title: '마라톤 테이퍼링(Tapering) 3주 공식: 훈련량 40% 감축으로 파워 100% 충전',
-      snippet: '대회 3주 전부터 주간 마일리지를 20% -> 40% -> 60% 순차적으로 줄이면서 인터벌 강도는 유지해 레이스 당일 폭발적인 근글리코겐 초회복을 이끌어내는 공식입니다.',
-      date: '2026.10.22 훈련 컬럼',
-      source: '마라톤 레이스 전략 연구소',
-      tags: ['#테이퍼링', '#마일리지조절', '#대회전준비', '#피킹'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81+%ED%9B%88%EB%A0%A8',
-      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81&hl=ko&gl=KR&ceid=KR%3Ako'
-    },
-    {
-      id: 'news-20',
-      rank: 20,
-      category: 'trend',
-      categoryLabel: '🔥 러닝 트렌드',
-      badgeColor: 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/20',
-      title: '2030 러닝 크루 문화와 마라톤 매너: 안전 수칙 및 도심 보행자 배려 캠페인',
-      snippet: '러닝 인구 1000만 시대, 한강 및 도심 러닝 크루들이 떼 러닝을 지양하고 2열 종대 및 우측통행, 안전 수칙을 준수하는 성숙한 러닝 매너 캠페인을 전개하고 있습니다.',
-      date: '2026.10.20 문화 트렌드',
-      source: '문화일보 & 러닝크루 연합',
-      tags: ['#러닝크루', '#러닝매너', '#러닝문화', '#안전러닝'],
-      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%9F%AC%EB%8B%9D%ED%81%AC%EB%A3%A8+%EB%A7%A4%EB%84%88+%EC%95%88%EC%A0%84',
-      googleUrl: 'https://news.google.com/search?q=%EB%9F%AC%EB%8B%9D%ED%81%AC%EB%A3%A8%20%EC%95%88%EC%A0%84%20%EB%A7%A4%EB%84%88&hl=ko&gl=KR&ceid=KR%3Ako'
-    }
-  ];
+  {
+    "id": "news_alphafly3_review",
+    "category": "blog",
+    "categoryLabel": "📝 티스토리 블로그",
+    "badgeColor": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    "title": "[티스토리 러닝리뷰] 나이키 알파플라이 3 실착 100km 누적 리뷰: 중족부 아치 압박 개선과 5mm 반업 필수 팁",
+    "source": "티스토리 러너 블로그",
+    "date": "러닝화 실착 검증",
+    "snippet": "알파플라이 2 대비 전장 미드솔 연결로 발구름이 훨씬 부드러워졌고 경량화 성공. 줌 에어포드의 폭발적 반발력은 최고이나, 칼발이 아니라면 무조건 5mm 반업을 추천합니다.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=site:tistory.com+%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43+%EC%8B%A4%EC%B0%A9+%EB%A6%AC%EB%B7%B0",
+    "tags": [
+      "#알파플라이3",
+      "#티스토리리뷰",
+      "#카본화",
+      "#사이즈팁"
+    ]
+  },
+  {
+    "id": "news_superblast2_review",
+    "category": "blog",
+    "categoryLabel": "📝 네이버 블로그",
+    "badgeColor": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "title": "[네이버 블로그] 아식스 슈퍼블라스트 2 실착 후기: 45mm 힐스택의 극강 쿠셔닝과 LSD 장거리 훈련의 구원투수",
+    "source": "네이버 러닝 블로그",
+    "date": "러닝화 실착 검증",
+    "snippet": "FF BLAST TURBO 폼 적용으로 무릎·발목 관절 충격 제로에 가까운 극강의 보호력. 장거리 30km LSD 및 존2 유산소 지속주에 최적화된 올라운드 슈퍼트레이너.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=site:blog.naver.com+%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82+%ED%9B%84%EA%B8%B0",
+    "tags": [
+      "#슈퍼블라스트2",
+      "#네이버블로그",
+      "#LSD훈련화",
+      "#아식스러닝화"
+    ]
+  },
+  {
+    "id": "news_evosl_vs_pro3",
+    "category": "blog",
+    "categoryLabel": "📝 티스토리 블로그",
+    "badgeColor": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    "title": "[티스토리 러닝리뷰] 아디다스 아디제로 EVO SL vs 아디오스 프로 3: 노카본 훈련화와 카본 레이싱화 체감 비교",
+    "source": "티스토리 러너 블로그",
+    "date": "러닝화 실착 검증",
+    "snippet": "카본 플레이트 없이 라이트스트라이크 프로 단일 폼으로 10km 템포런·인터벌에서 경쾌한 발놀림을 주는 EVO SL. 실전 풀코스에서는 에너지로드 2.0이 장착된 아디오스 프로 3 추천.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4+EVO+SL+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4+EVO+SL+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=site:tistory.com+아디제로+EVO+SL+아디오스프로3+비교",
+    "tags": [
+      "#에보SL",
+      "#아디오스프로3",
+      "#티스토리비교",
+      "#스피드훈련"
+    ]
+  },
+  {
+    "id": "news_adiospro3_review",
+    "category": "blog",
+    "categoryLabel": "📝 네이버 블로그",
+    "badgeColor": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "title": "[네이버 블로그] 아디다스 아디오스 프로 3 풀코스 완주기: 컨티넨탈 접지력과 악마의 뿌리(악뿌) 테이핑 팁",
+    "source": "네이버 마라톤 블로그",
+    "date": "풀코스 완주 검증",
+    "snippet": "비 오는 날에도 미끄러지지 않는 독보적 컨티넨탈 아웃솔. 에너지로드의 단단한 반발력이 30km 이후 페이스를 지켜주며, 악뿌 통증은 락레이싱과 키네시오 테이핑으로 해결.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%ED%94%84%EB%A1%9C3+%ED%92%80%EC%BD%94%EC%8A%A4+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%ED%94%84%EB%A1%9C3+%ED%92%80%EC%BD%94%EC%8A%A4+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=아디오스프로3+악마의뿌리+마라톤+완주+후기",
+    "tags": [
+      "#아디오스프로3",
+      "#풀코스완주기",
+      "#악뿌해결",
+      "#마라톤카본화"
+    ]
+  },
+  {
+    "id": "news_novablast4_review",
+    "category": "blog",
+    "categoryLabel": "📝 티스토리 블로그",
+    "badgeColor": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    "title": "[티스토리 러닝리뷰] 아식스 노바블라스트 4 실착 리뷰: 푹신한 트램펄린 반발력과 런린이·조깅족 최애 데일리 러닝화",
+    "source": "티스토리 러너 블로그",
+    "date": "데일리 조깅 검증",
+    "snippet": "FF BLAST+ ECO 폼 적용으로 쫀득한 쿠션감과 넓어진 아웃솔로 안정성이 크게 강화. 달리는 재미를 느끼고 싶은 입문 러너와 회복 조깅용으로 최고의 가성비 훈련화.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=site:tistory.com+노바블라스트4+실착+리뷰",
+    "tags": [
+      "#노바블라스트4",
+      "#티스토리리뷰",
+      "#조깅화",
+      "#입문러닝화"
+    ]
+  },
+  {
+    "id": "news_pro4_vs_elite4",
+    "category": "blog",
+    "categoryLabel": "📝 네이버 블로그",
+    "badgeColor": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "title": "[네이버 블로그] 써코니 엔돌핀 프로 4 vs 뉴발란스 SC 엘리트 v4: 공격적 스피드롤 vs 극상의 푹신함 비교",
+    "source": "네이버 장비 리뷰 블로그",
+    "date": "카본화 비교 검증",
+    "snippet": "앞으로 확실히 굴려주는 스피드롤의 엔돌핀 프로 4, 그리고 100% PEBA 퓨얼셀 폼과 2E 와이드 발볼로 발볼러에게 축복인 SC 엘리트 v4의 성향별 비교 분석.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4+SC%EC%97%98%EB%A6%AC%ED%8A%B8v4+%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4+SC%EC%97%98%EB%A6%AC%ED%8A%B8v4+%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=엔돌핀프로4+SC엘리트v4+실착+비교+리뷰",
+    "tags": [
+      "#엔돌핀프로4",
+      "#SC엘리트v4",
+      "#발볼러카본화",
+      "#슈퍼슈즈비교"
+    ]
+  },
+  {
+    "id": "news_hoka_clifton_mach",
+    "category": "blog",
+    "categoryLabel": "📝 티스토리 블로그",
+    "badgeColor": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    "title": "[티스토리 러닝리뷰] 호카 클리프톤 9 vs 마하 6 실착 비교: 무릎 부상 방지 힐 쿠션과 경쾌한 템포런의 차이",
+    "source": "티스토리 러너 블로그",
+    "date": "쿠션화 비교 검증",
+    "snippet": "도톰한 미드솔로 충격을 흡수해 주는 클리프톤 9과 초경량 SCF EVA 단일 폼으로 탄력 있는 페이스업을 돕는 마하 6. 발목 안정성과 일상 러닝 목적에 따른 선택 팁.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%ED%98%B8%EC%B9%B4+%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49+%EB%A7%88%ED%95%986+%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%ED%98%B8%EC%B9%B4+%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49+%EB%A7%88%ED%95%986+%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=site:tistory.com+호카+클리프톤9+마하6+비교",
+    "tags": [
+      "#호카러닝화",
+      "#클리프톤9",
+      "#마하6",
+      "#쿠션화비교"
+    ]
+  },
+  {
+    "id": "news_carbo_loading_guide",
+    "category": "trend",
+    "categoryLabel": "🔬 카보로딩 가이드",
+    "badgeColor": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    "title": "[훈련·영양] 마라톤 대회 3일 전 카보로딩(탄수화물 로딩) 식단법: 쌀밥·떡·베이글로 글리코겐 100% 충전하기",
+    "source": "스포츠 영양학 저널",
+    "date": "대회 3일 전 필수",
+    "snippet": "대회 36~48시간 전 탄수화물 70~80% 집중 식단 구성법. 전날 기름진 삼겹살·짜장면 폭식을 피하고 소화 빠른 밥·떡 위주 식단과 수분 섭취로 1~2kg 증량되는 원리 완벽 정리.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9+%EC%8B%9D%EB%8B%A8%EB%B2%95",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9+%EC%8B%9D%EB%8B%A8%EB%B2%95",
+    "googleUrl": "https://www.google.com/search?q=마라톤+카보로딩+식단법+글리코겐+비축",
+    "tags": [
+      "#카보로딩",
+      "#마라톤식단",
+      "#에너지비축",
+      "#식단가이드"
+    ]
+  },
+  {
+    "id": "news_gel_timing_guide",
+    "category": "trend",
+    "categoryLabel": "🔬 에너지젤 타이밍",
+    "badgeColor": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    "title": "[훈련·영양] 마라톤 풀코스 에너지젤 섭취 타이밍 & 30km 사점 극복: 출발 15분 전부터 45분 주기 공식",
+    "source": "러닝 생리학 가이드",
+    "date": "레이스 실전 공식",
+    "snippet": "에너지젤은 지치고 나서 먹으면 늦는다! 출발 15분 전 1포, 레이스 중 10km(45분)마다 선제적 섭취. 32km 이후 카페인 젤 부스팅과 급수대 물 섭취 노하우.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%84%AD%EC%B7%A8+%ED%83%80%EC%9D%B4%EB%B0%8D",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%84%AD%EC%B7%A8+%ED%83%80%EC%9D%B4%EB%B0%8D",
+    "googleUrl": "https://www.google.com/search?q=마라톤+에너지젤+섭취+타이밍+30km사점",
+    "tags": [
+      "#에너지젤",
+      "#보급타이밍",
+      "#30km벽",
+      "#파워젤"
+    ]
+  },
+  {
+    "id": "news_gel_brand_comparison",
+    "category": "blog",
+    "categoryLabel": "📝 네이버 블로그",
+    "badgeColor": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "title": "[네이버 블로그] 4대 마라톤 에너지젤 맛·성분·흡수도 비교: 모르텐 vs 아미노바이탈 vs 구(GU) vs 요헤미티",
+    "source": "네이버 러닝 영양 블로그",
+    "date": "파워젤 실착 비교",
+    "snippet": "엘리트의 하이드로겔 모르텐, 근육 경련 방지 아미노산의 아미노바이탈, 다양한 맛의 클래식 GU, 가성비 좋은 요헤미티 파워젤의 목넘김 및 위장 트러블 실착 비교.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%B6%94%EC%B2%9C+%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%B6%94%EC%B2%9C+%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=모르텐+아미노바이탈+구GU+요헤미티+에너지젤+비교",
+    "tags": [
+      "#에너지젤비교",
+      "#모르텐",
+      "#아미노바이탈",
+      "#위장트러블"
+    ]
+  },
+  {
+    "id": "news_midfoot_form",
+    "category": "trend",
+    "categoryLabel": "🔬 러닝 폼 연구",
+    "badgeColor": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    "title": "[훈련·영양] 무릎 통증 줄이는 체간 착지(Mid-foot) 주법 & 180spm 케이던스 훈련법",
+    "source": "러닝 바이오메카닉스 칼럼",
+    "date": "부상 방지 주법",
+    "snippet": "오버스트라이드로 인한 무릎 관절 충격을 방지하는 골반 무게중심 착지법. 지면 접촉 시간을 줄이고 반발력을 극대화하는 메트로놈 180spm 케이던스 루틴.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EB%AF%B8%EB%93%9C%ED%92%8B+%EC%BC%80%EC%9D%B4%EB%8D%98%EC%8A%A4",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EB%AF%B8%EB%93%9C%ED%92%8B+%EC%BC%80%EC%9D%B4%EB%8D%98%EC%8A%A4",
+    "googleUrl": "https://www.google.com/search?q=체간착지+미드풋+케이던스+180spm+러닝폼",
+    "tags": [
+      "#체간착지",
+      "#미드풋",
+      "#케이던스180",
+      "#무릎통증예방"
+    ]
+  },
+  {
+    "id": "news_tapering_formula",
+    "category": "trend",
+    "categoryLabel": "🔬 테이퍼링 가이드",
+    "badgeColor": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    "title": "[훈련·영양] 마라톤 대회 3주 전 테이퍼링(Tapering) 감축 공식: 체력과 컨디션 100% 끌어올리기",
+    "source": "마라톤 훈련 매거진",
+    "date": "대회 3주 전 공식",
+    "snippet": "대회 3주 전 마일리지 25% 감축, 2주 전 50% 감축, 1주 전 75% 감축. 강도는 유지하되 볼륨을 줄여 글리코겐과 근세포 회복을 극대화하는 과학적 테이퍼링 비법.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81+%ED%9B%88%EB%A0%A8",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81+%ED%9B%88%EB%A0%A8",
+    "googleUrl": "https://www.google.com/search?q=마라톤+테이퍼링+훈련법+컨디셔닝",
+    "tags": [
+      "#테이퍼링",
+      "#컨디션조절",
+      "#마일리지감축",
+      "#대회준비"
+    ]
+  },
+  {
+    "id": "news_seoul_marathon_course",
+    "category": "race",
+    "categoryLabel": "🏃 마라톤 코스 공략",
+    "badgeColor": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    "title": "[대회 코스 공략] 서울마라톤(동아마라톤) 광화문~잠실 42.195km 코스 고저도 분석 및 구간별 페이스 전략",
+    "source": "동아마라톤 참가자 포럼",
+    "date": "코스 실전 가이드",
+    "snippet": "광화문 출발 후 청계천 루프와 군자교 완만한 오르막, 잠실대교 통과 후 잠실 주경기장 피니시까지 5km 구간별 네거티브 스플릿 페이싱과 맞바람 대비 실전 팁.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%A0%EC%A0%80%EB%8F%84+%EA%B3%B5%EB%9E%B5",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%A0%EC%A0%80%EB%8F%84+%EA%B3%B5%EB%9E%B5",
+    "googleUrl": "https://www.google.com/search?q=서울마라톤+동아마라톤+코스+고저도+공략",
+    "tags": [
+      "#서울마라톤",
+      "#동아마라톤",
+      "#코스공략",
+      "#잠실주경기장"
+    ]
+  },
+  {
+    "id": "news_jtbc_marathon_course",
+    "category": "race",
+    "categoryLabel": "🏃 마라톤 코스 공략",
+    "badgeColor": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    "title": "[대회 코스 공략] JTBC 서울마라톤 상암~잠실 코스 분석: 양화대교와 탄천합수부 언덕 공략 비법",
+    "source": "JTBC 러너스 포럼",
+    "date": "코스 실전 가이드",
+    "snippet": "상암 월드컵경기장을 출발해 양화대교, 마포대교, 강남 도심을 가로지르는 JTBC 코스. 30km 이후 강남 테헤란로 및 탄천 오르막 극복 페이싱 가이드.",
+    "url": "https://search.naver.com/search.naver?where=article&query=JTBC+%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%B5%EB%9E%B5",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=JTBC+%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%B5%EB%9E%B5",
+    "googleUrl": "https://www.google.com/search?q=JTBC서울마라톤+코스+고저도+공략법",
+    "tags": [
+      "#JTBC마라톤",
+      "#상암잠실",
+      "#코스분석",
+      "#테헤란로"
+    ]
+  },
+  {
+    "id": "news_chuncheon_daegu_course",
+    "category": "race",
+    "categoryLabel": "🏃 마라톤 코스 공략",
+    "badgeColor": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    "title": "[대회 코스 공략] 춘천마라톤 의암호 단풍 코스 & 대구국제마라톤 도심 순환 루프 비교 가이드",
+    "source": "전국 마라톤 종합 분석",
+    "date": "코스 비교 가이드",
+    "snippet": "가을 단풍과 호반의 절경을 자랑하지만 춘천댐 낙타등 언덕이 까다로운 춘마, 그리고 평지 중심 루프로 전면 개편되어 PB 달성에 유리해진 대구국제마라톤 비교.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%8C%80%EA%B5%AC%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%8C%80%EA%B5%AC%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=춘천마라톤+대구국제마라톤+코스+비교",
+    "tags": [
+      "#춘천마라톤",
+      "#대구국제마라톤",
+      "#낙타등",
+      "#평지코스"
+    ]
+  },
+  {
+    "id": "news_garmin_forerunner_comparison",
+    "category": "blog",
+    "categoryLabel": "📝 네이버 블로그",
+    "badgeColor": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "title": "[네이버 블로그] 가민(Garmin) 포러너 165 vs 265 vs 965 실사용 비교: 아몰레드 디스플레이와 러너 필수 기능",
+    "source": "네이버 IT 러닝 블로그",
+    "date": "스마트워치 검증",
+    "snippet": "가성비 입문용 포러너 165, 멀티밴드 GPS와 트레이닝 레디니스를 갖춘 265, 풀 지도 내비게이션의 965. 러너 실사용자가 추천하는 최적의 모델 선택 가이드.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EA%B0%80%EB%AF%BC+%ED%8F%AC%EB%9F%AC%EB%84%88+165+265+%EB%B9%84%EA%B5%90+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EA%B0%80%EB%AF%BC+%ED%8F%AC%EB%9F%AC%EB%84%88+165+265+%EB%B9%84%EA%B5%90+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=가민+포러너+165+265+965+실사용+비교",
+    "tags": [
+      "#가민포러너",
+      "#포러너265",
+      "#러닝워치",
+      "#네이버블로그"
+    ]
+  },
+  {
+    "id": "news_socks_blister_review",
+    "category": "blog",
+    "categoryLabel": "📝 티스토리 블로그",
+    "badgeColor": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    "title": "[티스토리 러닝리뷰] 마라톤 물집 방지 러닝양말 실착 비교: 타비 삭스 vs 발가락 양말 vs 논슬립 쿠션 삭스",
+    "source": "티스토리 러닝 기어 블로그",
+    "date": "물집 방지 실착 검증",
+    "snippet": "30km 이상 장거리 주행 시 발가락 마찰 물집을 완벽 차단하는 인진지 발가락 양말과 발바닥 미끄러짐을 잡아주는 실리콘 논슬립 삭스 착용감 비교 후기.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%96%91%EB%A7%90+%EB%AC%BC%EC%A7%91%EB%B0%A9%EC%A7%80+%EC%B6%94%EC%B2%9C",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%96%91%EB%A7%90+%EB%AC%BC%EC%A7%91%EB%B0%A9%EC%A7%80+%EC%B6%94%EC%B2%9C",
+    "googleUrl": "https://www.google.com/search?q=site:tistory.com+마라톤+러닝양말+물집방지+비교",
+    "tags": [
+      "#러닝양말",
+      "#물집방지",
+      "#발가락양말",
+      "#논슬립양말"
+    ]
+  },
+  {
+    "id": "news_winter_layering_guide",
+    "category": "blog",
+    "categoryLabel": "📝 네이버 블로그",
+    "badgeColor": "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    "title": "[네이버 블로그] 겨울철 영하 날씨 동계 러닝 방한 레이어링 & 기모 장갑·넥워머 필수 착용법",
+    "source": "네이버 아웃도어 러닝 블로그",
+    "date": "동계 방한 실전 팁",
+    "snippet": "땀 배출 흡한속건 베이스레이어 + 방풍 윈드브레이커 조합. 손끝 시림을 방지하는 스마트폰 터치 기모 장갑과 귀마개·넥워머로 체온을 유지하는 동계 달리기 팁.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EA%B2%A8%EC%9A%B8+%EB%9F%AC%EB%8B%9D+%EB%B0%A9%ED%95%9C+%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EA%B2%A8%EC%9A%B8+%EB%9F%AC%EB%8B%9D+%EB%B0%A9%ED%95%9C+%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
+    "googleUrl": "https://www.google.com/search?q=겨울철+러닝+방한복장+레이어링+기모장갑",
+    "tags": [
+      "#동계러닝",
+      "#방한레이어링",
+      "#러닝장갑",
+      "#체온유지"
+    ]
+  },
+  {
+    "id": "news_yt_youngjo_deadpoint",
+    "category": "youtube",
+    "categoryLabel": "🎬 유튜브 명품 특강",
+    "badgeColor": "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    "title": "[유튜브 특강] [황영조형] 올림픽 마라톤 금메달리스트가 전하는 30km 사점(Dead Point) 극복법 & 후반 페이스 특강",
+    "source": "유튜브 공식 @황영조형",
+    "date": "올림픽 레전드 직강",
+    "snippet": "몬주익의 영웅 황영조 감독이 직접 알려주는 마라톤 30km 이후 사점(Dead Point) 극복법과 지치지 않는 멘탈 관리 및 바른 팔치기 기본기.",
+    "url": "https://www.youtube.com/watch?v=6ZwBhkcja-8",
+    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%ED%99%A9%EC%98%81%EC%A1%B0+%EC%82%AC%EC%A0%90+%EB%A7%88%EB%9D%BC%ED%86%A4",
+    "googleUrl": "https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95",
+    "tags": [
+      "#황영조",
+      "#올림픽금메달",
+      "#사점극복",
+      "#마라톤특강"
+    ],
+    "youtubeUrl": "https://www.youtube.com/watch?v=6ZwBhkcja-8",
+    "channelUrl": "https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95/videos"
+  },
+  {
+    "id": "news_yt_dear_bible",
+    "category": "youtube",
+    "categoryLabel": "🎬 유튜브 명품 특강",
+    "badgeColor": "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    "title": "[유튜브 특강] [방구석 운동가 디어] 2026 러닝화 계급도 & 카테고리 바이블: 알파플라이부터 슈퍼블라스트까지 완벽 총정리",
+    "source": "유튜브 공식 @daily__dear",
+    "date": "러닝화 총정리",
+    "snippet": "러너들의 필수 시청 영상! 데일리 조깅화, 템포 트레이너, 최상급 카본 레이싱화까지 브랜드별 티어 정리 및 족형별 사이즈 선택 완벽 가이드.",
+    "url": "https://www.youtube.com/watch?v=u913M5LxTvQ",
+    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80+%EB%94%94%EC%96%B4+%EB%9F%AC%EB%8B%9D%ED%99%94+%EA%B3%84%EA%B8%89%EB%8F%84",
+    "googleUrl": "https://www.youtube.com/@daily__dear",
+    "tags": [
+      "#방구석운동가디어",
+      "#러닝화계급도",
+      "#카본화추천",
+      "#러닝장비"
+    ],
+    "youtubeUrl": "https://www.youtube.com/watch?v=u913M5LxTvQ",
+    "channelUrl": "https://www.youtube.com/@daily__dear/videos"
+  },
+  {
+    "id": "news_yt_runclear_form",
+    "category": "youtube",
+    "categoryLabel": "🎬 유튜브 명품 특강",
+    "badgeColor": "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    "title": "[유튜브 특강] [런클리어] 무릎·발목 통증 싹 없애는 체간 착지와 지면 반력 활용 테크닉",
+    "source": "유튜브 공식 @runclear_running",
+    "date": "1:1 자세 교정",
+    "snippet": "김영복 감독의 1:1 러닝 자세 교정 Before & After! 통증 없이 오래 달리는 체간 착지 주법과 에너지를 30% 절약하는 원포인트 레슨.",
+    "url": "https://www.youtube.com/watch?v=YHrPd85dVh4",
+    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EC%9E%90%EC%84%B8%EA%B5%90%EC%A0%95",
+    "googleUrl": "https://www.youtube.com/@runclear_running",
+    "tags": [
+      "#런클리어",
+      "#자세교정",
+      "#체간착지",
+      "#부상예방"
+    ],
+    "youtubeUrl": "https://www.youtube.com/watch?v=YHrPd85dVh4",
+    "channelUrl": "https://www.youtube.com/@runclear_running/videos"
+  },
+  {
+    "id": "news_yt_suncoach_breathing",
+    "category": "youtube",
+    "categoryLabel": "🎬 유튜브 명품 특강",
+    "badgeColor": "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    "title": "[유튜브 특강] [썬코치 42.195] 마라톤 호흡이 터지는 2:2 리듬 복식호흡 & 심박수 낮추는 페이싱 비법",
+    "source": "유튜브 공식 @suncoach42.195",
+    "date": "국가대표 호흡법",
+    "snippet": "국가대표 출신 썬코치가 전수하는 실전 마라톤 호흡법! 가슴이 답답하지 않은 복식 호흡 리듬과 후반부 심박수를 안정시키는 호흡 페이싱 공식.",
+    "url": "https://www.youtube.com/watch?v=EzMukipCCK4",
+    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%EC%8D%AC%EC%BD%94%EC%B9%98+%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%98%B8%ED%9D%A1%EB%B2%95",
+    "googleUrl": "https://www.youtube.com/@suncoach42.195",
+    "tags": [
+      "#썬코치",
+      "#호흡법",
+      "#복식호흡",
+      "#심박수조절"
+    ],
+    "youtubeUrl": "https://www.youtube.com/watch?v=EzMukipCCK4",
+    "channelUrl": "https://www.youtube.com/@suncoach42.195/videos"
+  },
+  {
+    "id": "news_half_sub130_routine",
+    "category": "blog",
+    "categoryLabel": "📝 티스토리 블로그",
+    "badgeColor": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+    "title": "[티스토리 러닝리뷰] 직장인 1년 만에 하프마라톤 1시간 29분 달성: 주간 40km 마일리지 배분과 LSD 훈련 일지",
+    "source": "티스토리 러너 실전 일지",
+    "date": "직장인 서브1:30",
+    "snippet": "바쁜 평일 5km 조깅 2회 + 주말 20km LSD 훈련으로 완성한 현실적인 훈련 일지. 무리한 인터벌 대신 점진적 마일리지 증량으로 이뤄낸 서브-1:30 달성 후기.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%9B%88%EB%A0%A8+%EB%A3%A8%ED%8B%B4+%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%9B%88%EB%A0%A8+%EB%A3%A8%ED%8B%B4+%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=site:tistory.com+하프마라톤+1시간30분+훈련+일지",
+    "tags": [
+      "#하프마라톤",
+      "#직장인러너",
+      "#훈련일지",
+      "#LSD루틴"
+    ]
+  },
+  {
+    "id": "news_recovery_48h_guide",
+    "category": "trend",
+    "categoryLabel": "🔬 리커버리 가이드",
+    "badgeColor": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    "title": "[훈련·영양] 마라톤 완주 후 48시간 초회복 골든타임: 아이싱·리커버리 조깅·BCAA 보급 가이드",
+    "source": "스포츠 의학 칼럼",
+    "date": "대회 완주 후 필수",
+    "snippet": "대회 완주 직후 젖산 배출을 위한 10분 걷기, 4:1 탄단비 섭취, 24시간 후 가벼운 20분 리커버리 조깅으로 근육통을 절반으로 줄이는 과학적 회복 프로토콜.",
+    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%99%84%EC%A3%BC+%ED%9B%84+%ED%9A%8C%EB%B3%B5+%EB%A3%A8%ED%8B%B4",
+    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%99%84%EC%A3%BC+%ED%9B%84+%ED%9A%8C%EB%B3%B5+%EB%A3%A8%ED%8B%B4",
+    "googleUrl": "https://www.google.com/search?q=마라톤+완주+후+근육통+초회복+루틴",
+    "tags": [
+      "#초회복",
+      "#마라톤회복",
+      "#리커버리조깅",
+      "#근육통완화"
+    ]
+  }
+];
 
   const RUNNING_NEWS_STORAGE_KEY = 'pacecraft_running_news_v2';
 
@@ -8421,11 +8543,12 @@ ${content}
       `).join('');
     }
 
-    container.innerHTML = filtered.map(item => {
-      const isTop3 = item.rank <= 3;
+    container.innerHTML = filtered.map((item, idx) => {
+      const rankNum = item.rank || (idx + 1);
+      const isTop3 = rankNum <= 3;
       const rankBadge = isTop3
-        ? `<span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-red-600 to-amber-500 text-white shadow-2xs">🔥 TOP ${String(item.rank).padStart(2, '0')}</span>`
-        : `<span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">TOP ${String(item.rank).padStart(2, '0')}</span>`;
+        ? `<span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-red-600 to-amber-500 text-white shadow-2xs">🔥 TOP ${String(rankNum).padStart(2, '0')}</span>`
+        : `<span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">TOP ${String(rankNum).padStart(2, '0')}</span>`;
 
       const tagsHtml = (item.tags || []).map(t => `<span class="text-[11px] font-bold text-blue-600 dark:text-blue-400">${t}</span>`).join(' ');
 
