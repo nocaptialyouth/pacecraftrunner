@@ -871,9 +871,9 @@
     document.querySelectorAll('.table-strat-btn').forEach(btn => {
       const st = btn.getAttribute('data-table-strategy');
       if (st === state.strategy) {
-        btn.className = 'table-strat-btn px-2.5 py-1 rounded-lg text-xs font-extrabold bg-brand-600 text-white shadow-xs transition cursor-pointer';
+        btn.className = 'table-strat-btn whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-extrabold bg-brand-600 text-white shadow-xs transition cursor-pointer shrink-0';
       } else {
-        btn.className = 'table-strat-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer';
+        btn.className = 'table-strat-btn whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer shrink-0';
       }
     });
   }
@@ -1165,7 +1165,7 @@
           <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap text-brand-600 dark:text-brand-400 font-bold">${formatPace(segPace)}/km</td>
           <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap text-slate-500 dark:text-slate-400">${formatDurationClean(segSec)}</td>
           <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap font-bold">${formatHMS(cumSec)}</td>
-          <td class="py-2.5 px-2 sm:px-3 hidden sm:table-cell font-sans text-xs text-slate-500 dark:text-slate-400">${seg.guide}</td>
+          <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap font-sans text-xs text-slate-600 dark:text-slate-300 font-medium">${seg.guide}</td>
         </tr>
       `;
     }).join('');

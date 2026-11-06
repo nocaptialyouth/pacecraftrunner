@@ -649,14 +649,14 @@ window.addEventListener('load', function() {
               </div>
               <div class="flex items-center gap-1.5 self-start sm:self-auto">
                 <!-- 5km 스플릿 테이블 헤더 직접 전환 원클릭 버튼 그룹 -->
-                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-                  <button type="button" data-table-strategy="even" onclick="setSplitStrategy('even')" class="table-strat-btn px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer" title="이븐 페이스 (일정 속도 유지)">
+                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl shrink-0">
+                  <button type="button" data-table-strategy="even" onclick="setSplitStrategy('even')" class="table-strat-btn whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer shrink-0" title="이븐 페이스 (일정 속도 유지)">
                     ⚖️ 이븐
                   </button>
-                  <button type="button" data-table-strategy="negative" onclick="setSplitStrategy('negative')" class="table-strat-btn px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer" title="네거티브 스플릿 (후반 가속·추천)">
+                  <button type="button" data-table-strategy="negative" onclick="setSplitStrategy('negative')" class="table-strat-btn whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer shrink-0" title="네거티브 스플릿 (후반 가속·추천)">
                     🚀 네거티브
                   </button>
-                  <button type="button" data-table-strategy="positive" onclick="setSplitStrategy('positive')" class="table-strat-btn px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer" title="포지티브 스플릿 (전반 세이브)">
+                  <button type="button" data-table-strategy="positive" onclick="setSplitStrategy('positive')" class="table-strat-btn whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-extrabold transition cursor-pointer shrink-0" title="포지티브 스플릿 (전반 세이브)">
                     🔥 포지티브
                   </button>
                 </div>
@@ -666,14 +666,14 @@ window.addEventListener('load', function() {
 
             <!-- 스플릿 테이블 -->
             <div class="overflow-x-auto rounded-xl border border-slate-200/80 dark:border-slate-800">
-              <table class="w-full text-left text-xs font-mono">
+              <table class="w-full min-w-[540px] text-left text-xs font-mono">
                 <thead class="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 font-sans border-b border-slate-200 dark:border-slate-800">
                   <tr>
-                    <th class="py-2.5 px-2 sm:px-3">구간</th>
-                    <th class="py-2.5 px-2 sm:px-3">구간 페이스</th>
-                    <th class="py-2.5 px-2 sm:px-3">구간 소요</th>
-                    <th class="py-2.5 px-2 sm:px-3">누적 통과 시간</th>
-                    <th class="py-2.5 px-2 sm:px-3 hidden sm:table-cell font-sans">실전 가이드</th>
+                    <th class="py-2.5 px-2 sm:px-3 whitespace-nowrap">구간</th>
+                    <th class="py-2.5 px-2 sm:px-3 whitespace-nowrap">구간 페이스</th>
+                    <th class="py-2.5 px-2 sm:px-3 whitespace-nowrap">구간 소요</th>
+                    <th class="py-2.5 px-2 sm:px-3 whitespace-nowrap">누적 통과 시간</th>
+                    <th class="py-2.5 px-2 sm:px-3 whitespace-nowrap min-w-[160px] font-sans">실전 가이드</th>
                   </tr>
                 </thead>
                 <tbody id="split-table-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-800 dark:text-slate-200">
