@@ -851,12 +851,29 @@
       }
     });
 
-    strategyBtns.forEach(btn => {
+    // [신규] 5km 구간별 스플릿 시간표 헤더에서 원클릭 페이스 전략 전환 (이븐 / 네거티브 / 포지티브)
+  function setSplitStrategy(strategy) {
+    if (!['even', 'negative', 'positive'].includes(strategy)) return;
+    state.strategy = strategy;
+    calculateAndRender();
+  }
+  window.setSplitStrategy = setSplitStrategy;
+
+  strategyBtns.forEach(btn => {
       const st = btn.dataset.strategy;
       if (st === state.strategy) {
         btn.className = 'strategy-btn p-3 rounded-xl border-2 text-left transition border-brand-600 dark:border-brand-400 bg-brand-50/50 dark:bg-brand-950/30';
       } else {
         btn.className = 'strategy-btn p-3 rounded-xl border text-left transition border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 hover:border-slate-300';
+      }
+    });
+
+    document.querySelectorAll('.table-strat-btn').forEach(btn => {
+      const st = btn.getAttribute('data-table-strategy');
+      if (st === state.strategy) {
+        btn.className = 'table-strat-btn px-2.5 py-1 rounded-lg text-xs font-extrabold bg-brand-600 text-white shadow-xs transition cursor-pointer';
+      } else {
+        btn.className = 'table-strat-btn px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 transition cursor-pointer';
       }
     });
   }
@@ -986,67 +1003,55 @@
 
     const bodyInfoText = `신장 <strong>${state.height}cm</strong> · 체중 <strong>${state.weight}kg</strong>(BMI <strong>${metabolic.bmi.toFixed(1)}</strong>, ${metabolic.bmiType})`;
 
+    let adviceToneClass = 'text-emerald-600 dark:text-emerald-400';
+    let adviceMsg = '';
+    let btnGradientClass = 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700';
+
     if (prob >= 80) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400';
       probBarEl.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
       badgeEl.textContent = '✅ 안정권 목표 (충분히 달성 가능)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
-      adviceEl.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed break-keep">
-            <span class="font-extrabold text-emerald-600 dark:text-emerald-400">💡 데이터 코치 진단:</span>
-            현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 달성이 충분히 가능합니다! 초반 오버페이스만 주의하세요.
-          </div>
-          <button
-            type="button"
-            onclick="goToGearTier('${autoTier}')"
-            class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-            title="목표 페이스에 맞춘 추천 기어 바로가기"
-          >
-            <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기 ➔</span>
-          </button>
-        </div>`;
+      adviceToneClass = 'text-emerald-600 dark:text-emerald-400';
+      adviceMsg = `현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 달성이 충분히 가능합니다! 초반 오버페이스만 주의하세요.`;
+      btnGradientClass = 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700';
     } else if (prob >= 55) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-sky-600 dark:text-sky-400';
       probBarEl.className = 'h-full bg-sky-500 rounded-full transition-all duration-300';
       badgeEl.textContent = '🔥 적정 도전 목표 (6~10주 훈련 권장)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-sky-500/15 text-sky-600 dark:text-sky-400';
-      adviceEl.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed break-keep">
-            <span class="font-extrabold text-sky-600 dark:text-sky-400">💡 데이터 코치 진단:</span>
-            ${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표입니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.
-          </div>
-          <button
-            type="button"
-            onclick="goToGearTier('${autoTier}')"
-            class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-            title="목표 페이스에 맞춘 추천 기어 바로가기"
-          >
-            <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기 ➔</span>
-          </button>
-        </div>`;
+      adviceToneClass = 'text-sky-600 dark:text-sky-400';
+      adviceMsg = `${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표입니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.`;
+      btnGradientClass = 'from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700';
     } else {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 dark:text-rose-400';
       probBarEl.className = 'h-full bg-rose-500 rounded-full transition-all duration-300';
       badgeEl.textContent = '⚠️ 공격적 목표 (후반 퍼짐 주의)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400';
-      adviceEl.innerHTML = `
-        <div class="space-y-2.5">
-          <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed break-keep">
-            <span class="font-extrabold text-rose-600 dark:text-rose-400">💡 데이터 코치 진단:</span>
-            ${bodyInfoText} 대비 요구 VDOT 차이(<strong>+${vdotDiff.toFixed(1)}</strong>)가 커서 후반 에너지 고갈 위험이 높습니다. 충분한 훈련 기간 확보와 철저한 보급이 필수입니다.
-          </div>
-          <button
-            type="button"
-            onclick="goToGearTier('${autoTier}')"
-            class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-            title="목표 페이스에 맞춘 추천 기어 바로가기"
-          >
-            <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기 ➔</span>
-          </button>
-        </div>`;
+      adviceToneClass = 'text-rose-600 dark:text-rose-400';
+      adviceMsg = `${bodyInfoText} 대비 요구 VDOT 차이(<strong>+${vdotDiff.toFixed(1)}</strong>)가 커서 후반 에너지 고갈 위험이 높습니다. 충분한 훈련 기간 확보와 철저한 보급이 필수입니다.`;
+      btnGradientClass = 'from-brand-600 via-indigo-600 to-purple-600 hover:from-brand-700 hover:to-purple-700';
     }
+
+    adviceEl.innerHTML = `
+      <div class="flex flex-col gap-2.5 w-full">
+        <div class="text-xs sm:text-[13px] text-slate-700 dark:text-slate-200 leading-relaxed" style="word-break: keep-all; overflow-wrap: anywhere;">
+          <div class="font-extrabold ${adviceToneClass} mb-1 flex items-center gap-1.5 text-xs sm:text-sm">
+            <span>💡</span>
+            <span>데이터 코치 진단:</span>
+          </div>
+          <p class="mt-1">${adviceMsg}</p>
+        </div>
+        <button
+          type="button"
+          onclick="goToGearTier('${autoTier}')"
+          class="w-full mt-1.5 py-2.5 px-3 rounded-xl bg-gradient-to-r ${btnGradientClass} active:scale-[0.99] text-white text-xs sm:text-sm font-extrabold shadow-sm hover:shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+          title="목표 페이스에 맞춘 추천 기어 바로가기"
+        >
+          <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기</span>
+          <span class="text-xs">➔</span>
+        </button>
+      </div>`;
 
     const totalKcal = metabolic.totalKcal;
     const raceHours = state.targetSec / 3600;
@@ -1054,8 +1059,10 @@
     const hourlyCarbGram = Math.min(78, Math.max(25, Math.round((state.weight * 0.72) + (metabolic.bsa * 8))));
     const totalCarbGram = Math.round(hourlyCarbGram * raceHours);
 
-    document.getElementById('kcal-val').textContent = totalKcal.toLocaleString();
-    document.getElementById('carb-need-text').textContent = `${state.height}cm·${state.weight}kg(BMI ${metabolic.bmi.toFixed(1)}) · 권장 탄수화물 ${totalCarbGram}g`;
+    const kcalEl = document.getElementById('kcal-val');
+    if (kcalEl) kcalEl.textContent = totalKcal.toLocaleString();
+    const carbEl = document.getElementById('carb-need-text');
+    if (carbEl) carbEl.textContent = `권장 탄수화물 ${totalCarbGram}g`;
 
     const eFast = getPaceSecFromVDOTIntensity(currentVDOT, 0.74);
     const eSlow = getPaceSecFromVDOTIntensity(currentVDOT, 0.65);
@@ -1063,10 +1070,14 @@
     const tPace = getPaceSecFromVDOTIntensity(currentVDOT, 0.88);
     const iPace = getPaceSecFromVDOTIntensity(currentVDOT, 0.975);
 
-    document.getElementById('pace-e').textContent = `${formatPace(eFast)} ~ ${formatPace(eSlow)}`;
-    document.getElementById('pace-m').textContent = `${formatPace(mPace)}/km`;
-    document.getElementById('pace-t').textContent = `${formatPace(tPace)}/km`;
-    document.getElementById('pace-i').textContent = `${formatPace(iPace)}/km`;
+    const paceE = document.getElementById('pace-e');
+    if (paceE) paceE.textContent = `${formatPace(eFast)} ~ ${formatPace(eSlow)}`;
+    const paceM = document.getElementById('pace-m');
+    if (paceM) paceM.textContent = `${formatPace(mPace)}/km`;
+    const paceT = document.getElementById('pace-t');
+    if (paceT) paceT.textContent = `${formatPace(tPace)}/km`;
+    const paceI = document.getElementById('pace-i');
+    if (paceI) paceI.textContent = `${formatPace(iPace)}/km`;
 
     renderSplitTable(targetPace);
     renderFuelingTimeline(targetPace, metabolic);
@@ -2226,6 +2237,14 @@
     calculateAndRender();
   });
 
+  // [신규] 5km 구간별 스플릿 시간표 헤더에서 원클릭 페이스 전략 전환 (이븐 / 네거티브 / 포지티브)
+  function setSplitStrategy(strategy) {
+    if (!['even', 'negative', 'positive'].includes(strategy)) return;
+    state.strategy = strategy;
+    calculateAndRender();
+  }
+  window.setSplitStrategy = setSplitStrategy;
+
   strategyBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       state.strategy = btn.dataset.strategy;
@@ -3312,6 +3331,58 @@
       showToast('📋 복사 완료되었습니다.');
     });
   }
+
+  // 우측 사이드바: 오늘의 실시간 러닝 핫뉴스 TOP 4 + 인기 유튜브 추천 TOP 2 위젯 (공백 완벽 채움 & 실시간 연동)
+  function renderRightSidebarWidgets() {
+    // 1. 오늘의 러닝 핫뉴스 TOP 4
+    const rightNewsList = document.getElementById('right-sidebar-news-list');
+    if (rightNewsList) {
+      const top4 = (runningNewsList && runningNewsList.length > 0)
+        ? runningNewsList.slice(0, 4)
+        : (DEFAULT_RUNNING_NEWS || []).slice(0, 4);
+      rightNewsList.innerHTML = top4.map(item => `
+        <a href="${item.naverBlogUrl || item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer" title="${item.title}">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="px-1.5 py-0.5 rounded font-extrabold ${item.badgeColor || 'bg-brand-500/10 text-brand-600'}">${item.categoryLabel || '러닝뉴스'}</span>
+            <span class="text-slate-400 text-[10px]">${item.date || '오늘'}</span>
+          </div>
+          <p class="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition line-clamp-2 leading-snug break-words">${item.title}</p>
+        </a>
+      `).join('');
+    }
+
+    // 2. 추천 러닝 유튜브 TOP 2
+    const rightYtList = document.getElementById('right-sidebar-youtube-list');
+    if (rightYtList) {
+      const allYt = (typeof youtubeVideos !== 'undefined' && youtubeVideos && youtubeVideos.length > 0)
+        ? youtubeVideos
+        : (typeof DEFAULT_YOUTUBE_VIDEOS !== 'undefined' ? DEFAULT_YOUTUBE_VIDEOS : []);
+      const ytItems = allYt.slice(0, 2);
+      rightYtList.innerHTML = ytItems.map(item => {
+        const vId = item.videoId || extractYouTubeVideoId(item.url);
+        const thumbUrl = vId
+          ? `https://img.youtube.com/vi/${vId}/mqdefault.jpg`
+          : 'https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?auto=format&fit=crop&w=640&q=80';
+        return `
+          <div onclick="openYoutubePlayer('${item.id}')" class="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex items-center gap-2.5 group cursor-pointer" title="클릭 시 바로 영상 시청">
+            <div class="w-16 h-11 shrink-0 rounded-lg overflow-hidden relative bg-slate-900">
+              <img src="${thumbUrl}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition" />
+              <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <span class="text-white text-xs drop-shadow">▶</span>
+              </div>
+            </div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[9px] font-extrabold px-1 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400">${item.creator || '유튜브'}</span>
+              <p class="text-[11px] font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-brand-600 transition mt-0.5">${item.title}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+  window.renderRightSidebarWidgets = renderRightSidebarWidgets;
+  window.setSplitStrategy = setSplitStrategy;
+
 
   function renderRightRaceScheduleSidebar() {
     const listContainer = document.getElementById('right-race-schedule-list');
@@ -4648,7 +4719,7 @@ ${content}
     if (rightNewsList) {
       const top4 = (runningNewsList || []).slice(0, 4);
       rightNewsList.innerHTML = top4.map(item => `
-        <a href="${item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer">
+        <a href="${item.naverBlogUrl || item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer">
           <div class="flex items-center justify-between text-[10px]">
             <span class="px-1.5 py-0.5 rounded font-extrabold ${item.badgeColor || 'bg-brand-500/10 text-brand-600'}">${item.categoryLabel || '러닝뉴스'}</span>
             <span class="text-slate-400 text-[10px]">${item.date || '오늘'}</span>
@@ -5499,15 +5570,18 @@ ${content}
     "source": "티스토리 러너 블로그",
     "date": "러닝화 실착 검증",
     "snippet": "알파플라이 2 대비 전장 미드솔 연결로 발구름이 훨씬 부드러워졌고 경량화 성공. 줌 에어포드의 폭발적 반발력은 최고이나, 칼발이 아니라면 무조건 5mm 반업을 추천합니다.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=site:tistory.com+%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43+%EC%8B%A4%EC%B0%A9+%EB%A6%AC%EB%B7%B0",
+    "searchKw": "알파플라이3 실착 후기",
     "tags": [
       "#알파플라이3",
       "#티스토리리뷰",
       "#카본화",
       "#사이즈팁"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43%20%EC%8B%A4%EC%B0%A9%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43%20%EC%8B%A4%EC%B0%A9%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43%20%EC%8B%A4%EC%B0%A9%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B43%20%EC%8B%A4%EC%B0%A9%20%ED%9B%84%EA%B8%B0",
+    "rank": 1
   },
   {
     "id": "news_superblast2_review",
@@ -5518,15 +5592,18 @@ ${content}
     "source": "네이버 러닝 블로그",
     "date": "러닝화 실착 검증",
     "snippet": "FF BLAST TURBO 폼 적용으로 무릎·발목 관절 충격 제로에 가까운 극강의 보호력. 장거리 30km LSD 및 존2 유산소 지속주에 최적화된 올라운드 슈퍼트레이너.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=site:blog.naver.com+%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82+%ED%9B%84%EA%B8%B0",
+    "searchKw": "아식스 슈퍼블라스트2 후기",
     "tags": [
       "#슈퍼블라스트2",
       "#네이버블로그",
       "#LSD훈련화",
       "#아식스러닝화"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%95%84%EC%8B%9D%EC%8A%A4%20%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B82%20%ED%9B%84%EA%B8%B0",
+    "rank": 2
   },
   {
     "id": "news_evosl_vs_pro3",
@@ -5537,15 +5614,18 @@ ${content}
     "source": "티스토리 러너 블로그",
     "date": "러닝화 실착 검증",
     "snippet": "카본 플레이트 없이 라이트스트라이크 프로 단일 폼으로 10km 템포런·인터벌에서 경쾌한 발놀림을 주는 EVO SL. 실전 풀코스에서는 에너지로드 2.0이 장착된 아디오스 프로 3 추천.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4+EVO+SL+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4+EVO+SL+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=site:tistory.com+아디제로+EVO+SL+아디오스프로3+비교",
+    "searchKw": "아디다스 EVO SL 후기",
     "tags": [
       "#에보SL",
       "#아디오스프로3",
       "#티스토리비교",
       "#스피드훈련"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4%20EVO%20SL%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4%20EVO%20SL%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4%20EVO%20SL%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4%20EVO%20SL%20%ED%9B%84%EA%B8%B0",
+    "rank": 3
   },
   {
     "id": "news_adiospro3_review",
@@ -5556,15 +5636,18 @@ ${content}
     "source": "네이버 마라톤 블로그",
     "date": "풀코스 완주 검증",
     "snippet": "비 오는 날에도 미끄러지지 않는 독보적 컨티넨탈 아웃솔. 에너지로드의 단단한 반발력이 30km 이후 페이스를 지켜주며, 악뿌 통증은 락레이싱과 키네시오 테이핑으로 해결.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%ED%94%84%EB%A1%9C3+%ED%92%80%EC%BD%94%EC%8A%A4+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%ED%94%84%EB%A1%9C3+%ED%92%80%EC%BD%94%EC%8A%A4+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=아디오스프로3+악마의뿌리+마라톤+완주+후기",
+    "searchKw": "아디오스 프로3 마라톤 후기",
     "tags": [
       "#아디오스프로3",
       "#풀코스완주기",
       "#악뿌해결",
       "#마라톤카본화"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%20%ED%94%84%EB%A1%9C3%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%20%ED%94%84%EB%A1%9C3%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%20%ED%94%84%EB%A1%9C3%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EB%94%94%EC%98%A4%EC%8A%A4%20%ED%94%84%EB%A1%9C3%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%84%EA%B8%B0",
+    "rank": 4
   },
   {
     "id": "news_novablast4_review",
@@ -5575,15 +5658,18 @@ ${content}
     "source": "티스토리 러너 블로그",
     "date": "데일리 조깅 검증",
     "snippet": "FF BLAST+ ECO 폼 적용으로 쫀득한 쿠션감과 넓어진 아웃솔로 안정성이 크게 강화. 달리는 재미를 느끼고 싶은 입문 러너와 회복 조깅용으로 최고의 가성비 훈련화.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84+%EC%8B%A4%EC%B0%A9+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=site:tistory.com+노바블라스트4+실착+리뷰",
+    "searchKw": "아식스 노바블라스트4 후기",
     "tags": [
       "#노바블라스트4",
       "#티스토리리뷰",
       "#조깅화",
       "#입문러닝화"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%95%84%EC%8B%9D%EC%8A%A4%20%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B84%20%ED%9B%84%EA%B8%B0",
+    "rank": 5
   },
   {
     "id": "news_pro4_vs_elite4",
@@ -5594,15 +5680,18 @@ ${content}
     "source": "네이버 장비 리뷰 블로그",
     "date": "카본화 비교 검증",
     "snippet": "앞으로 확실히 굴려주는 스피드롤의 엔돌핀 프로 4, 그리고 100% PEBA 퓨얼셀 폼과 2E 와이드 발볼로 발볼러에게 축복인 SC 엘리트 v4의 성향별 비교 분석.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4+SC%EC%97%98%EB%A6%AC%ED%8A%B8v4+%EB%B9%84%EA%B5%90",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4+SC%EC%97%98%EB%A6%AC%ED%8A%B8v4+%EB%B9%84%EA%B5%90",
-    "googleUrl": "https://www.google.com/search?q=엔돌핀프로4+SC엘리트v4+실착+비교+리뷰",
+    "searchKw": "엔돌핀프로4 SC엘리트v4 비교",
     "tags": [
       "#엔돌핀프로4",
       "#SC엘리트v4",
       "#발볼러카본화",
       "#슈퍼슈즈비교"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4%20SC%EC%97%98%EB%A6%AC%ED%8A%B8v4%20%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4%20SC%EC%97%98%EB%A6%AC%ED%8A%B8v4%20%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4%20SC%EC%97%98%EB%A6%AC%ED%8A%B8v4%20%EB%B9%84%EA%B5%90",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C4%20SC%EC%97%98%EB%A6%AC%ED%8A%B8v4%20%EB%B9%84%EA%B5%90",
+    "rank": 6
   },
   {
     "id": "news_hoka_clifton_mach",
@@ -5613,15 +5702,18 @@ ${content}
     "source": "티스토리 러너 블로그",
     "date": "쿠션화 비교 검증",
     "snippet": "도톰한 미드솔로 충격을 흡수해 주는 클리프톤 9과 초경량 SCF EVA 단일 폼으로 탄력 있는 페이스업을 돕는 마하 6. 발목 안정성과 일상 러닝 목적에 따른 선택 팁.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%ED%98%B8%EC%B9%B4+%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49+%EB%A7%88%ED%95%986+%EB%B9%84%EA%B5%90",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%ED%98%B8%EC%B9%B4+%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49+%EB%A7%88%ED%95%986+%EB%B9%84%EA%B5%90",
-    "googleUrl": "https://www.google.com/search?q=site:tistory.com+호카+클리프톤9+마하6+비교",
+    "searchKw": "호카 클리프톤9 마하6 비교",
     "tags": [
       "#호카러닝화",
       "#클리프톤9",
       "#마하6",
       "#쿠션화비교"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%ED%98%B8%EC%B9%B4%20%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49%20%EB%A7%88%ED%95%986%20%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?query=%ED%98%B8%EC%B9%B4%20%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49%20%EB%A7%88%ED%95%986%20%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%ED%98%B8%EC%B9%B4%20%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49%20%EB%A7%88%ED%95%986%20%EB%B9%84%EA%B5%90",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%ED%98%B8%EC%B9%B4%20%ED%81%B4%EB%A6%AC%ED%94%84%ED%86%A49%20%EB%A7%88%ED%95%986%20%EB%B9%84%EA%B5%90",
+    "rank": 7
   },
   {
     "id": "news_carbo_loading_guide",
@@ -5632,15 +5724,18 @@ ${content}
     "source": "스포츠 영양학 저널",
     "date": "대회 3일 전 필수",
     "snippet": "대회 36~48시간 전 탄수화물 70~80% 집중 식단 구성법. 전날 기름진 삼겹살·짜장면 폭식을 피하고 소화 빠른 밥·떡 위주 식단과 수분 섭취로 1~2kg 증량되는 원리 완벽 정리.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9+%EC%8B%9D%EB%8B%A8%EB%B2%95",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9+%EC%8B%9D%EB%8B%A8%EB%B2%95",
-    "googleUrl": "https://www.google.com/search?q=마라톤+카보로딩+식단법+글리코겐+비축",
+    "searchKw": "마라톤 카보로딩 식단법",
     "tags": [
       "#카보로딩",
       "#마라톤식단",
       "#에너지비축",
       "#식단가이드"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9%20%EC%8B%9D%EB%8B%A8%EB%B2%95",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9%20%EC%8B%9D%EB%8B%A8%EB%B2%95",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9%20%EC%8B%9D%EB%8B%A8%EB%B2%95",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%B9%B4%EB%B3%B4%EB%A1%9C%EB%94%A9%20%EC%8B%9D%EB%8B%A8%EB%B2%95",
+    "rank": 8
   },
   {
     "id": "news_gel_timing_guide",
@@ -5651,15 +5746,18 @@ ${content}
     "source": "러닝 생리학 가이드",
     "date": "레이스 실전 공식",
     "snippet": "에너지젤은 지치고 나서 먹으면 늦는다! 출발 15분 전 1포, 레이스 중 10km(45분)마다 선제적 섭취. 32km 이후 카페인 젤 부스팅과 급수대 물 섭취 노하우.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%84%AD%EC%B7%A8+%ED%83%80%EC%9D%B4%EB%B0%8D",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%84%AD%EC%B7%A8+%ED%83%80%EC%9D%B4%EB%B0%8D",
-    "googleUrl": "https://www.google.com/search?q=마라톤+에너지젤+섭취+타이밍+30km사점",
+    "searchKw": "마라톤 에너지젤 섭취 타이밍",
     "tags": [
       "#에너지젤",
       "#보급타이밍",
       "#30km벽",
       "#파워젤"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%84%AD%EC%B7%A8%20%ED%83%80%EC%9D%B4%EB%B0%8D",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%84%AD%EC%B7%A8%20%ED%83%80%EC%9D%B4%EB%B0%8D",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%84%AD%EC%B7%A8%20%ED%83%80%EC%9D%B4%EB%B0%8D",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%84%AD%EC%B7%A8%20%ED%83%80%EC%9D%B4%EB%B0%8D",
+    "rank": 9
   },
   {
     "id": "news_gel_brand_comparison",
@@ -5670,15 +5768,18 @@ ${content}
     "source": "네이버 러닝 영양 블로그",
     "date": "파워젤 실착 비교",
     "snippet": "엘리트의 하이드로겔 모르텐, 근육 경련 방지 아미노산의 아미노바이탈, 다양한 맛의 클래식 GU, 가성비 좋은 요헤미티 파워젤의 목넘김 및 위장 트러블 실착 비교.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%B6%94%EC%B2%9C+%EB%B9%84%EA%B5%90",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EC%B6%94%EC%B2%9C+%EB%B9%84%EA%B5%90",
-    "googleUrl": "https://www.google.com/search?q=모르텐+아미노바이탈+구GU+요헤미티+에너지젤+비교",
+    "searchKw": "마라톤 에너지젤 추천 비교",
     "tags": [
       "#에너지젤비교",
       "#모르텐",
       "#아미노바이탈",
       "#위장트러블"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%B6%94%EC%B2%9C%20%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%B6%94%EC%B2%9C%20%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%B6%94%EC%B2%9C%20%EB%B9%84%EA%B5%90",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EC%B6%94%EC%B2%9C%20%EB%B9%84%EA%B5%90",
+    "rank": 10
   },
   {
     "id": "news_midfoot_form",
@@ -5689,15 +5790,18 @@ ${content}
     "source": "러닝 바이오메카닉스 칼럼",
     "date": "부상 방지 주법",
     "snippet": "오버스트라이드로 인한 무릎 관절 충격을 방지하는 골반 무게중심 착지법. 지면 접촉 시간을 줄이고 반발력을 극대화하는 메트로놈 180spm 케이던스 루틴.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EB%AF%B8%EB%93%9C%ED%92%8B+%EC%BC%80%EC%9D%B4%EB%8D%98%EC%8A%A4",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EB%AF%B8%EB%93%9C%ED%92%8B+%EC%BC%80%EC%9D%B4%EB%8D%98%EC%8A%A4",
-    "googleUrl": "https://www.google.com/search?q=체간착지+미드풋+케이던스+180spm+러닝폼",
+    "searchKw": "체간착지 미드풋 러닝폼",
     "tags": [
       "#체간착지",
       "#미드풋",
       "#케이던스180",
       "#무릎통증예방"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80%20%EB%AF%B8%EB%93%9C%ED%92%8B%20%EB%9F%AC%EB%8B%9D%ED%8F%BC",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80%20%EB%AF%B8%EB%93%9C%ED%92%8B%20%EB%9F%AC%EB%8B%9D%ED%8F%BC",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80%20%EB%AF%B8%EB%93%9C%ED%92%8B%20%EB%9F%AC%EB%8B%9D%ED%8F%BC",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80%20%EB%AF%B8%EB%93%9C%ED%92%8B%20%EB%9F%AC%EB%8B%9D%ED%8F%BC",
+    "rank": 11
   },
   {
     "id": "news_tapering_formula",
@@ -5708,15 +5812,18 @@ ${content}
     "source": "마라톤 훈련 매거진",
     "date": "대회 3주 전 공식",
     "snippet": "대회 3주 전 마일리지 25% 감축, 2주 전 50% 감축, 1주 전 75% 감축. 강도는 유지하되 볼륨을 줄여 글리코겐과 근세포 회복을 극대화하는 과학적 테이퍼링 비법.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81+%ED%9B%88%EB%A0%A8",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81+%ED%9B%88%EB%A0%A8",
-    "googleUrl": "https://www.google.com/search?q=마라톤+테이퍼링+훈련법+컨디셔닝",
+    "searchKw": "마라톤 테이퍼링 훈련법",
     "tags": [
       "#테이퍼링",
       "#컨디션조절",
       "#마일리지감축",
       "#대회준비"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81%20%ED%9B%88%EB%A0%A8%EB%B2%95",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81%20%ED%9B%88%EB%A0%A8%EB%B2%95",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81%20%ED%9B%88%EB%A0%A8%EB%B2%95",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81%20%ED%9B%88%EB%A0%A8%EB%B2%95",
+    "rank": 12
   },
   {
     "id": "news_seoul_marathon_course",
@@ -5727,15 +5834,18 @@ ${content}
     "source": "동아마라톤 참가자 포럼",
     "date": "코스 실전 가이드",
     "snippet": "광화문 출발 후 청계천 루프와 군자교 완만한 오르막, 잠실대교 통과 후 잠실 주경기장 피니시까지 5km 구간별 네거티브 스플릿 페이싱과 맞바람 대비 실전 팁.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%A0%EC%A0%80%EB%8F%84+%EA%B3%B5%EB%9E%B5",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%A0%EC%A0%80%EB%8F%84+%EA%B3%B5%EB%9E%B5",
-    "googleUrl": "https://www.google.com/search?q=서울마라톤+동아마라톤+코스+고저도+공략",
+    "searchKw": "서울마라톤 코스 고저도 공략",
     "tags": [
       "#서울마라톤",
       "#동아마라톤",
       "#코스공략",
       "#잠실주경기장"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%EA%B3%B5%EB%9E%B5",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%EA%B3%B5%EB%9E%B5",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%EA%B3%B5%EB%9E%B5",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%EA%B3%B5%EB%9E%B5",
+    "rank": 13
   },
   {
     "id": "news_jtbc_marathon_course",
@@ -5746,15 +5856,18 @@ ${content}
     "source": "JTBC 러너스 포럼",
     "date": "코스 실전 가이드",
     "snippet": "상암 월드컵경기장을 출발해 양화대교, 마포대교, 강남 도심을 가로지르는 JTBC 코스. 30km 이후 강남 테헤란로 및 탄천 오르막 극복 페이싱 가이드.",
-    "url": "https://search.naver.com/search.naver?where=article&query=JTBC+%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%B5%EB%9E%B5",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=JTBC+%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EA%B3%B5%EB%9E%B5",
-    "googleUrl": "https://www.google.com/search?q=JTBC서울마라톤+코스+고저도+공략법",
+    "searchKw": "JTBC 서울마라톤 코스 공략",
     "tags": [
       "#JTBC마라톤",
       "#상암잠실",
       "#코스분석",
       "#테헤란로"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=JTBC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%B5%EB%9E%B5",
+    "naverUrl": "https://search.naver.com/search.naver?query=JTBC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%B5%EB%9E%B5",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20JTBC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%B5%EB%9E%B5",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=JTBC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%B5%EB%9E%B5",
+    "rank": 14
   },
   {
     "id": "news_chuncheon_daegu_course",
@@ -5765,15 +5878,18 @@ ${content}
     "source": "전국 마라톤 종합 분석",
     "date": "코스 비교 가이드",
     "snippet": "가을 단풍과 호반의 절경을 자랑하지만 춘천댐 낙타등 언덕이 까다로운 춘마, 그리고 평지 중심 루프로 전면 개편되어 PB 달성에 유리해진 대구국제마라톤 비교.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%8C%80%EA%B5%AC%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EB%B9%84%EA%B5%90",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%8C%80%EA%B5%AC%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4+%EB%B9%84%EA%B5%90",
-    "googleUrl": "https://www.google.com/search?q=춘천마라톤+대구국제마라톤+코스+비교",
+    "searchKw": "춘천마라톤 코스 고저도 후기",
     "tags": [
       "#춘천마라톤",
       "#대구국제마라톤",
       "#낙타등",
       "#평지코스"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BD%94%EC%8A%A4%20%EA%B3%A0%EC%A0%80%EB%8F%84%20%ED%9B%84%EA%B8%B0",
+    "rank": 15
   },
   {
     "id": "news_garmin_forerunner_comparison",
@@ -5784,15 +5900,18 @@ ${content}
     "source": "네이버 IT 러닝 블로그",
     "date": "스마트워치 검증",
     "snippet": "가성비 입문용 포러너 165, 멀티밴드 GPS와 트레이닝 레디니스를 갖춘 265, 풀 지도 내비게이션의 965. 러너 실사용자가 추천하는 최적의 모델 선택 가이드.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EA%B0%80%EB%AF%BC+%ED%8F%AC%EB%9F%AC%EB%84%88+165+265+%EB%B9%84%EA%B5%90+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EA%B0%80%EB%AF%BC+%ED%8F%AC%EB%9F%AC%EB%84%88+165+265+%EB%B9%84%EA%B5%90+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=가민+포러너+165+265+965+실사용+비교",
+    "searchKw": "가민 포러너 165 265 965 비교",
     "tags": [
       "#가민포러너",
       "#포러너265",
       "#러닝워치",
       "#네이버블로그"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EA%B0%80%EB%AF%BC%20%ED%8F%AC%EB%9F%AC%EB%84%88%20165%20265%20965%20%EB%B9%84%EA%B5%90",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EA%B0%80%EB%AF%BC%20%ED%8F%AC%EB%9F%AC%EB%84%88%20165%20265%20965%20%EB%B9%84%EA%B5%90",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EA%B0%80%EB%AF%BC%20%ED%8F%AC%EB%9F%AC%EB%84%88%20165%20265%20965%20%EB%B9%84%EA%B5%90",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EA%B0%80%EB%AF%BC%20%ED%8F%AC%EB%9F%AC%EB%84%88%20165%20265%20965%20%EB%B9%84%EA%B5%90",
+    "rank": 16
   },
   {
     "id": "news_socks_blister_review",
@@ -5803,15 +5922,18 @@ ${content}
     "source": "티스토리 러닝 기어 블로그",
     "date": "물집 방지 실착 검증",
     "snippet": "30km 이상 장거리 주행 시 발가락 마찰 물집을 완벽 차단하는 인진지 발가락 양말과 발바닥 미끄러짐을 잡아주는 실리콘 논슬립 삭스 착용감 비교 후기.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%96%91%EB%A7%90+%EB%AC%BC%EC%A7%91%EB%B0%A9%EC%A7%80+%EC%B6%94%EC%B2%9C",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%96%91%EB%A7%90+%EB%AC%BC%EC%A7%91%EB%B0%A9%EC%A7%80+%EC%B6%94%EC%B2%9C",
-    "googleUrl": "https://www.google.com/search?q=site:tistory.com+마라톤+러닝양말+물집방지+비교",
+    "searchKw": "마라톤 양말 물집 방지 추천",
     "tags": [
       "#러닝양말",
       "#물집방지",
       "#발가락양말",
       "#논슬립양말"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%96%91%EB%A7%90%20%EB%AC%BC%EC%A7%91%20%EB%B0%A9%EC%A7%80%20%EC%B6%94%EC%B2%9C",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%96%91%EB%A7%90%20%EB%AC%BC%EC%A7%91%20%EB%B0%A9%EC%A7%80%20%EC%B6%94%EC%B2%9C",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%96%91%EB%A7%90%20%EB%AC%BC%EC%A7%91%20%EB%B0%A9%EC%A7%80%20%EC%B6%94%EC%B2%9C",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%96%91%EB%A7%90%20%EB%AC%BC%EC%A7%91%20%EB%B0%A9%EC%A7%80%20%EC%B6%94%EC%B2%9C",
+    "rank": 17
   },
   {
     "id": "news_winter_layering_guide",
@@ -5822,15 +5944,18 @@ ${content}
     "source": "네이버 아웃도어 러닝 블로그",
     "date": "동계 방한 실전 팁",
     "snippet": "땀 배출 흡한속건 베이스레이어 + 방풍 윈드브레이커 조합. 손끝 시림을 방지하는 스마트폰 터치 기모 장갑과 귀마개·넥워머로 체온을 유지하는 동계 달리기 팁.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EA%B2%A8%EC%9A%B8+%EB%9F%AC%EB%8B%9D+%EB%B0%A9%ED%95%9C+%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EA%B2%A8%EC%9A%B8+%EB%9F%AC%EB%8B%9D+%EB%B0%A9%ED%95%9C+%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
-    "googleUrl": "https://www.google.com/search?q=겨울철+러닝+방한복장+레이어링+기모장갑",
+    "searchKw": "겨울 러닝 방한 복장 레이어링",
     "tags": [
       "#동계러닝",
       "#방한레이어링",
       "#러닝장갑",
       "#체온유지"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EA%B2%A8%EC%9A%B8%20%EB%9F%AC%EB%8B%9D%20%EB%B0%A9%ED%95%9C%20%EB%B3%B5%EC%9E%A5%20%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EA%B2%A8%EC%9A%B8%20%EB%9F%AC%EB%8B%9D%20%EB%B0%A9%ED%95%9C%20%EB%B3%B5%EC%9E%A5%20%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EA%B2%A8%EC%9A%B8%20%EB%9F%AC%EB%8B%9D%20%EB%B0%A9%ED%95%9C%20%EB%B3%B5%EC%9E%A5%20%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EA%B2%A8%EC%9A%B8%20%EB%9F%AC%EB%8B%9D%20%EB%B0%A9%ED%95%9C%20%EB%B3%B5%EC%9E%A5%20%EB%A0%88%EC%9D%B4%EC%96%B4%EB%A7%81",
+    "rank": 18
   },
   {
     "id": "news_yt_youngjo_deadpoint",
@@ -5841,17 +5966,20 @@ ${content}
     "source": "유튜브 공식 @황영조형",
     "date": "올림픽 레전드 직강",
     "snippet": "몬주익의 영웅 황영조 감독이 직접 알려주는 마라톤 30km 이후 사점(Dead Point) 극복법과 지치지 않는 멘탈 관리 및 바른 팔치기 기본기.",
-    "url": "https://www.youtube.com/watch?v=6ZwBhkcja-8",
-    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%ED%99%A9%EC%98%81%EC%A1%B0+%EC%82%AC%EC%A0%90+%EB%A7%88%EB%9D%BC%ED%86%A4",
-    "googleUrl": "https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95",
+    "youtubeUrl": "https://www.youtube.com/watch?v=6ZwBhkcja-8",
+    "channelUrl": "https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95/videos",
+    "searchKw": "황영조 마라톤 30km 사점",
     "tags": [
       "#황영조",
       "#올림픽금메달",
       "#사점극복",
       "#마라톤특강"
     ],
-    "youtubeUrl": "https://www.youtube.com/watch?v=6ZwBhkcja-8",
-    "channelUrl": "https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95/videos"
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%ED%99%A9%EC%98%81%EC%A1%B0%20%EB%A7%88%EB%9D%BC%ED%86%A4%2030km%20%EC%82%AC%EC%A0%90",
+    "naverUrl": "https://search.naver.com/search.naver?query=%ED%99%A9%EC%98%81%EC%A1%B0%20%EB%A7%88%EB%9D%BC%ED%86%A4%2030km%20%EC%82%AC%EC%A0%90",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%ED%99%A9%EC%98%81%EC%A1%B0%20%EB%A7%88%EB%9D%BC%ED%86%A4%2030km%20%EC%82%AC%EC%A0%90",
+    "url": "https://www.youtube.com/watch?v=6ZwBhkcja-8",
+    "rank": 19
   },
   {
     "id": "news_yt_dear_bible",
@@ -5862,17 +5990,20 @@ ${content}
     "source": "유튜브 공식 @daily__dear",
     "date": "러닝화 총정리",
     "snippet": "러너들의 필수 시청 영상! 데일리 조깅화, 템포 트레이너, 최상급 카본 레이싱화까지 브랜드별 티어 정리 및 족형별 사이즈 선택 완벽 가이드.",
-    "url": "https://www.youtube.com/watch?v=u913M5LxTvQ",
-    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80+%EB%94%94%EC%96%B4+%EB%9F%AC%EB%8B%9D%ED%99%94+%EA%B3%84%EA%B8%89%EB%8F%84",
-    "googleUrl": "https://www.youtube.com/@daily__dear",
+    "youtubeUrl": "https://www.youtube.com/watch?v=u913M5LxTvQ",
+    "channelUrl": "https://www.youtube.com/@daily__dear/videos",
+    "searchKw": "방구석운동가 디어 러닝화 계급도",
     "tags": [
       "#방구석운동가디어",
       "#러닝화계급도",
       "#카본화추천",
       "#러닝장비"
     ],
-    "youtubeUrl": "https://www.youtube.com/watch?v=u913M5LxTvQ",
-    "channelUrl": "https://www.youtube.com/@daily__dear/videos"
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80%20%EB%94%94%EC%96%B4%20%EB%9F%AC%EB%8B%9D%ED%99%94%20%EA%B3%84%EA%B8%89%EB%8F%84",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80%20%EB%94%94%EC%96%B4%20%EB%9F%AC%EB%8B%9D%ED%99%94%20%EA%B3%84%EA%B8%89%EB%8F%84",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80%20%EB%94%94%EC%96%B4%20%EB%9F%AC%EB%8B%9D%ED%99%94%20%EA%B3%84%EA%B8%89%EB%8F%84",
+    "url": "https://www.youtube.com/watch?v=u913M5LxTvQ",
+    "rank": 20
   },
   {
     "id": "news_yt_runclear_form",
@@ -5883,17 +6014,20 @@ ${content}
     "source": "유튜브 공식 @runclear_running",
     "date": "1:1 자세 교정",
     "snippet": "김영복 감독의 1:1 러닝 자세 교정 Before & After! 통증 없이 오래 달리는 체간 착지 주법과 에너지를 30% 절약하는 원포인트 레슨.",
-    "url": "https://www.youtube.com/watch?v=YHrPd85dVh4",
-    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EC%9E%90%EC%84%B8%EA%B5%90%EC%A0%95",
-    "googleUrl": "https://www.youtube.com/@runclear_running",
+    "youtubeUrl": "https://www.youtube.com/watch?v=YHrPd85dVh4",
+    "channelUrl": "https://www.youtube.com/@runclear_running/videos",
+    "searchKw": "런클리어 마라톤 자세 교정",
     "tags": [
       "#런클리어",
       "#자세교정",
       "#체간착지",
       "#부상예방"
     ],
-    "youtubeUrl": "https://www.youtube.com/watch?v=YHrPd85dVh4",
-    "channelUrl": "https://www.youtube.com/@runclear_running/videos"
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%9E%90%EC%84%B8%20%EA%B5%90%EC%A0%95",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%9E%90%EC%84%B8%20%EA%B5%90%EC%A0%95",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%9E%90%EC%84%B8%20%EA%B5%90%EC%A0%95",
+    "url": "https://www.youtube.com/watch?v=YHrPd85dVh4",
+    "rank": 21
   },
   {
     "id": "news_yt_suncoach_breathing",
@@ -5904,17 +6038,20 @@ ${content}
     "source": "유튜브 공식 @suncoach42.195",
     "date": "국가대표 호흡법",
     "snippet": "국가대표 출신 썬코치가 전수하는 실전 마라톤 호흡법! 가슴이 답답하지 않은 복식 호흡 리듬과 후반부 심박수를 안정시키는 호흡 페이싱 공식.",
-    "url": "https://www.youtube.com/watch?v=EzMukipCCK4",
-    "naverUrl": "https://search.naver.com/search.naver?where=video&query=%EC%8D%AC%EC%BD%94%EC%B9%98+%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%98%B8%ED%9D%A1%EB%B2%95",
-    "googleUrl": "https://www.youtube.com/@suncoach42.195",
+    "youtubeUrl": "https://www.youtube.com/watch?v=EzMukipCCK4",
+    "channelUrl": "https://www.youtube.com/@suncoach42.195/videos",
+    "searchKw": "썬코치 마라톤 호흡법",
     "tags": [
       "#썬코치",
       "#호흡법",
       "#복식호흡",
       "#심박수조절"
     ],
-    "youtubeUrl": "https://www.youtube.com/watch?v=EzMukipCCK4",
-    "channelUrl": "https://www.youtube.com/@suncoach42.195/videos"
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EC%8D%AC%EC%BD%94%EC%B9%98%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%98%B8%ED%9D%A1%EB%B2%95",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EC%8D%AC%EC%BD%94%EC%B9%98%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%98%B8%ED%9D%A1%EB%B2%95",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EC%8D%AC%EC%BD%94%EC%B9%98%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%98%B8%ED%9D%A1%EB%B2%95",
+    "url": "https://www.youtube.com/watch?v=EzMukipCCK4",
+    "rank": 22
   },
   {
     "id": "news_half_sub130_routine",
@@ -5925,15 +6062,18 @@ ${content}
     "source": "티스토리 러너 실전 일지",
     "date": "직장인 서브1:30",
     "snippet": "바쁜 평일 5km 조깅 2회 + 주말 20km LSD 훈련으로 완성한 현실적인 훈련 일지. 무리한 인터벌 대신 점진적 마일리지 증량으로 이뤄낸 서브-1:30 달성 후기.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%9B%88%EB%A0%A8+%EB%A3%A8%ED%8B%B4+%ED%9B%84%EA%B8%B0",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%9B%88%EB%A0%A8+%EB%A3%A8%ED%8B%B4+%ED%9B%84%EA%B8%B0",
-    "googleUrl": "https://www.google.com/search?q=site:tistory.com+하프마라톤+1시간30분+훈련+일지",
+    "searchKw": "하프마라톤 훈련 루틴 후기",
     "tags": [
       "#하프마라톤",
       "#직장인러너",
       "#훈련일지",
       "#LSD루틴"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%88%EB%A0%A8%20%EB%A3%A8%ED%8B%B4%20%ED%9B%84%EA%B8%B0",
+    "naverUrl": "https://search.naver.com/search.naver?query=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%88%EB%A0%A8%20%EB%A3%A8%ED%8B%B4%20%ED%9B%84%EA%B8%B0",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%88%EB%A0%A8%20%EB%A3%A8%ED%8B%B4%20%ED%9B%84%EA%B8%B0",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%ED%95%98%ED%94%84%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9B%88%EB%A0%A8%20%EB%A3%A8%ED%8B%B4%20%ED%9B%84%EA%B8%B0",
+    "rank": 23
   },
   {
     "id": "news_recovery_48h_guide",
@@ -5944,15 +6084,18 @@ ${content}
     "source": "스포츠 의학 칼럼",
     "date": "대회 완주 후 필수",
     "snippet": "대회 완주 직후 젖산 배출을 위한 10분 걷기, 4:1 탄단비 섭취, 24시간 후 가벼운 20분 리커버리 조깅으로 근육통을 절반으로 줄이는 과학적 회복 프로토콜.",
-    "url": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%99%84%EC%A3%BC+%ED%9B%84+%ED%9A%8C%EB%B3%B5+%EB%A3%A8%ED%8B%B4",
-    "naverUrl": "https://search.naver.com/search.naver?where=article&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%99%84%EC%A3%BC+%ED%9B%84+%ED%9A%8C%EB%B3%B5+%EB%A3%A8%ED%8B%B4",
-    "googleUrl": "https://www.google.com/search?q=마라톤+완주+후+근육통+초회복+루틴",
+    "searchKw": "마라톤 완주 후 회복 루틴",
     "tags": [
       "#초회복",
       "#마라톤회복",
       "#리커버리조깅",
       "#근육통완화"
-    ]
+    ],
+    "naverBlogUrl": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%99%84%EC%A3%BC%20%ED%9B%84%20%ED%9A%8C%EB%B3%B5%20%EB%A3%A8%ED%8B%B4",
+    "naverUrl": "https://search.naver.com/search.naver?query=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%99%84%EC%A3%BC%20%ED%9B%84%20%ED%9A%8C%EB%B3%B5%20%EB%A3%A8%ED%8B%B4",
+    "googleUrl": "https://www.google.com/search?q=%ED%8B%B0%EC%8A%A4%ED%86%A0%EB%A6%AC%20%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%99%84%EC%A3%BC%20%ED%9B%84%20%ED%9A%8C%EB%B3%B5%20%EB%A3%A8%ED%8B%B4",
+    "url": "https://section.blog.naver.com/Search/Post.naver?pageNo=1&rangeType=ALL&orderBy=sim&keyword=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%99%84%EC%A3%BC%20%ED%9B%84%20%ED%9A%8C%EB%B3%B5%20%EB%A3%A8%ED%8B%B4",
+    "rank": 24
   }
 ];
 
@@ -6027,7 +6170,7 @@ ${content}
     if (rightNewsList) {
       const top4 = (runningNewsList || []).slice(0, 4);
       rightNewsList.innerHTML = top4.map(item => `
-        <a href="${item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer">
+        <a href="${item.naverBlogUrl || item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer">
           <div class="flex items-center justify-between text-[10px]">
             <span class="px-1.5 py-0.5 rounded font-extrabold ${item.badgeColor || 'bg-brand-500/10 text-brand-600'}">${item.categoryLabel || '러닝뉴스'}</span>
             <span class="text-slate-400 text-[10px]">${item.date || '오늘'}</span>
@@ -6084,7 +6227,7 @@ ${content}
 
             <!-- 기사 제목 (클릭 시 네이버 검색/원문 바로가기) -->
             <a
-              href="${item.naverUrl || item.googleUrl}"
+              href="${item.naverBlogUrl || item.naverUrl || item.googleUrl}"
               target="_blank"
               rel="noopener noreferrer"
               class="block text-sm sm:text-base font-black text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition leading-snug break-keep"
@@ -6111,22 +6254,31 @@ ${content}
             <div class="flex items-center gap-1.5 flex-wrap">
               ${item.category === 'blog' ? `
                 <a
-                  href="${item.naverUrl}"
+                  href="${item.naverBlogUrl}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-100 transition flex items-center gap-1 shadow-2xs"
-                  title="네이버 블로그 실착 후기 검색"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-100 transition flex items-center gap-1 shadow-2xs"
+                  title="네이버 블로그 실착 인기글 바로보기 (조회수 높은 글)"
                 >
-                  <span>📝 네이버블로그 ↗</span>
+                  <span>📝 네이버블로그 인기글 ↗</span>
                 </a>
                 <a
                   href="${item.googleUrl}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="px-2.5 py-1.5 rounded-xl text-xs font-extrabold bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-500/30 hover:bg-orange-100 transition flex items-center gap-1 shadow-2xs"
-                  title="티스토리·구글 실착 리뷰 검색"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-black bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300 border border-orange-500/30 hover:bg-orange-100 transition flex items-center gap-1 shadow-2xs"
+                  title="티스토리 러너 실착 리뷰 검색"
                 >
-                  <span>☕ 티스토리·구글 ↗</span>
+                  <span>☕ 티스토리 리뷰 ↗</span>
+                </a>
+                <a
+                  href="${item.naverUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-2 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1 shadow-2xs"
+                  title="네이버 통합 검색 & 스마트블록 리뷰"
+                >
+                  <span>🟢 네이버 통합 ↗</span>
                 </a>
               ` : item.category === 'youtube' ? `
                 ${item.youtubeUrl ? `
@@ -6151,24 +6303,42 @@ ${content}
                     <span>📺 채널 최신순 ↗</span>
                   </a>
                 ` : ''}
-              ` : `
                 <a
-                  href="${item.naverUrl}"
+                  href="${item.naverBlogUrl || item.naverUrl}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 hover:bg-emerald-100 transition flex items-center gap-1 shadow-2xs"
-                  title="네이버 정보 검색"
+                  class="px-2 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 hover:bg-emerald-100 transition flex items-center gap-1 shadow-2xs"
+                  title="네이버 블로그 후기 검색"
                 >
-                  <span>🟢 네이버 ↗</span>
+                  <span>📝 네이버 후기 ↗</span>
+                </a>
+              ` : `
+                <a
+                  href="${item.naverBlogUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-black bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-100 transition flex items-center gap-1 shadow-2xs"
+                  title="네이버 블로그 실전 가이드 바로보기"
+                >
+                  <span>📝 네이버블로그 ↗</span>
                 </a>
                 <a
                   href="${item.googleUrl}"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-500/20 hover:bg-blue-100 transition flex items-center gap-1 shadow-2xs"
-                  title="구글 정보 검색"
+                  title="구글·티스토리 전문 칼럼 바로보기"
                 >
-                  <span>🔍 구글 ↗</span>
+                  <span>🔍 구글·티스토리 ↗</span>
+                </a>
+                <a
+                  href="${item.naverUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-2 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1 shadow-2xs"
+                  title="네이버 통합 정보 검색"
+                >
+                  <span>🟢 네이버 통합 ↗</span>
                 </a>
               `}
             </div>
@@ -6189,6 +6359,7 @@ ${content}
       }
     });
     renderRunningNewsCards();
+        renderRightSidebarWidgets();
   }
 
   function handleClickAddNews() {
@@ -6331,6 +6502,7 @@ ${content}
     runningNewsList.sort((a, b) => a.rank - b.rank);
     saveRunningNews(runningNewsList);
     renderRunningNewsCards();
+        renderRightSidebarWidgets();
     closeNewsManageModal();
     alert('러닝 뉴스가 성공적으로 저장되었습니다!');
   }
@@ -6345,6 +6517,7 @@ ${content}
     runningNewsList = runningNewsList.filter(n => n.id !== newsId);
     saveRunningNews(runningNewsList);
     renderRunningNewsCards();
+        renderRightSidebarWidgets();
   }
 
   function resetDefaultRunningNews() {
@@ -6354,17 +6527,20 @@ ${content}
     runningNewsList = JSON.parse(JSON.stringify(DEFAULT_RUNNING_NEWS));
     saveRunningNews(runningNewsList);
     renderRunningNewsCards();
+        renderRightSidebarWidgets();
     alert('기본 데일리 러닝 뉴스 TOP 20으로 복원되었습니다.');
   }
 
   function initRunningNewsModule() {
     renderRunningNewsCards();
+        renderRightSidebarWidgets();
 
     const searchInput = document.getElementById('news-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', () => {
         currentNewsSearchQuery = searchInput.value.trim();
         renderRunningNewsCards();
+        renderRightSidebarWidgets();
       });
     }
 
@@ -6462,6 +6638,7 @@ ${content}
         runningNewsList = data;
         try { localStorage.setItem(RUNNING_NEWS_STORAGE_KEY, JSON.stringify(runningNewsList)); } catch (e) {}
         renderRunningNewsCards();
+        renderRightSidebarWidgets();
         console.log("🔥 [Firebase] 러닝 뉴스 실시간 동기화 완료:", runningNewsList.length, "개");
       } else {
         firebaseDb.ref('pacecraft_running_news').set(runningNewsList);
@@ -6474,7 +6651,8 @@ ${content}
       if (data && Array.isArray(data) && data.length > 0) {
         affiliateLinks = data;
         try { localStorage.setItem(AFFILIATES_STORAGE_KEY, JSON.stringify(affiliateLinks)); } catch (e) {}
-        renderAffiliateCards();
+        renderAffiliateCatalog();
+        if (typeof renderCTAModule === "function") { renderCTAModule(state.targetSec / state.targetDist); }
         console.log("🔥 [Firebase] 제휴 링크 실시간 동기화 완료:", affiliateLinks.length, "개");
       } else {
         firebaseDb.ref('pacecraft_affiliates').set(affiliateLinks);
@@ -6516,16 +6694,20 @@ ${content}
   
   // [신규] 4번 VDOT 코치 진단 박스에서 7번 추천 기어로 1클릭 다이렉트 이동 및 티어 자동 선택
   function goToGearTier(tier) {
-    switchDashboardTab('tab-gear');
+    console.log("🔥 [Nav] goToGearTier 호출:", tier);
+    switchDashboardTab('tab-gear', false);
     if (tier) {
       selectedShowcaseTier = tier;
-      renderCTAModule(state.targetSec / state.targetDist);
     }
-    const gearEl = document.getElementById('panel-gear');
-    if (gearEl) {
-      gearEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+    renderCTAModule(state.targetSec / state.targetDist);
+    setTimeout(() => {
+      const gearEl = document.getElementById('panel-gear');
+      if (gearEl) {
+        gearEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
   }
+  window.goToGearTier = goToGearTier;
 
   function switchDashboardTab(tabId, shouldScroll = true) {
     if (!DASH_TAB_TO_PANEL[tabId]) tabId = 'tab-calc';
@@ -7597,6 +7779,7 @@ ${content}
     ['updateRaceDOM', updateRaceDOM],
     ['updateDDayBadge', updateDDayBadge],
     ['renderRightRaceScheduleSidebar', renderRightRaceScheduleSidebar],
+    ['renderRightSidebarWidgets', renderRightSidebarWidgets],
     ['calculateAndRender', calculateAndRender],
     ['FirebaseCloudSync', initFirebaseCloudSync],
     ['YoutubeLectureModule', initYoutubeLectureModule],
