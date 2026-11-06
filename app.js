@@ -992,9 +992,19 @@
       badgeEl.textContent = '✅ 안정권 목표 (충분히 달성 가능)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
       adviceEl.innerHTML = `
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><strong>💡 데이터 코치 진단:</strong> 현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 달성이 충분히 가능합니다! 초반 오버페이스만 주의하세요.</div>
-          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보기 ↓</a>
+        <div class="space-y-2.5">
+          <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed break-keep">
+            <span class="font-extrabold text-emerald-600 dark:text-emerald-400">💡 데이터 코치 진단:</span>
+            현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 달성이 충분히 가능합니다! 초반 오버페이스만 주의하세요.
+          </div>
+          <button
+            type="button"
+            onclick="goToGearTier('${autoTier}')"
+            class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            title="목표 페이스에 맞춘 추천 기어 바로가기"
+          >
+            <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기 ➔</span>
+          </button>
         </div>`;
     } else if (prob >= 55) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-sky-600 dark:text-sky-400';
@@ -1002,9 +1012,19 @@
       badgeEl.textContent = '🔥 적정 도전 목표 (6~10주 훈련 권장)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-sky-500/15 text-sky-600 dark:text-sky-400';
       adviceEl.innerHTML = `
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><strong>💡 데이터 코치 진단:</strong> ${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표입니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.</div>
-          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보기 ↓</a>
+        <div class="space-y-2.5">
+          <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed break-keep">
+            <span class="font-extrabold text-sky-600 dark:text-sky-400">💡 데이터 코치 진단:</span>
+            ${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표입니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.
+          </div>
+          <button
+            type="button"
+            onclick="goToGearTier('${autoTier}')"
+            class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            title="목표 페이스에 맞춘 추천 기어 바로가기"
+          >
+            <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기 ➔</span>
+          </button>
         </div>`;
     } else {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 dark:text-rose-400';
@@ -1012,9 +1032,19 @@
       badgeEl.textContent = '⚠️ 공격적 목표 (후반 퍼짐 주의)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400';
       adviceEl.innerHTML = `
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div><strong>💡 데이터 코치 진단:</strong> ${bodyInfoText} 대비 요구 VDOT 차이(<strong>+${vdotDiff.toFixed(1)}</strong>)가 커서 후반 에너지 고갈 위험이 높습니다. 충분한 훈련 기간 확보와 철저한 보급이 필수입니다.</div>
-          <a href="#gear-section" class="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand-600 text-white text-xs font-extrabold hover:bg-brand-700 transition">🎁 ${tierTitleMap[autoTier]} 베스트 픽 보기 ↓</a>
+        <div class="space-y-2.5">
+          <div class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed break-keep">
+            <span class="font-extrabold text-rose-600 dark:text-rose-400">💡 데이터 코치 진단:</span>
+            ${bodyInfoText} 대비 요구 VDOT 차이(<strong>+${vdotDiff.toFixed(1)}</strong>)가 커서 후반 에너지 고갈 위험이 높습니다. 충분한 훈련 기간 확보와 철저한 보급이 필수입니다.
+          </div>
+          <button
+            type="button"
+            onclick="goToGearTier('${autoTier}')"
+            class="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-700 hover:to-indigo-700 text-white text-xs font-extrabold shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
+            title="목표 페이스에 맞춘 추천 기어 바로가기"
+          >
+            <span>🎁 ${tierTitleMap[autoTier]} 베스트 픽 보러가기 ➔</span>
+          </button>
         </div>`;
     }
 
@@ -4613,6 +4643,21 @@ ${content}
       return;
     }
 
+    // 우측 사이드바 미니 뉴스 리스트 렌더링 (공백 완벽 해소 & 실시간 연동)
+    const rightNewsList = document.getElementById('right-sidebar-news-list');
+    if (rightNewsList) {
+      const top4 = (runningNewsList || []).slice(0, 4);
+      rightNewsList.innerHTML = top4.map(item => `
+        <a href="${item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="px-1.5 py-0.5 rounded font-extrabold ${item.badgeColor || 'bg-brand-500/10 text-brand-600'}">${item.categoryLabel || '러닝뉴스'}</span>
+            <span class="text-slate-400 text-[10px]">${item.date || '오늘'}</span>
+          </div>
+          <p class="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition line-clamp-2 leading-snug">${item.title}</p>
+        </a>
+      `).join('');
+    }
+
     container.innerHTML = filtered.map(item => {
       const vId = item.videoId || extractYouTubeVideoId(item.url);
       const thumbUrl = vId
@@ -5851,6 +5896,21 @@ ${content}
       return;
     }
 
+    // 우측 사이드바 미니 뉴스 리스트 렌더링 (공백 완벽 해소 & 실시간 연동)
+    const rightNewsList = document.getElementById('right-sidebar-news-list');
+    if (rightNewsList) {
+      const top4 = (runningNewsList || []).slice(0, 4);
+      rightNewsList.innerHTML = top4.map(item => `
+        <a href="${item.naverUrl || item.googleUrl || '#'}" target="_blank" rel="noopener noreferrer" class="p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 transition flex flex-col gap-1 group cursor-pointer">
+          <div class="flex items-center justify-between text-[10px]">
+            <span class="px-1.5 py-0.5 rounded font-extrabold ${item.badgeColor || 'bg-brand-500/10 text-brand-600'}">${item.categoryLabel || '러닝뉴스'}</span>
+            <span class="text-slate-400 text-[10px]">${item.date || '오늘'}</span>
+          </div>
+          <p class="text-xs font-bold text-slate-800 dark:text-slate-200 group-hover:text-brand-600 dark:group-hover:text-brand-400 transition line-clamp-2 leading-snug">${item.title}</p>
+        </a>
+      `).join('');
+    }
+
     container.innerHTML = filtered.map(item => {
       const isTop3 = item.rank <= 3;
       const rankBadge = isTop3
@@ -6216,10 +6276,8 @@ ${content}
         renderSidebarMiniCalendar();
         console.log("🔥 [Firebase] 대회 목록 실시간 동기화 완료:", Object.keys(majorRaces).length, "개");
       } else {
-        // 클라우드 최초 생성 시 현재 기본 대회 목록 업로드
-        if (isCurrentAdminApproved()) {
-          firebaseDb.ref('pacecraft_races').set(majorRaces);
-        }
+        // 클라우드 최초 생성 시 현재 기본 대회 목록 자동 시딩
+        firebaseDb.ref('pacecraft_races').set(majorRaces);
       }
     });
 
@@ -6232,9 +6290,7 @@ ${content}
         renderYoutubeVideoCards();
         console.log("🔥 [Firebase] 유튜브 영상 실시간 동기화 완료:", youtubeVideos.length, "개");
       } else {
-        if (isCurrentAdminApproved()) {
-          firebaseDb.ref('pacecraft_youtube_videos').set(youtubeVideos);
-        }
+        firebaseDb.ref('pacecraft_youtube_videos').set(youtubeVideos);
       }
     });
 
@@ -6246,9 +6302,7 @@ ${content}
         try { localStorage.setItem(YOUTUBE_COACHES_STORAGE_KEY, JSON.stringify(youtubeCoaches)); } catch (e) {}
         renderYoutubeCoachCards();
       } else {
-        if (isCurrentAdminApproved()) {
-          firebaseDb.ref('pacecraft_youtube_coaches').set(youtubeCoaches);
-        }
+        firebaseDb.ref('pacecraft_youtube_coaches').set(youtubeCoaches);
       }
     });
 
@@ -6261,9 +6315,7 @@ ${content}
         renderRunningNewsCards();
         console.log("🔥 [Firebase] 러닝 뉴스 실시간 동기화 완료:", runningNewsList.length, "개");
       } else {
-        if (isCurrentAdminApproved()) {
-          firebaseDb.ref('pacecraft_running_news').set(runningNewsList);
-        }
+        firebaseDb.ref('pacecraft_running_news').set(runningNewsList);
       }
     });
 
@@ -6276,9 +6328,7 @@ ${content}
         renderAffiliateCards();
         console.log("🔥 [Firebase] 제휴 링크 실시간 동기화 완료:", affiliateLinks.length, "개");
       } else {
-        if (isCurrentAdminApproved()) {
-          firebaseDb.ref('pacecraft_affiliates').set(affiliateLinks);
-        }
+        firebaseDb.ref('pacecraft_affiliates').set(affiliateLinks);
       }
     });
   }
@@ -6313,6 +6363,20 @@ ${content}
 
   let currentActiveTabId = 'tab-calc';
   let isAllViewMode = false; // 기본: 한 화면씩 탭 모드
+
+  
+  // [신규] 4번 VDOT 코치 진단 박스에서 7번 추천 기어로 1클릭 다이렉트 이동 및 티어 자동 선택
+  function goToGearTier(tier) {
+    switchDashboardTab('tab-gear');
+    if (tier) {
+      selectedShowcaseTier = tier;
+      renderCTAModule(state.targetSec / state.targetDist);
+    }
+    const gearEl = document.getElementById('panel-gear');
+    if (gearEl) {
+      gearEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
 
   function switchDashboardTab(tabId, shouldScroll = true) {
     if (!DASH_TAB_TO_PANEL[tabId]) tabId = 'tab-calc';
@@ -7349,6 +7413,7 @@ ${content}
   window.resetDefaultRunningNews = resetDefaultRunningNews;
   window.initFirebaseCloudSync = initFirebaseCloudSync;
   window.syncToFirebaseCloud = syncToFirebaseCloud;
+  window.goToGearTier = goToGearTier;
   window.handleClickAddNews = handleClickAddNews;
   window.setYoutubeCreatorFilter = setYoutubeCreatorFilter;
   window.setYoutubeCategoryFilter = setYoutubeCategoryFilter;

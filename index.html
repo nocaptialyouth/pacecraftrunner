@@ -2005,6 +2005,21 @@ window.addEventListener('load', function() {
             * 대회 추가는 구글 로그인으로 관리 승인받은 아이디(rkstmtk@gmail.com 외 승인 계정)만 가능합니다.
           </p>
         </div>
+        <!-- 우측 사이드바: 오늘의 실시간 러닝 핫뉴스 TOP 4 위젯 (공백 완벽 채움 & 원클릭 이동) -->
+        <div class="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm">🔥</span>
+              <h4 class="text-xs font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">오늘의 러닝 핫뉴스 TOP 4</h4>
+            </div>
+            <button type="button" onclick="switchDashboardTab('tab-news')" class="text-[10px] text-brand-600 dark:text-brand-400 font-bold hover:underline flex items-center gap-0.5 cursor-pointer">
+              전체보기 ➔
+            </button>
+          </div>
+          <div id="right-sidebar-news-list" class="flex flex-col gap-2">
+            <!-- JS 동적 렌더링 -->
+          </div>
+        </div>
       </aside>
 
 
