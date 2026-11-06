@@ -144,23 +144,31 @@ window.addEventListener('load', function() {
           </p>
         </div>
 
-        <!-- [이미지 요청 위치] 라이트모드 하단 빈칸: 러닝 잇템 & 러닝화 바이블 원클릭 버튼 -->
+        <!-- [이미지 요청 위치] 라이트모드 하단 빈칸: 러닝 잇템 & 러닝화 바이블 & 러닝뉴스 원클릭 버튼 -->
         <div class="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             type="button"
             onclick="switchDashboardTab('tab-gear')"
-            class="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-700 hover:to-amber-600 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition flex items-center gap-2 cursor-pointer"
+            class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-amber-500 hover:from-red-700 hover:to-amber-600 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer"
             title="마라톤 대회 준비물 및 스마트워치·러닝화·에너지젤 추천 기어 바로가기"
           >
-            <span>🔥 러닝 잇템 &amp; 준비물 추천 ↗</span>
+            <span>🔥 러닝 잇템 &amp; 준비물 ↗</span>
           </button>
           <button
             type="button"
             onclick="openShoeBibleModal()"
-            class="px-4 py-2.5 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-extrabold border border-slate-300 dark:border-slate-700 shadow-sm transition flex items-center gap-2 cursor-pointer"
+            class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 text-xs sm:text-sm font-extrabold border border-slate-300 dark:border-slate-700 shadow-sm transition flex items-center gap-1.5 cursor-pointer"
             title="2026 러닝화 카테고리 &amp; 티어별 바이블 가이드"
           >
-            <span>👟 러닝화 티어 바이블</span>
+            <span>👟 러닝화 바이블</span>
+          </button>
+          <button
+            type="button"
+            onclick="switchDashboardTab('tab-news')"
+            class="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-extrabold shadow-md hover:shadow-lg transition flex items-center gap-1.5 cursor-pointer"
+            title="네이버 &amp; 구글 실시간 데일리 러닝 뉴스 &amp; 핫이슈 TOP 20 바로가기"
+          >
+            <span>📰 데일리 러닝뉴스 TOP 20 ↗</span>
           </button>
         </div>
       </div>
@@ -218,7 +226,7 @@ window.addEventListener('load', function() {
     <div id="dashboard-wrapper" class="lg:flex lg:gap-6 lg:items-start mt-4">
 
       <!-- 2. PC 전용: 좌측 세로 사이드바 메뉴 (이미지 요청 레이아웃) -->
-      <aside id="dashboard-sidebar" class="hidden lg:flex flex-col w-64 shrink-0 sticky top-20 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-4">
+      <aside id="dashboard-sidebar" class="hidden lg:flex flex-col w-64 shrink-0 sticky top-20 max-h-[calc(100vh-5.5rem)] overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-3 overscroll-contain">
         <div>
           <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2 px-2 flex items-center justify-between">
             <span>대시보드 메뉴</span>
@@ -262,6 +270,10 @@ window.addEventListener('load', function() {
               <span class="text-sm">🎬</span>
               <span>9. 러닝 특강 &amp; 추천 유튜브</span>
             </button>
+            <button type="button" data-dash-tab="tab-news" onclick="switchDashboardTab('tab-news')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">📰</span>
+              <span>10. 데일리 러닝뉴스 TOP 20</span>
+            </button>
           </nav>
         </div>
 
@@ -288,6 +300,54 @@ window.addEventListener('load', function() {
             <span>✉️ 문의·승인·광고 신청</span>
           </button>
         </div>
+
+        <!-- [신규 요청] 좌측 사이드바 하단: 대형 실시간 디지털 시계 & 데일리 마라톤 캘린더 위젯 -->
+        <div id="sidebar-calendar-widget" class="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
+          <!-- 1. 대형 실시간 디지털 시계 & 오늘 요일 -->
+          <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-brand-950 text-white border border-brand-500/20 shadow-md relative overflow-hidden">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 mb-1">
+              <span class="text-brand-400 font-extrabold flex items-center gap-1">
+                <span>📅</span>
+                <span id="live-sidebar-date-text">오늘 날짜 계산 중...</span>
+              </span>
+              <span class="text-[9px] px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-300 font-mono tracking-wider font-extrabold">LIVE</span>
+            </div>
+            <!-- 실시간 대형 디지털 시계 (HH:MM:SS) -->
+            <div id="live-sidebar-digital-clock" class="text-2xl sm:text-3xl font-black font-mono tracking-wider text-center text-white py-1">
+              --:--:--
+            </div>
+            <div class="text-[10px] text-slate-300 flex items-center justify-center gap-1.5 mt-0.5 font-bold">
+              <span id="live-sidebar-run-tip" class="text-emerald-400">러닝 최적 시간대 안내</span>
+            </div>
+          </div>
+
+          <!-- 2. 인터랙티브 미니 데일리 달력 -->
+          <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-800">
+            <div class="flex items-center justify-between mb-2">
+              <button type="button" onclick="prevMiniCalendarMonth()" class="p-1 px-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold transition text-slate-600 dark:text-slate-300 cursor-pointer">◀</button>
+              <div id="mini-cal-month-title" class="text-xs font-extrabold text-slate-800 dark:text-slate-200">2026년 11월</div>
+              <button type="button" onclick="nextMiniCalendarMonth()" class="p-1 px-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold transition text-slate-600 dark:text-slate-300 cursor-pointer">▶</button>
+            </div>
+            <div class="grid grid-cols-7 gap-1 text-center text-[10px] font-extrabold text-slate-400 mb-1.5">
+              <span class="text-rose-500">일</span>
+              <span>월</span>
+              <span>화</span>
+              <span>수</span>
+              <span>목</span>
+              <span>금</span>
+              <span class="text-blue-500">토</span>
+            </div>
+            <!-- 달력 날짜 그리드 (JS 동적 렌더링) -->
+            <div id="mini-cal-days-grid" class="grid grid-cols-7 gap-1 text-center text-[11px] font-bold">
+              <!-- JS 동적 렌더링 -->
+            </div>
+            <!-- 하단 가장 가까운 메이저 대회 D-Day 요약 -->
+            <div id="mini-cal-nearest-race-box" class="mt-2.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between text-[11px]">
+              <span id="mini-cal-nearest-title" class="text-slate-500 dark:text-slate-400 text-[10px] truncate max-w-[140px]">다음 대회: 서울마라톤</span>
+              <span id="mini-cal-nearest-dday" class="font-extrabold text-brand-600 dark:text-brand-400 font-mono">D-136</span>
+            </div>
+          </div>
+        </div>
       </aside>
 
       <!-- 3. 메인 콘텐츠 영역 (PC 우측 75% / 모바일 100%) -->
@@ -295,7 +355,7 @@ window.addEventListener('load', function() {
       <!-- [대시보드 패널 1] VDOT 페이스 & 5km 구간별 스플릿 계산기 -->
       <div id="panel-calc" class="dash-panel space-y-6">
         <section id="calculator-section" class="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4">
-      <!-- 좌측: 최근 기록 및 체중 입력 (5 cols) -->
+      <!-- 좌측: 최근 기록 & 신체 프로필 & VDOT 분석 (5 cols) -->
       <div class="lg:col-span-5 flex flex-col gap-5">
         <!-- 카드 1: 최근 완주 기록 -->
         <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
@@ -403,10 +463,89 @@ window.addEventListener('load', function() {
             </div>
           </div>
         </div>
+
+        <!-- 카드 1: VDOT 달성 확률 & 난이도 판정 -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-bold flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">4</span>
+                목표 달성 확률 &amp; VDOT 난이도 분석
+              </h3>
+              <span id="feasibility-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                도전적 페이스
+              </span>
+            </div>
+
+            <!-- 확률 게이지 바 -->
+            <div class="mb-4">
+              <div class="flex justify-between items-end mb-1.5">
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">달성 성공 확률</span>
+                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono"><span id="prob-val">68</span>%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden p-0.5">
+                <div id="prob-bar" class="bg-gradient-to-r from-amber-500 to-brand-600 h-full rounded-full transition-all duration-500" style="width: 68%;"></div>
+              </div>
+            </div>
+
+            <!-- VDOT 비교 요약 그리드 -->
+            <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center mb-3">
+              <div>
+                <div class="text-[11px] text-slate-400 font-medium mb-0.5">현재 VDOT</div>
+                <div id="current-vdot-val" class="text-base font-black font-mono text-slate-800 dark:text-slate-200">46.5</div>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-400 font-medium mb-0.5">목표 VDOT</div>
+                <div id="target-vdot-val" class="text-base font-black font-mono text-brand-600 dark:text-brand-400">48.2</div>
+              </div>
+              <div>
+                <div class="text-[11px] text-slate-400 font-medium mb-0.5">VDOT 차이</div>
+                <div id="vdot-diff-val" class="text-base font-black font-mono text-amber-600 dark:text-amber-400">+1.7</div>
+              </div>
+            </div>
+
+            <!-- 코치 피드백 박스 -->
+            <div id="coach-advice-box" class="text-xs p-3 rounded-xl bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 text-slate-700 dark:text-slate-300 leading-relaxed">
+              최근 기록 대비 목표 페이스를 안정적으로 완주하기 위해 8~12주의 체계적인 인터벌 및 지속주 훈련이 권장됩니다.
+            </div>
+          </div>
+
+          <!-- 카드 2: 5대 훈련 페이스 존 (Jack Daniels) -->
+          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                <span>⏱️</span> VDOT 기반 5대 권장 훈련 페이스
+              </h4>
+              <span id="target-pace-summary" class="text-xs font-mono font-bold text-brand-600 dark:text-brand-400">목표 4'45"/km</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-slate-500 dark:text-slate-400 text-[11px]">이지런 (E-Pace)</div>
+                <div id="pace-e" class="font-mono font-extrabold text-sm text-slate-800 dark:text-slate-200 mt-1">5'35" ~ 6'05"</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-brand-600 dark:text-brand-400 text-[11px]">마라톤 (M-Pace)</div>
+                <div id="pace-m" class="font-mono font-extrabold text-sm text-brand-600 dark:text-brand-400 mt-1">4'45"/km</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-amber-600 dark:text-amber-400 text-[11px]">역치주 (T-Pace)</div>
+                <div id="pace-t" class="font-mono font-extrabold text-sm text-amber-600 dark:text-amber-400 mt-1">4'28"/km</div>
+              </div>
+              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
+                <div class="font-bold text-red-600 dark:text-red-400 text-[11px]">인터벌 (I-Pace)</div>
+                <div id="pace-i" class="font-mono font-extrabold text-sm text-red-600 dark:text-red-400 mt-1">4'08"/km</div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500">
+              <span id="equiv-time-text">예상 완주 기록: 3시간 20분 15초</span>
+              <span id="carb-need-text">소모 열량: <strong id="kcal-val" class="text-slate-800 dark:text-slate-200">2,650</strong> kcal</span>
+            </div>
+          </div>
       </div>
 
-      <!-- 우측: 목표 대회 및 주행 전략 설정 (7 cols) -->
-      <div class="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+      <!-- 우측: 목표 대회 주행 전략 & 5km 구간별 스플릿 시간표 (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-5">
+        <!-- 우측: 목표 대회 및 주행 전략 설정 (7 cols) -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
         <div>
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-base font-bold flex items-center gap-2">
@@ -491,89 +630,10 @@ window.addEventListener('load', function() {
             </button>
           </div>
         </div>
-      </div>
-    
-      <!-- 우측: 분석 결과 및 스플릿 시간표 (7 cols) -->
-      <div class="lg:col-span-7 flex flex-col gap-5">
-        <!-- 캡처 대상 컨테이너 -->
+        </div>
+
+        <!-- 캡처 대상 컨테이너: 5km 스플릿 시간표 -->
         <div id="capture-dashboard" class="space-y-5">
-          <!-- 카드 1: VDOT 달성 확률 & 난이도 판정 -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <h3 class="text-base font-bold flex items-center gap-2">
-                <span class="w-6 h-6 rounded-lg bg-brand-600 text-white text-xs flex items-center justify-center font-bold">3</span>
-                목표 달성 확률 &amp; VDOT 난이도 분석
-              </h3>
-              <span id="feasibility-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
-                도전적 페이스
-              </span>
-            </div>
-
-            <!-- 확률 게이지 바 -->
-            <div class="mb-4">
-              <div class="flex justify-between items-end mb-1.5">
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">달성 성공 확률</span>
-                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono"><span id="prob-val">68</span>%</span>
-              </div>
-              <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden p-0.5">
-                <div id="prob-bar" class="bg-gradient-to-r from-amber-500 to-brand-600 h-full rounded-full transition-all duration-500" style="width: 68%;"></div>
-              </div>
-            </div>
-
-            <!-- VDOT 비교 요약 그리드 -->
-            <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center mb-3">
-              <div>
-                <div class="text-[11px] text-slate-400 font-medium mb-0.5">현재 VDOT</div>
-                <div id="current-vdot-val" class="text-base font-black font-mono text-slate-800 dark:text-slate-200">46.5</div>
-              </div>
-              <div>
-                <div class="text-[11px] text-slate-400 font-medium mb-0.5">목표 VDOT</div>
-                <div id="target-vdot-val" class="text-base font-black font-mono text-brand-600 dark:text-brand-400">48.2</div>
-              </div>
-              <div>
-                <div class="text-[11px] text-slate-400 font-medium mb-0.5">VDOT 차이</div>
-                <div id="vdot-diff-val" class="text-base font-black font-mono text-amber-600 dark:text-amber-400">+1.7</div>
-              </div>
-            </div>
-
-            <!-- 코치 피드백 박스 -->
-            <div id="coach-advice-box" class="text-xs p-3 rounded-xl bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-900/60 text-slate-700 dark:text-slate-300 leading-relaxed">
-              최근 기록 대비 목표 페이스를 안정적으로 완주하기 위해 8~12주의 체계적인 인터벌 및 지속주 훈련이 권장됩니다.
-            </div>
-          </div>
-
-          <!-- 카드 2: 5대 훈련 페이스 존 (Jack Daniels) -->
-          <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                <span>⏱️</span> VDOT 기반 5대 권장 훈련 페이스
-              </h4>
-              <span id="target-pace-summary" class="text-xs font-mono font-bold text-brand-600 dark:text-brand-400">목표 4'45"/km</span>
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
-                <div class="font-bold text-slate-500 dark:text-slate-400 text-[11px]">이지런 (E-Pace)</div>
-                <div id="pace-e" class="font-mono font-extrabold text-sm text-slate-800 dark:text-slate-200 mt-1">5'35" ~ 6'05"</div>
-              </div>
-              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
-                <div class="font-bold text-brand-600 dark:text-brand-400 text-[11px]">마라톤 (M-Pace)</div>
-                <div id="pace-m" class="font-mono font-extrabold text-sm text-brand-600 dark:text-brand-400 mt-1">4'45"/km</div>
-              </div>
-              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
-                <div class="font-bold text-amber-600 dark:text-amber-400 text-[11px]">역치주 (T-Pace)</div>
-                <div id="pace-t" class="font-mono font-extrabold text-sm text-amber-600 dark:text-amber-400 mt-1">4'28"/km</div>
-              </div>
-              <div class="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-center">
-                <div class="font-bold text-red-600 dark:text-red-400 text-[11px]">인터벌 (I-Pace)</div>
-                <div id="pace-i" class="font-mono font-extrabold text-sm text-red-600 dark:text-red-400 mt-1">4'08"/km</div>
-              </div>
-            </div>
-            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500">
-              <span id="equiv-time-text">예상 완주 기록: 3시간 20분 15초</span>
-              <span id="carb-need-text">소모 열량: <strong id="kcal-val" class="text-slate-800 dark:text-slate-200">2,650</strong> kcal</span>
-            </div>
-          </div>
-
           <!-- 카드 3: 5km 구간별 스플릿 시간표 -->
           <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-sm">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
@@ -620,7 +680,6 @@ window.addEventListener('load', function() {
           </div>
         </div>
       </div>
-
     </section>
       </div>
 
@@ -1546,7 +1605,7 @@ window.addEventListener('load', function() {
         </div>
 
         <!-- 전체 스토어 링크 카탈로그 (쿠팡 4종 + 네이버 14종 + 추가 링크) -->
-        <div id="all-affiliate-catalog" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div id="all-affiliate-catalog" class="w-full">
           <!-- app.js에서 자동 렌더링 -->
         </div>
       </div>
@@ -1718,6 +1777,168 @@ window.addEventListener('load', function() {
             <!-- JS 동적 렌더링 -->
           </div>
 
+        </section>
+      </div>
+
+    
+      <!-- [대시보드 패널 10] 데일리 러닝 뉴스 & 트렌드 핫이슈 TOP 20 -->
+      <div id="panel-news" class="dash-panel space-y-6 hidden" style="display: none;">
+        <section id="news-section" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-7 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
+          
+          <!-- 헤더 타이틀 & 관리자 등록 버튼 -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                <span class="text-xl">📰</span>
+                <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
+                  10. 데일리 러닝 뉴스 &amp; 트렌드 핫이슈 TOP 20
+                </h2>
+                <span id="news-count-badge" class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                  TOP 20 실시간 업데이트
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                  네이버 &amp; 구글 뉴스 연동
+                </span>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                매일 업데이트되는 신상 러닝화 발매, 메이저 마라톤 접수 속보, 보급·훈련 과학 트렌드를 클릭 한 번에 확인하세요!
+              </p>
+            </div>
+
+            <!-- 관리자 액션 & 뉴스 새로고침 -->
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onclick="handleClickAddNews()"
+                class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1.5 cursor-pointer"
+                title="승인된 관리자만 뉴스를 직접 등록할 수 있습니다"
+              >
+                <span>➕ 뉴스 등록 (관리자)</span>
+              </button>
+              <button
+                type="button"
+                onclick="resetDefaultRunningNews()"
+                class="p-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                title="기본 TOP 20 뉴스로 복원"
+              >
+                <span>🔄 최신 복원</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 실시간 포털 & 유튜브 채널 데일리 속보 1클릭 바로가기 -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-transparent border border-blue-500/20">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="text-sm">🌐</span>
+                <span class="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">실시간 포털 속보 &amp; 한국 대표 러닝 유튜브 데일리 영상 1클릭:</span>
+              </div>
+              <span class="text-[11px] text-slate-400">새 탭에서 포털 속보 및 유튜브 최신 영상 즉시 열람</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <a
+                href="https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%9F%AC%EB%8B%9D+%EB%8C%80%ED%9A%8C"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>🟢 네이버 속보 ↗</span>
+              </a>
+              <a
+                href="https://news.google.com/search?q=%EB%9F%AC%EB%8B%9D%ED%99%94%20%EC%8B%A0%EC%A0%9C%ED%92%88%20%EC%B6%9C%EC%8B%9C&hl=ko&gl=KR&ceid=KR%3Ako"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-500/30 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition flex items-center gap-1.5 shadow-2xs"
+              >
+                <span>🔍 구글 속보 ↗</span>
+              </a>
+              <a
+                href="https://www.youtube.com/results?search_query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%9F%AC%EB%8B%9D&sp=CAI%253D"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-500/30 hover:bg-rose-100 transition flex items-center gap-1.5 shadow-2xs"
+                title="유튜브에서 오늘 올라온 실시간 마라톤 러닝 최신 영상 검색"
+              >
+                <span>🔴 유튜브 오늘 러닝 속보 ↗</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95/videos"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-1 shadow-2xs"
+                title="황영조 올림픽 금메달리스트 공식 채널 최신순 영상 목록"
+              >
+                <span>🏃 영조형 최신 ↗</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@daily__dear/videos"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-1 shadow-2xs"
+                title="방구석 운동가 디어 러닝화 티어 & 장비 피드"
+              >
+                <span>👟 디어 최신 ↗</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@runclear_running/videos"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-1 shadow-2xs"
+                title="런클리어 김영복 코치 러닝 자세 및 훈련 최신 영상"
+              >
+                <span>⚡ 런클리어 최신 ↗</span>
+              </a>
+              <a
+                href="https://www.youtube.com/@suncoach42.195/videos"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-1 shadow-2xs"
+                title="썬코치 실전 마라톤 페이싱 & 테이퍼링 최신 영상"
+              >
+                <span>🔥 썬코치 최신 ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- 필터 탭 & 검색 바 -->
+          <div class="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-800 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <!-- 카테고리 필터 버튼 -->
+              <div class="flex flex-wrap items-center gap-1.5" id="news-category-filter-group">
+                <button type="button" data-news-cat="all" onclick="setRunningNewsCategoryFilter('all')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer">
+                  🔥 전체 핫이슈 TOP 20
+                </button>
+                <button type="button" data-news-cat="shoes" onclick="setRunningNewsCategoryFilter('shoes')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                  👟 신상 러닝화·기어
+                </button>
+                <button type="button" data-news-cat="race" onclick="setRunningNewsCategoryFilter('race')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                  🏃 마라톤 대회 &amp; 접수 속보
+                </button>
+                <button type="button" data-news-cat="trend" onclick="setRunningNewsCategoryFilter('trend')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                  🔬 훈련·영양 &amp; 러닝 트렌드
+                </button>
+                <button type="button" data-news-cat="youtube" onclick="setRunningNewsCategoryFilter('youtube')" class="news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer">
+                  🎬 유튜브 러닝 데일리 속보
+                </button>
+              </div>
+
+              <!-- 검색 인풋 -->
+              <div class="relative sm:w-64">
+                <input
+                  type="text"
+                  id="news-search-input"
+                  placeholder="뉴스 키워드 검색 (예: 알파플라이, 서울마라톤)..."
+                  class="w-full pl-8 pr-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs">🔍</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 데일리 뉴스 TOP 20 카드 컨테이너 (2열 와이드 그리드) -->
+          <div id="running-news-cards-container" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            <!-- JS 동적 렌더링 -->
+          </div>
         </section>
       </div>
 
@@ -2268,6 +2489,9 @@ window.addEventListener('load', function() {
   </div>
 
   <!-- 메인 애플리케이션 스크립트 (모든 모달 DOM 로드 후 실행) -->
+    <!-- Google Firebase Realtime Database SDK (실시간 전세계 자동 동기화) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="./app.js"></script>
 
   <!-- [유튜브 인앱 재생 팝업 모달] -->
@@ -2576,6 +2800,124 @@ window.addEventListener('load', function() {
             class="px-5 py-2 rounded-xl text-xs font-extrabold bg-red-600 hover:bg-red-700 text-white transition shadow-sm"
           >
             채널 저장하기
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- [신규] 러닝 뉴스 등록/수정 모달 (관리자 전용) -->
+  <div id="news-manage-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs hidden p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden animate-scale-up">
+      <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <h3 id="news-modal-title" class="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+          <span>📰</span>
+          <span>러닝 뉴스 등록/수정 (관리자)</span>
+        </h3>
+        <button
+          type="button"
+          onclick="closeNewsManageModal()"
+          class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold text-sm transition"
+        >
+          ✕
+        </button>
+      </div>
+
+      <form onsubmit="submitNewsManageModal(event); return false;" class="p-5 space-y-4">
+        <input type="hidden" id="news-modal-id" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">카테고리</label>
+            <select id="news-modal-category" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white">
+              <option value="shoes">👟 신상 러닝화·기어</option>
+              <option value="race">🏃 마라톤 대회 &amp; 접수 속보</option>
+              <option value="trend">🔬 훈련·영양 &amp; 러닝 트렌드</option>
+              <option value="youtube">🎬 유튜브 러닝 데일리 속보</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">랭킹 순위 (1~20)</label>
+            <input type="number" id="news-modal-rank" min="1" max="50" value="1" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">뉴스 제목 (필수)</label>
+          <input
+            type="text"
+            id="news-modal-name"
+            required
+            placeholder="예: 나이키 알파플라이 4 국내 정식 발매"
+            class="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">기사 핵심 요약 (1~2줄)</label>
+          <textarea
+            id="news-modal-snippet"
+            rows="3"
+            required
+            placeholder="러너들에게 도움되는 핵심 내용을 간략히 요약해주세요."
+            class="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          ></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">네이버 뉴스 URL</label>
+            <input
+              type="url"
+              id="news-modal-naver"
+              placeholder="https://search.naver.com/..."
+              class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">구글 뉴스 URL</label>
+            <input
+              type="url"
+              id="news-modal-google"
+              placeholder="https://news.google.com/..."
+              class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">유튜브 영상 URL (선택)</label>
+            <input
+              type="url"
+              id="news-modal-youtube"
+              placeholder="https://www.youtube.com/watch?v=..."
+              class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-extrabold text-slate-700 dark:text-slate-300 mb-1">태그 (쉼표로 구분)</label>
+          <input
+            type="text"
+            id="news-modal-tags"
+            placeholder="#알파플라이4, #카본화, #나이키"
+            class="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+          />
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2 border-t border-slate-100 dark:border-slate-800">
+          <button
+            type="button"
+            onclick="closeNewsManageModal()"
+            class="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            class="px-5 py-2 rounded-xl text-xs font-extrabold bg-blue-600 hover:bg-blue-700 text-white transition shadow-sm"
+          >
+            뉴스 저장하기
           </button>
         </div>
       </form>

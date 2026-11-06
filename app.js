@@ -7,7 +7,7 @@
  */
 
 (function () {
-  const STORAGE_KEY = 'marathon_pro_affiliate_links_v7';
+  const STORAGE_KEY = 'marathon_pro_affiliate_links_v8';
   let currentCategoryFilter = 'all';
   let currentBrandFilter = 'all';
   let currentCourseFilter = 'all'; // 'all' | '10k' | 'half' | 'full'
@@ -632,6 +632,9 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(affiliateLinks));
     } catch (e) {}
+    if (typeof syncToFirebaseCloud === 'function') {
+      syncToFirebaseCloud('pacecraft_affiliates', affiliateLinks);
+    }
   }
 
   function detectPlatformFromUrl(url) {
@@ -1625,34 +1628,34 @@
       return '<span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-700 text-white">영양·보급</span>';
     };
 
-    // 아이템 단일 카드 렌더러 (텍스트 절대 안 잘림, 시원한 레이아웃)
+    // 아이템 단일 카드 렌더러 (넓은 폭, 시원한 비율, 모바일 터치 최적화)
     const renderCard = (item, idx) => {
       const isCoupang = item.platform === 'coupang';
       const catTag = CATEGORY_LABELS[item.category] || '🎽 러닝기어';
       const brandBadge = getBrandBadge(item);
       const platBadge = isCoupang
-        ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-500 text-white shadow-2xs">🚀 쿠팡 로켓</span>'
-        : '<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-500 text-white shadow-2xs">🟢 N쇼핑 커넥트</span>';
+        ? '<span class="px-2.5 py-1 rounded-lg text-xs font-black bg-rose-500 text-white shadow-2xs flex items-center gap-1"><span>🚀</span><span>쿠팡 로켓</span></span>'
+        : '<span class="px-2.5 py-1 rounded-lg text-xs font-black bg-emerald-500 text-white shadow-2xs flex items-center gap-1"><span>🟢</span><span>네이버 쇼핑</span></span>';
 
       const borderCls = isCoupang
-        ? 'border-rose-500/30 hover:border-rose-500 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm'
-        : 'border-emerald-500/30 hover:border-emerald-500 bg-white dark:bg-slate-900 shadow-2xs hover:shadow-sm';
+        ? 'border-rose-500/25 hover:border-rose-500 bg-white dark:bg-slate-900/90 shadow-sm hover:shadow-md'
+        : 'border-emerald-500/25 hover:border-emerald-500 bg-white dark:bg-slate-900/90 shadow-sm hover:shadow-md';
 
       const btnCls = isCoupang
-        ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
-        : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs';
+        ? 'bg-rose-600 hover:bg-rose-700 active:scale-98 text-white shadow-sm'
+        : 'bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white shadow-sm';
 
       const btnText = isCoupang ? '쿠팡 특가 바로가기 ↗' : '네이버 스토어 바로가기 ↗';
 
       return `
-        <div class="affiliate-item-card p-3.5 sm:p-4 rounded-2xl border ${borderCls} transition flex flex-col justify-between gap-3 group">
+        <div class="affiliate-item-card p-4 sm:p-5 rounded-2xl border ${borderCls} transition-all duration-200 flex flex-col justify-between gap-3.5 group hover:-translate-y-0.5">
           <div>
             <!-- 상단 태그 뱃지 영역 -->
-            <div class="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+            <div class="flex items-center justify-between gap-2 mb-2.5">
               <div class="flex items-center gap-1.5 flex-wrap">
                 ${platBadge}
                 ${brandBadge}
-                <span class="text-[11px] font-extrabold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                <span class="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/60">
                   ${catTag}
                 </span>
               </div>
@@ -1661,7 +1664,7 @@
                   <button
                     type="button"
                     data-edit-id="${item.id}"
-                    class="edit-link-btn text-[10px] font-bold px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-700 hover:bg-brand-600 hover:text-white transition cursor-pointer"
+                    class="edit-link-btn text-[11px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition cursor-pointer"
                     title="상품명 및 분류 수정"
                   >
                     ✏️ 수정
@@ -1669,7 +1672,7 @@
                   <button
                     type="button"
                     data-del-id="${item.id}"
-                    class="delete-link-btn text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-950/40 text-rose-600 hover:bg-rose-600 hover:text-white transition cursor-pointer"
+                    class="delete-link-btn text-[11px] font-bold px-2 py-1 rounded-lg bg-rose-100 dark:bg-rose-950/40 text-rose-600 hover:bg-rose-600 hover:text-white transition cursor-pointer"
                     title="상품 삭제"
                   >
                     🗑️
@@ -1678,27 +1681,27 @@
               ` : ''}
             </div>
 
-            <!-- 상품명 (말줄임 없이 전문 노출) -->
+            <!-- 상품명 (충분한 너비로 시원하게 전문 노출, 줄바꿈 자연스러움) -->
             <a
               href="${item.url}"
               target="_blank"
               rel="noopener noreferrer sponsored"
-              class="block text-sm sm:text-base font-extrabold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition leading-snug whitespace-normal"
+              class="block text-sm sm:text-base font-extrabold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 transition leading-snug break-keep"
             >
               ${item.name}
             </a>
           </div>
 
-          <!-- 하단 버튼 및 링크 URL 표시 -->
-          <div class="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-            <span class="text-[10px] font-mono text-slate-400 truncate max-w-[140px] sm:max-w-[220px]">
+          <!-- 하단 버튼 및 링크 영역 (모바일에서도 엄지로 누르기 편한 크기) -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <span class="text-[11px] font-mono text-slate-400 dark:text-slate-500 truncate max-w-full sm:max-w-[200px]">
               ${item.url}
             </span>
             <a
               href="${item.url}"
               target="_blank"
               rel="noopener noreferrer sponsored"
-              class="px-3.5 py-1.5 rounded-xl text-xs font-black ${btnCls} transition flex items-center gap-1 shrink-0"
+              class="w-full sm:w-auto px-4 py-2 rounded-xl text-xs sm:text-sm font-black ${btnCls} transition flex items-center justify-center gap-1.5 shrink-0 text-center cursor-pointer"
             >
               <span>${btnText}</span>
             </a>
@@ -1758,7 +1761,7 @@
                 1. 필수 에너지젤 &amp; 아미노산 뉴트리션 보급품 (${fuelItems.length}종)
               </h4>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               ${fuelItems.length > 0 ? fuelItems.map(renderCard).join('') : '<div class="col-span-full py-4 text-xs text-slate-400 text-center">해당 품목의 추천 링크가 없습니다.</div>'}
             </div>
           </div>
@@ -1771,7 +1774,7 @@
                 2. 실전 레이스 &amp; 데일리 추천 러닝화 (${shoeItems.length}종)
               </h4>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               ${shoeItems.length > 0 ? shoeItems.map(renderCard).join('') : '<div class="col-span-full py-4 text-xs text-slate-400 text-center">해당 품목의 추천 링크가 없습니다.</div>'}
             </div>
           </div>
@@ -1784,7 +1787,7 @@
                 3. 러닝양말, 압박삭스 &amp; GPS 스마트워치·보조 기어 (${otherItems.length}종)
               </h4>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               ${otherItems.length > 0 ? otherItems.map(renderCard).join('') : '<div class="col-span-full py-4 text-xs text-slate-400 text-center">해당 품목의 추천 링크가 없습니다.</div>'}
             </div>
           </div>
@@ -1816,7 +1819,7 @@
               </span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               ${naverList.length > 0 ? naverList.map(renderCard).join('') : '<div class="col-span-full py-6 text-xs text-slate-400 text-center">선택된 조건의 네이버 링크가 없습니다.</div>'}
             </div>
           </div>
@@ -1840,7 +1843,7 @@
               </span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               ${coupangList.length > 0 ? coupangList.map(renderCard).join('') : '<div class="col-span-full py-6 text-xs text-slate-400 text-center">선택된 조건의 쿠팡 링크가 없습니다.</div>'}
             </div>
           </div>
@@ -2459,6 +2462,9 @@
     try {
       localStorage.setItem(RACES_CUSTOM_STORAGE_KEY, JSON.stringify(races));
     } catch (e) {}
+    if (typeof syncToFirebaseCloud === 'function') {
+      syncToFirebaseCloud('pacecraft_races', races);
+    }
   }
 
   let majorRaces = getCustomRaces();
@@ -4276,7 +4282,7 @@ ${content}
   // =========================================================================
   // [9. 명품 러닝 유튜브 특강 & 자세·신발 추천 가이드 모듈]
   // =========================================================================
-  const YOUTUBE_STORAGE_KEY = 'pacecraft_running_youtube_lectures_v5';
+  const YOUTUBE_STORAGE_KEY = 'pacecraft_running_youtube_lectures_v7';
 
   const DEFAULT_YOUTUBE_VIDEOS = [
     // 1. 러너임바
@@ -4322,7 +4328,7 @@ ${content}
 
     // 2. 썬코치
     {
-      id: 'yt_sun_1',
+      id: 'yt_soterfly_1',
       creator: '소터플라이',
       creatorBadge: '🦋 소터플라이',
       creatorBadgeColor: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400',
@@ -4452,7 +4458,7 @@ ${content}
       categoryTag: '#런클리어 #10km완주 #러닝기초',
       videoId: 'imHoSkJU06w',
       url: 'https://www.youtube.com/watch?v=imHoSkJU06w',
-      channelUrl: 'https://runclear.co.kr/',
+      channelUrl: 'https://www.youtube.com/@runclear_running',
       desc: '육상 엘리트 지도자 김영복 감독이 지도하는 러닝 기초 발바닥 롤링과 상체 중심 이동으로 편안하게 10km를 완주하는 법입니다.'
     },
     {
@@ -4465,7 +4471,7 @@ ${content}
       categoryTag: '#자세교정 #비포애프터 #에너지절약',
       videoId: 'YHrPd85dVh4',
       url: 'https://www.youtube.com/watch?v=YHrPd85dVh4',
-      channelUrl: 'https://runclear.co.kr/',
+      channelUrl: 'https://www.youtube.com/@runclear_running',
       desc: '일반 직장인 러너들의 잘못된 달리기 폼을 1:1로 원포인트 교정하여 동일한 심박수에서 페이스를 30초 이상 끌어올리는 비교 영상입니다.'
     }
 ,
@@ -4547,6 +4553,9 @@ ${content}
     try {
       localStorage.setItem(YOUTUBE_STORAGE_KEY, JSON.stringify(list));
     } catch (e) {}
+    if (typeof syncToFirebaseCloud === 'function') {
+      syncToFirebaseCloud('pacecraft_youtube_videos', list);
+    }
   }
 
   let youtubeVideos = loadYoutubeVideos();
@@ -4562,8 +4571,24 @@ ${content}
 
     const isApproved = isCurrentAdminApproved();
 
+    const matchesCreator = (itemCreator, filter) => {
+      if (!filter || filter === 'all') return true;
+      if (itemCreator === filter) return true;
+      const norm = (s) => (s || '').replace(/[\s()]/g, '');
+      const ic = norm(itemCreator);
+      const f = norm(filter);
+      if (ic === f) return true;
+      if ((ic.includes('영조') || ic.includes('황영조')) && (f.includes('영조') || f.includes('황영조'))) return true;
+      if (ic.includes('썬코치') && f.includes('썬코치') && !ic.includes('소터플라이') && !f.includes('소터플라이')) return true;
+      if (ic.includes('소터플라이') && f.includes('소터플라이')) return true;
+      if (ic.includes('런클리어') && f.includes('런클리어')) return true;
+      if (ic.includes('디어') && f.includes('디어')) return true;
+      if (ic.includes('러너임바') && f.includes('러너임바')) return true;
+      return false;
+    };
+
     const filtered = youtubeVideos.filter(item => {
-      if (currentYoutubeCreatorFilter !== 'all' && item.creator !== currentYoutubeCreatorFilter) return false;
+      if (currentYoutubeCreatorFilter !== 'all' && !matchesCreator(item.creator, currentYoutubeCreatorFilter)) return false;
       if (currentYoutubeCategoryFilter !== 'all' && item.category !== currentYoutubeCategoryFilter) return false;
       if (currentYoutubeSearchQuery) {
         const q = currentYoutubeSearchQuery.toLowerCase();
@@ -4915,7 +4940,7 @@ ${content}
     },
     {
       id: 'coach_youngjo',
-      name: '영조형 (황영조)',
+      name: '영조형',
       badge: '🥇 영조형 (황영조)',
       badgeColor: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400',
       title: '올림픽 마라톤 금메달리스트',
@@ -4930,7 +4955,7 @@ ${content}
       badgeColor: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
       title: '김영복 감독 1:1 자세 교정',
       desc: '10km 첫 완주 원포인트 레슨, 아마추어 폼 Before & After 에너지 30% 절약 분석',
-      url: 'https://www.youtube.com/@runclear',
+      url: 'https://www.youtube.com/@runclear_running',
       btnColor: 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300'
     },
     {
@@ -4955,7 +4980,7 @@ ${content}
     }
   ];
 
-  const YOUTUBE_COACHES_STORAGE_KEY = 'pacecraft_running_youtube_coaches_v3';
+  const YOUTUBE_COACHES_STORAGE_KEY = 'pacecraft_running_youtube_coaches_v5';
 
   function loadYoutubeCoaches() {
     try {
@@ -4972,6 +4997,9 @@ ${content}
     try {
       localStorage.setItem(YOUTUBE_COACHES_STORAGE_KEY, JSON.stringify(list));
     } catch (e) {}
+    if (typeof syncToFirebaseCloud === 'function') {
+      syncToFirebaseCloud('pacecraft_youtube_coaches', list);
+    }
   }
 
   let youtubeCoaches = loadYoutubeCoaches();
@@ -5248,6 +5276,1025 @@ ${content}
     });
   }
 
+  
+  // =========================================================================
+  // [신규] 좌측 사이드바: 대형 실시간 디지털 시계 & 데일리 마라톤 캘린더 시스템
+  // =========================================================================
+  let miniCalCurrentDate = new Date(); // 현재 보고 있는 달력 기준
+
+  function updateSidebarLiveClock() {
+    const clockEl = document.getElementById('live-sidebar-digital-clock');
+    const dateTextEl = document.getElementById('live-sidebar-date-text');
+    const runTipEl = document.getElementById('live-sidebar-run-tip');
+
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+
+    if (clockEl) clockEl.textContent = `${h}:${m}:${s}`;
+
+    if (dateTextEl) {
+      const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+      const y = now.getFullYear();
+      const mon = now.getMonth() + 1;
+      const d = now.getDate();
+      const day = weekdays[now.getDay()];
+      dateTextEl.textContent = `${y}.${mon}.${d} (${day})`;
+    }
+
+    if (runTipEl) {
+      const hour = now.getHours();
+      let tip = '러닝 컨디션 최고조 시간';
+      if (hour >= 5 && hour < 9) {
+        tip = '🌅 아침 모닝런 적기 (공복 유산소 & 지방 연소)';
+      } else if (hour >= 9 && hour < 12) {
+        tip = '☀️ 오전 조깅 적기 (비타민D 합성 & 활력 충전)';
+      } else if (hour >= 12 && hour < 17) {
+        tip = '🏃 낮 트레이닝 (실내 트레드밀 또는 충분한 수분 보급)';
+      } else if (hour >= 17 && hour < 21) {
+        tip = '🌇 황금 이브닝런 적기 (근육 유연성 & 체온 최적기)';
+      } else if (hour >= 21 && hour < 24) {
+        tip = '🌙 야간 쿨다운런 (가벼운 스트레칭 조깅)';
+      } else {
+        tip = '💤 숙면 & 근육 회복 시간 (마라톤 성장의 핵심)';
+      }
+      runTipEl.textContent = tip;
+    }
+  }
+
+  function renderSidebarMiniCalendar() {
+    const titleEl = document.getElementById('mini-cal-month-title');
+    const gridEl = document.getElementById('mini-cal-days-grid');
+    const nearestTitleEl = document.getElementById('mini-cal-nearest-title');
+    const nearestDDayEl = document.getElementById('mini-cal-nearest-dday');
+    if (!gridEl) return;
+
+    const y = miniCalCurrentDate.getFullYear();
+    const m = miniCalCurrentDate.getMonth(); // 0-indexed
+
+    if (titleEl) {
+      titleEl.textContent = `${y}년 ${m + 1}월`;
+    }
+
+    const firstDayIndex = new Date(y, m, 1).getDay(); // 요일 (0: 일)
+    const lastDay = new Date(y, m + 1, 0).getDate(); // 이달의 마지막 일수
+    const prevLastDay = new Date(y, m, 0).getDate(); // 전달 마지막 일수
+
+    const today = new Date();
+    const isCurrentMonth = today.getFullYear() === y && today.getMonth() === m;
+    const todayDate = today.getDate();
+
+    // 메이저 대회 일정 파싱하여 이 달의 대회일 하이라이트
+    const raceDatesInMonth = {};
+    const racesList = (typeof majorRaces === 'object' && majorRaces !== null)
+      ? Object.values(majorRaces)
+      : [];
+
+    racesList.forEach(r => {
+      if (!r || !r.date) return;
+      const parts = r.date.split('-');
+      if (parts.length >= 3) {
+        const ry = parseInt(parts[0], 10);
+        const rm = parseInt(parts[1], 10) - 1;
+        const rd = parseInt(parts[2], 10);
+        if (ry === y && rm === m) {
+          raceDatesInMonth[rd] = r;
+        }
+      }
+    });
+
+    let daysHtml = '';
+
+    // 전달 날짜 채우기
+    for (let i = firstDayIndex - 1; i >= 0; i--) {
+      daysHtml += `<div class="p-1 text-slate-300 dark:text-slate-600 text-[10px] select-none">${prevLastDay - i}</div>`;
+    }
+
+    // 이번 달 날짜 채우기
+    for (let day = 1; day <= lastDay; day++) {
+      const isToday = isCurrentMonth && day === todayDate;
+      const race = raceDatesInMonth[day];
+
+      let cellCls = 'p-0.5 rounded-lg transition select-none flex flex-col items-center justify-center relative cursor-default ';
+      let numCls = '';
+
+      if (isToday) {
+        cellCls += 'bg-brand-600 text-white font-black shadow-xs ring-2 ring-brand-400 ';
+        numCls = 'text-white';
+      } else if (race) {
+        cellCls += 'bg-rose-500/15 text-rose-600 dark:text-rose-400 font-black border border-rose-500/30 ';
+        numCls = 'text-rose-600 dark:text-rose-400';
+      } else {
+        cellCls += 'hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 ';
+      }
+
+      daysHtml += `
+        <div class="${cellCls}" title="${isToday ? '오늘' : ''} ${race ? race.name + ' (' + race.date + ')' : ''}">
+          <span class="${numCls}">${day}</span>
+          ${race ? '<span class="w-1 h-1 rounded-full bg-rose-500 mt-0.5"></span>' : ''}
+        </div>
+      `;
+    }
+
+    // 다음 달 날짜 채우기 (7열 완성)
+    const totalCells = firstDayIndex + lastDay;
+    const remaining = (7 - (totalCells % 7)) % 7;
+    for (let j = 1; j <= remaining; j++) {
+      daysHtml += `<div class="p-1 text-slate-300 dark:text-slate-600 text-[10px] select-none">${j}</div>`;
+    }
+
+    gridEl.innerHTML = daysHtml;
+
+    // 가장 가까운 미래 대회 D-Day 표시
+    if (nearestTitleEl && nearestDDayEl) {
+      const todayTime = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+      const futureRaces = racesList
+        .filter(r => r && r.date)
+        .map(r => {
+          const parts = r.date.split('-');
+          const rt = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10)).getTime();
+          const diffDays = Math.ceil((rt - todayTime) / (1000 * 60 * 60 * 24));
+          return { ...r, diffDays };
+        })
+        .filter(r => r.diffDays >= 0)
+        .sort((a, b) => a.diffDays - b.diffDays);
+
+      if (futureRaces.length > 0) {
+        const nextRace = futureRaces[0];
+        nearestTitleEl.textContent = `다음 대회: ${nextRace.name.split('(')[0]}`;
+        nearestDDayEl.textContent = nextRace.diffDays === 0 ? 'D-Day!' : `D-${nextRace.diffDays}`;
+      } else {
+        nearestTitleEl.textContent = '등록된 예정 대회';
+        nearestDDayEl.textContent = '-';
+      }
+    }
+  }
+
+  function prevMiniCalendarMonth() {
+    miniCalCurrentDate.setMonth(miniCalCurrentDate.getMonth() - 1);
+    renderSidebarMiniCalendar();
+  }
+
+  function nextMiniCalendarMonth() {
+    miniCalCurrentDate.setMonth(miniCalCurrentDate.getMonth() + 1);
+    renderSidebarMiniCalendar();
+  }
+
+  // =========================================================================
+  // [신규] 10. 데일리 러닝 뉴스 & 트렌드 핫이슈 TOP 20 시스템
+  // =========================================================================
+  const DEFAULT_RUNNING_NEWS = [
+    // [신규] 유튜브 러닝 데일리 최신 특강 & 속보 아이템 4종
+    {
+      id: 'news-yt-01',
+      rank: 5,
+      category: 'youtube',
+      categoryLabel: '🎬 유튜브 러닝',
+      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      title: '[황영조형] 올림픽 금메달리스트가 전하는 마라톤 30km 사점(Dead Point) 극복법 & 후반 페이스 특강',
+      snippet: '황영조 감독이 직접 밝히는 마라톤 후반 30km 이후 체력 고갈 시 팔치기와 호흡 리듬을 재정비해 피니시까지 기록을 밀고 나가는 실전 노하우입니다.',
+      date: '2026.11.06 데일리 특강',
+      source: '황영조형 공식 유튜브',
+      tags: ['#황영조형', '#올림픽금메달', '#마라톤30km', '#사점극복', '#러닝자세'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%ED%99%A9%EC%98%81%EC%A1%B0+%EB%A7%88%EB%9D%BC%ED%86%A4',
+      googleUrl: 'https://news.google.com/search?q=%ED%99%A9%EC%98%81%EC%A1%B0%20%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako',
+      youtubeUrl: 'https://www.youtube.com/watch?v=aMZhjckQTuw',
+      channelUrl: 'https://www.youtube.com/@%ED%99%A9%EC%98%81%EC%A1%B0%ED%98%95/videos'
+    },
+    {
+      id: 'news-yt-02',
+      rank: 6,
+      category: 'youtube',
+      categoryLabel: '🎬 유튜브 러닝',
+      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      title: '[방구석 운동가 디어] 2026 러닝화 계급도 & 카테고리 바이블: 알파플라이부터 슈퍼블라스트까지 완벽 총정리',
+      snippet: '러너들이 가장 신뢰하는 방구석 운동가 디어의 2026 러닝화 티어표 분석! 레이싱화, 슈퍼트레이너, 안정화, 쿠션화 브랜드를 한눈에 비교 분석합니다.',
+      date: '2026.11.06 데일리 리뷰',
+      source: '방구석 운동가 디어 채널',
+      tags: ['#방구석운동가디어', '#러닝화바이블', '#러닝화계급도', '#신발추천', '#슈퍼블라스트'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80+%EB%94%94%EC%96%B4+%EB%9F%AC%EB%8B%9D%ED%99%94',
+      googleUrl: 'https://news.google.com/search?q=%EB%B0%A9%EA%B5%AC%EC%84%9D%EC%9A%B4%EB%8F%99%EA%B0%80%20%EB%94%94%EC%96%B4&hl=ko&gl=KR&ceid=KR%3Ako',
+      youtubeUrl: 'https://www.youtube.com/watch?v=u913M5LxTvQ',
+      channelUrl: 'https://www.youtube.com/@daily__dear/videos'
+    },
+    {
+      id: 'news-yt-03',
+      rank: 7,
+      category: 'youtube',
+      categoryLabel: '🎬 유튜브 러닝',
+      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      title: '[런클리어] 무릎·발목 통증 싹 없애는 체간 착지(Mid-foot)와 지면 반력 활용 테크닉',
+      snippet: '육상 선수 출신 김영복 코치의 부상 없는 착지 메커니즘! 힐스트라이크 충격을 분산하고 체간 중심 착지로 기록을 5분 단축하는 핵심 훈련법입니다.',
+      date: '2026.11.06 데일리 훈련',
+      source: '런클리어 러닝아카데미',
+      tags: ['#런클리어', '#김영복코치', '#체간착지', '#미드풋', '#무릎통증예방'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4+%EB%A7%88%EB%9D%BC%ED%86%A4',
+      googleUrl: 'https://news.google.com/search?q=%EB%9F%B0%ED%81%B4%EB%A6%AC%EC%96%B4%20%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako',
+      youtubeUrl: 'https://www.youtube.com/watch?v=imHoSkJU06w',
+      channelUrl: 'https://www.youtube.com/@runclear_running/videos'
+    },
+    {
+      id: 'news-yt-04',
+      rank: 8,
+      category: 'youtube',
+      categoryLabel: '🎬 유튜브 러닝',
+      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      title: '[썬코치 42.195] 마라톤 호흡이 터지는 2:2 리듬 복식호흡 & 심박수 낮추는 페이싱 비법',
+      snippet: '마라톤 전문 썬코치가 전수하는 호흡 안정화 훈련! 발걸음에 맞춘 2:2 흡흡호호 리듬과 횡격막 호흡으로 심박 과열을 막고 체력을 비축하는 실전 가이드입니다.',
+      date: '2026.11.06 데일리 팁',
+      source: '썬코치 마라톤 채널',
+      tags: ['#썬코치', '#마라톤호흡법', '#복식호흡', '#심박수안정', '#마라톤완주'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%8D%AC%EC%BD%94%EC%B9%98+%EB%A7%88%EB%9D%BC%ED%86%A4',
+      googleUrl: 'https://news.google.com/search?q=%EC%8D%AC%EC%BD%94%EC%B9%98%20%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako',
+      youtubeUrl: 'https://www.youtube.com/watch?v=c_n_ust4pDI',
+      channelUrl: 'https://www.youtube.com/@suncoach42.195/videos'
+    },
+    {
+      id: 'news-01',
+      rank: 1,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      title: '나이키 알파플라이 4 공식 런칭 & 마스터즈 마라토너 실착 피드백 분석',
+      snippet: '초경량 줌X 폼과 공기역학적 에어 팟 설계를 고도화한 플래그십 레이서 알파플라이 4가 정식 공개되었습니다. 42.195km 풀코스 서브3 러너들의 반발력 메커니즘과 착지감 분석이 뜨거운 화제입니다.',
+      date: '2026.11.06 데일리 최신',
+      source: '네이버 뉴스 & 구글 속보',
+      tags: ['#알파플라이4', '#나이키', '#카본플레이트', '#서브3레이서'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%82%98%EC%9D%B4%ED%82%A4+%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B44',
+      googleUrl: 'https://news.google.com/search?q=%EB%82%98%EC%9D%B4%ED%82%A4%20%EC%95%8C%ED%8C%8C%ED%94%8C%EB%9D%BC%EC%9D%B44&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-02',
+      rank: 2,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+      title: '아디다스 아디제로 EVO SL(에보 SL) 품절 대란 & 2차 리오더 발매 일정',
+      snippet: '카본 플레이트 없이도 최상위 레이싱 폼 라이트스트라이크 프로를 풀렝스로 탑재해 러너들의 찬사를 받은 EVO SL이 전 사이즈 품절을 기록하며 추가 입고 일정이 공지되었습니다.',
+      date: '2026.11.06 데일리 최신',
+      source: '네이버 쇼핑 & 러닝 매거진',
+      tags: ['#아디제로', '#EVOSL', '#슈퍼트레이너', '#오픈런'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4+%EC%95%84%EB%94%94%EC%A0%9C%EB%A1%9C+EVO+SL',
+      googleUrl: 'https://news.google.com/search?q=%EC%95%84%EB%94%94%EB%8B%A4%EC%8A%A4%20EVO%20SL&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-03',
+      rank: 3,
+      category: 'race',
+      categoryLabel: '🏃 대회 속보',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+      title: '2027 서울마라톤(동아) 얼리버드 및 마스터즈 참가 접수 가이드라인 확정',
+      snippet: '세계육상연맹 플래티넘 라벨 서울마라톤이 광화문 광장 출발 잠실종합운동장 코스로 접수 일정을 발표했습니다. 동호인 러너들을 위한 그룹 배정 기준과 얼리버드 티켓팅 팁이 공개되었습니다.',
+      date: '2026.11.06 데일리 속보',
+      source: '동아일보 마라톤 사무국',
+      tags: ['#서울마라톤', '#동아마라톤', '#마스터즈접수', '#풀코스'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4+%EB%8F%99%EC%95%84%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%A0%91%EC%88%98',
+      googleUrl: 'https://news.google.com/search?q=%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%A0%91%EC%88%98&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-04',
+      rank: 4,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
+      title: '아식스 슈퍼블라스트 3(Superblast 3) 사전 유출 스펙 & FF 터보 플러스 적용',
+      snippet: '논플레이트 슈퍼트레이너의 최강자 슈퍼블라스트 3가 메타스피드 파리의 초고반발 폼을 탑재하여 더욱 가볍고 푹신한 에너지 리턴을 제공할 예정입니다.',
+      date: '2026.11.05 최신 뉴스',
+      source: '글로벌 러닝 인사이더',
+      tags: ['#아식스', '#슈퍼블라스트3', '#FF터보플러스', '#조깅화'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%95%84%EC%8B%9D%EC%8A%A4+%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B8',
+      googleUrl: 'https://news.google.com/search?q=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EC%8A%88%ED%8D%BC%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B83&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-05',
+      rank: 5,
+      category: 'trend',
+      categoryLabel: '🔬 훈련·영양',
+      badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20',
+      title: '에너지젤 시간당 90g 고탄수화물 보급 혁명: 30km 벽을 깨는 과학적 섭취법',
+      snippet: '기존 시간당 30~60g 한계를 넘어 2:1 말토덱스트린·과당 조합으로 위장 장애 없이 글리코겐 고갈을 막는 최신 마라톤 영양 섭취 프로토콜이 마스터즈 러너들 사이에 확산되고 있습니다.',
+      date: '2026.11.05 연구 보고',
+      source: '스포츠 뉴트리션 사이언스',
+      tags: ['#에너지젤', '#카보로딩', '#파워젤섭취법', '#30km벽'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4+%EB%B3%B4%EA%B8%89',
+      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%97%90%EB%84%88%EC%A7%80%EC%A0%A4%20%EB%B3%B4%EA%B8%89&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-06',
+      rank: 6,
+      category: 'race',
+      categoryLabel: '🏃 대회 속보',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+      title: 'JTBC 서울마라톤 성료: 3만 러너 상암·잠실 질주 및 완주자 기념 메달 화제',
+      snippet: '가을 최대 러닝 축제 JTBC 서울마라톤이 성공적으로 마무리되며 완주자들의 기록 분석과 입체 디자인 완주 메달이 SNS 상에서 뜨거운 호평을 받았습니다.',
+      date: '2026.11.04 현장 리포트',
+      source: 'JTBC 스포츠 뉴스',
+      tags: ['#JTBC서울마라톤', '#마라톤완주', '#가을마라톤', '#기록갱신'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=JTBC+%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4',
+      googleUrl: 'https://news.google.com/search?q=JTBC%20%EC%84%9C%EC%9A%B8%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-07',
+      rank: 7,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20',
+      title: '가민(Garmin) 포러너 시리즈 대규모 펌웨어 업데이트: 스마트 심박 & 페이스메이커 기능 강화',
+      snippet: '포러너 265 및 165 사용자를 대상으로 실시간 체간 상하진동비 측정과 러닝 파워 메트릭스, 랩 타임 음성 안내 고도화 패치가 공식 배포되었습니다.',
+      date: '2026.11.04 테크 뉴스',
+      source: '가민 코리아 공식',
+      tags: ['#가민', '#포러너265', '#스마트워치', '#GPS러닝'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EA%B0%80%EB%AF%BC+%ED%8F%AC%EB%9F%AC%EB%84%88+%EC%97%85%EB%8D%B0%EC%9D%B4%ED%8A%B8',
+      googleUrl: 'https://news.google.com/search?q=%EA%B0%80%EB%AF%BC%20%ED%8F%AC%EB%9F%AC%EB%84%88&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-08',
+      rank: 8,
+      category: 'trend',
+      categoryLabel: '🔬 훈련·영양',
+      badgeColor: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
+      title: '체간 착지(Mid-foot Core Landing) 주법: 무릎 관절 부상 40% 감소 임상 결과',
+      snippet: '육상 국가대표 코치진이 강조하는 척추-골반 정렬과 무게중심 착지가 힐스트라이크 대비 무릎 충격 하중을 40% 이상 줄인다는 스포츠의학회 연구가 발표되었습니다.',
+      date: '2026.11.03 의학 리포트',
+      source: '대한스포츠의학회지',
+      tags: ['#체간착지', '#미드풋', '#무릎통증예방', '#러닝자세'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80+%EB%9F%AC%EB%8B%9D%ED%8F%BC',
+      googleUrl: 'https://news.google.com/search?q=%EB%9F%AC%EB%8B%9D%ED%8F%BC%20%EC%B2%B4%EA%B0%84%EC%B0%A9%EC%A7%80&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-09',
+      rank: 9,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20',
+      title: '써코니 엔돌핀 프로 5 & 엘리트 3 공개: 10g 경량화와 향상된 스피드로 압도',
+      snippet: '써코니의 인기 카본 레이싱화 라인업 엔돌핀 프로 5가 PWRRUN HG 폼을 최적화해 더욱 가볍고 날렵한 롤링감을 선사하며 글로벌 러너들의 관심을 모으고 있습니다.',
+      date: '2026.11.03 장비 리뷰',
+      source: '러너스월드 코리아',
+      tags: ['#써코니', '#엔돌핀프로5', '#카본화', '#스피드훈련'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%8D%A8%EC%BD%94%EB%8B%88+%EC%97%94%EB%8F%8C%ED%95%80+%ED%94%84%EB%A1%9C',
+      googleUrl: 'https://news.google.com/search?q=%EC%8D%A8%EC%BD%94%EB%8B%88%20%EC%97%94%EB%8F%8C%ED%95%80%ED%94%84%EB%A1%9C5&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-10',
+      rank: 10,
+      category: 'race',
+      categoryLabel: '🏃 대회 속보',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+      title: '2027 대구국제마라톤 코스 전면 개편: 도심 평지 고속 루프로 세계 신기록 정조준',
+      snippet: '세계육상연맹 최고 등급 대구국제마라톤이 언덕 구간을 대폭 축소하고 평지 직선 루프 코스로 코스를 전면 재설계해 2시간 2분대 신기록 도전을 선언했습니다.',
+      date: '2026.11.02 속보',
+      source: '대구광역시 체육회',
+      tags: ['#대구마라톤', '#고속코스', '#세계기록도전', '#평지코스'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%8C%80%EA%B5%AC%EA%B5%AD%EC%A0%9C%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%BD%94%EC%8A%A4',
+      googleUrl: 'https://news.google.com/search?q=%EB%8C%80%EA%B5%AC%EA%B5%AD%EC%A0%9C%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-11',
+      rank: 11,
+      category: 'trend',
+      categoryLabel: '🔬 훈련·영양',
+      badgeColor: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20',
+      title: '겨울철 동계 러닝 방한 체크리스트: 기모 장갑·넥워머·방풍 윈드브레이커 가이드',
+      snippet: '기온 5도 이하 환경에서 말초혈관 수축과 체온 손실을 방지하는 스마트 레이어링 기법과 터치 기능성 기모 장갑 선택법이 러닝 매거진을 통해 소개되었습니다.',
+      date: '2026.11.02 기획',
+      source: '네이버 쇼핑 패션/레저',
+      tags: ['#겨울러닝', '#방한장갑', '#넥워머', '#러닝바람막이'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EA%B2%A8%EC%9A%B8+%EB%9F%AC%EB%8B%9D+%EB%B0%A9%ED%95%9C+%EC%9E%A5%EA%B0%91',
+      googleUrl: 'https://news.google.com/search?q=%EA%B2%A8%EC%9A%B8%20%EB%9F%AC%EB%8B%9D%20%EC%9A%A9%ED%92%88&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-12',
+      rank: 12,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-pink-500/15 text-pink-600 dark:text-pink-400 border border-pink-500/20',
+      title: '뉴발란스 SC 엘리트 v6(FuelCell SuperComp Elite) 국내 상륙',
+      snippet: '퓨어셀 고밀도 탄성 미드솔과 3D 굴곡 카본 플레이트를 결합한 뉴발란스의 플래그십 레이싱화 SC 엘리트 v6가 주요 러닝 전문 샵에 입고되었습니다.',
+      date: '2026.11.01 신제품',
+      source: '뉴발란스 코리아',
+      tags: ['#뉴발란스', '#SC엘리트v6', '#카본화', '#퓨어셀'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4+SC+%EC%97%98%EB%A6%AC%ED%8A%B8',
+      googleUrl: 'https://news.google.com/search?q=%EB%89%B4%EB%B0%9C%EB%9E%80%EC%8A%A4%20SC%20%EC%97%98%EB%A6%AC%ED%8A%B8&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-13',
+      rank: 13,
+      category: 'race',
+      categoryLabel: '🏃 대회 속보',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+      title: '춘천마라톤 호반 코스 단풍 속 성황리 개최: 1만 5천 건각 완주 레이스',
+      snippet: '가을의 전설 춘천마라톤이 의암호 순환 코스에서 단풍 절경과 함께 성황리에 치러졌으며, 완주자들의 서브3·서브4 달성률이 전년 대비 12% 증가했습니다.',
+      date: '2026.10.31 대회 결산',
+      source: '조선일보 춘천마라톤',
+      tags: ['#춘천마라톤', '#가을의전설', '#호반코스', '#완주자'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4',
+      googleUrl: 'https://news.google.com/search?q=%EC%B6%98%EC%B2%9C%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-14',
+      rank: 14,
+      category: 'trend',
+      categoryLabel: '🔬 훈련·영양',
+      badgeColor: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/20',
+      title: '러닝 후 30분 골든타임: 글리코겐 초회복을 위한 4:1 탄수화물·단백질 공식',
+      snippet: '고강도 인터벌이나 20km 이상 LSD 훈련 직후 30분 이내에 탄수화물과 유청 단백질을 4:1 비율로 섭취하면 근육통과 피로도가 50% 이상 빠르게 회복됩니다.',
+      date: '2026.10.30 영양 가이드',
+      source: '운동생리학 아카데미',
+      tags: ['#리커버리', '#글리코겐회복', '#단백질보충', '#LSD회복'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%9F%AC%EB%8B%9D+%ED%9A%8C%EB%B3%B5+%ED%83%84%EC%88%98%ED%99%94%EB%AC%BC+%EB%8B%A8%EB%B0%B1%EC%A7%88',
+      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%9A%8C%EB%B3%B5%20%EC%8B%9D%EB%8B%A8&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-15',
+      rank: 15,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+      title: '나이키 베이퍼플라이 4(Vaporfly 4) 출시 일정 확정: 더 얇아진 어퍼와 통기성',
+      snippet: '로드 10km부터 풀코스까지 전천후로 사랑받는 베이퍼플라이의 4세대 모델이 플라이니트 통기성 개선과 미드풋 지지력 강화 설계를 갖추고 출격을 앞두고 있습니다.',
+      date: '2026.10.29 발매 예고',
+      source: '스니커즈 데일리',
+      tags: ['#베이퍼플라이4', '#나이키러닝', '#레이싱화', '#10km추천'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%82%98%EC%9D%B4%ED%82%A4+%EB%B2%A0%EC%9D%B4%ED%8D%BC%ED%94%8C%EB%9D%BC%EC%9D%B44',
+      googleUrl: 'https://news.google.com/search?q=%EB%B2%A0%EC%9D%B4%ED%8D%BC%ED%94%8C%EB%9D%BC%EC%9D%B44&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-16',
+      rank: 16,
+      category: 'trend',
+      categoryLabel: '🔬 훈련·영양',
+      badgeColor: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
+      title: '기능성 컴프레션 종아리 압박양말의 효과: 마라톤 후반 쥐(경련) 방지 실증',
+      snippet: '단계적 압박 설계를 적용한 의료용 컴프레션 삭스가 정맥혈 회귀를 촉진해 30km 지점 이후 종아리 근육 경련과 붓기를 유의미하게 억제한다는 필드 테스트 결과입니다.',
+      date: '2026.10.28 임상 분석',
+      source: '러닝 사이언스 랩',
+      tags: ['#압박양말', '#컴프레션삭스', '#근육경련예방', '#삭피엔스'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%EC%95%95%EB%B0%95%EC%96%91%EB%A7%90+%ED%9A%A8%EA%B3%BC',
+      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%EC%BB%B4%ED%94%84%EB%A0%88%EC%85%98%20%EC%96%91%EB%A7%90&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-17',
+      rank: 17,
+      category: 'race',
+      categoryLabel: '🏃 대회 속보',
+      badgeColor: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+      title: '경주국제마라톤 천년고도 레이스 마감: 가을 경주 유적지 통과 코스 대인기',
+      snippet: '첨성대와 월정교를 가로지르는 역사문화 마라톤 코스로 전국 러너들의 큰 호응을 얻으며 하프 및 풀코스 전 부문 성공적으로 레이스가 종료되었습니다.',
+      date: '2026.10.25 결산',
+      source: '동아일보 경주마라톤',
+      tags: ['#경주마라톤', '#천년고도', '#가을레이스', '#월정교코스'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EA%B2%BD%EC%A3%BC%EA%B5%AD%EC%A0%9C%EB%A7%88%EB%9D%BC%ED%86%A4',
+      googleUrl: 'https://news.google.com/search?q=%EA%B2%BD%EC%A3%BC%EB%A7%88%EB%9D%BC%ED%86%A4&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-18',
+      rank: 18,
+      category: 'shoes',
+      categoryLabel: '👟 신상 러닝화',
+      badgeColor: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+      title: '아식스 노바블라스트 6(Novablast 6) 출시 예고: 국민 트레이너의 귀환',
+      snippet: '아마추어 러너들의 원픽 데일리 트레이너 노바블라스트의 차세대 모델이 트램펄린 지오메트리를 보강해 부드러운 착지와 튕겨나가는 반발 탄성을 극대화합니다.',
+      date: '2026.10.24 장비 뉴스',
+      source: '아식스 재팬/글로벌',
+      tags: ['#노바블라스트6', '#아식스', '#데일리트레이너', '#쿠션화'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EC%95%84%EC%8B%9D%EC%8A%A4+%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B8',
+      googleUrl: 'https://news.google.com/search?q=%EC%95%84%EC%8B%9D%EC%8A%A4%20%EB%85%B8%EB%B0%94%EB%B8%94%EB%9D%BC%EC%8A%A4%ED%8A%B86&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-19',
+      rank: 19,
+      category: 'trend',
+      categoryLabel: '🔬 훈련·영양',
+      badgeColor: 'bg-teal-500/15 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+      title: '마라톤 테이퍼링(Tapering) 3주 공식: 훈련량 40% 감축으로 파워 100% 충전',
+      snippet: '대회 3주 전부터 주간 마일리지를 20% -> 40% -> 60% 순차적으로 줄이면서 인터벌 강도는 유지해 레이스 당일 폭발적인 근글리코겐 초회복을 이끌어내는 공식입니다.',
+      date: '2026.10.22 훈련 컬럼',
+      source: '마라톤 레이스 전략 연구소',
+      tags: ['#테이퍼링', '#마일리지조절', '#대회전준비', '#피킹'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%A7%88%EB%9D%BC%ED%86%A4+%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81+%ED%9B%88%EB%A0%A8',
+      googleUrl: 'https://news.google.com/search?q=%EB%A7%88%EB%9D%BC%ED%86%A4%20%ED%85%8C%EC%9D%B4%ED%8D%BC%EB%A7%81&hl=ko&gl=KR&ceid=KR%3Ako'
+    },
+    {
+      id: 'news-20',
+      rank: 20,
+      category: 'trend',
+      categoryLabel: '🔥 러닝 트렌드',
+      badgeColor: 'bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/20',
+      title: '2030 러닝 크루 문화와 마라톤 매너: 안전 수칙 및 도심 보행자 배려 캠페인',
+      snippet: '러닝 인구 1000만 시대, 한강 및 도심 러닝 크루들이 떼 러닝을 지양하고 2열 종대 및 우측통행, 안전 수칙을 준수하는 성숙한 러닝 매너 캠페인을 전개하고 있습니다.',
+      date: '2026.10.20 문화 트렌드',
+      source: '문화일보 & 러닝크루 연합',
+      tags: ['#러닝크루', '#러닝매너', '#러닝문화', '#안전러닝'],
+      naverUrl: 'https://search.naver.com/search.naver?where=news&query=%EB%9F%AC%EB%8B%9D%ED%81%AC%EB%A3%A8+%EB%A7%A4%EB%84%88+%EC%95%88%EC%A0%84',
+      googleUrl: 'https://news.google.com/search?q=%EB%9F%AC%EB%8B%9D%ED%81%AC%EB%A3%A8%20%EC%95%88%EC%A0%84%20%EB%A7%A4%EB%84%88&hl=ko&gl=KR&ceid=KR%3Ako'
+    }
+  ];
+
+  const RUNNING_NEWS_STORAGE_KEY = 'pacecraft_running_news_v2';
+
+  function loadRunningNews() {
+    try {
+      const stored = localStorage.getItem(RUNNING_NEWS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return JSON.parse(JSON.stringify(DEFAULT_RUNNING_NEWS));
+  }
+
+  function saveRunningNews(list) {
+    try {
+      localStorage.setItem(RUNNING_NEWS_STORAGE_KEY, JSON.stringify(list));
+    } catch (e) {}
+    if (typeof syncToFirebaseCloud === 'function') {
+      syncToFirebaseCloud('pacecraft_running_news', list);
+    }
+  }
+
+  let runningNewsList = loadRunningNews();
+  let currentNewsCategoryFilter = 'all'; // 'all' | 'shoes' | 'race' | 'trend'
+  let currentNewsSearchQuery = '';
+  let editingNewsItemId = null;
+
+  function renderRunningNewsCards() {
+    const container = document.getElementById('running-news-cards-container');
+    const countBadge = document.getElementById('news-count-badge');
+    if (!container) return;
+
+    const isApproved = isCurrentAdminApproved();
+
+    const filtered = runningNewsList.filter(item => {
+      if (currentNewsCategoryFilter !== 'all' && item.category !== currentNewsCategoryFilter) return false;
+      if (currentNewsSearchQuery) {
+        const q = currentNewsSearchQuery.toLowerCase();
+        const fullText = `${item.title} ${item.snippet} ${item.categoryLabel} ${(item.tags || []).join(' ')}`.toLowerCase();
+        if (!fullText.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if (countBadge) {
+      countBadge.textContent = `TOP ${filtered.length}선 실시간`;
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="col-span-full py-12 text-center bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 p-8">
+          <span class="text-3xl mb-2 block">📰</span>
+          <div class="text-sm font-extrabold text-slate-700 dark:text-slate-300 mb-1">검색 조건에 맞는 러닝 뉴스가 없습니다.</div>
+          <p class="text-xs text-slate-400">다른 카테고리를 선택하거나 다른 검색어로 검색해 보세요.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+      const isTop3 = item.rank <= 3;
+      const rankBadge = isTop3
+        ? `<span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-gradient-to-r from-red-600 to-amber-500 text-white shadow-2xs">🔥 TOP ${String(item.rank).padStart(2, '0')}</span>`
+        : `<span class="px-2.5 py-0.5 rounded-lg text-xs font-black bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">TOP ${String(item.rank).padStart(2, '0')}</span>`;
+
+      const tagsHtml = (item.tags || []).map(t => `<span class="text-[11px] font-bold text-blue-600 dark:text-blue-400">${t}</span>`).join(' ');
+
+      return `
+        <div class="running-news-card p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between gap-3.5 group hover:-translate-y-0.5">
+          <div>
+            <!-- 상단 랭크 & 카테고리 뱃지 -->
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                ${rankBadge}
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-extrabold ${item.badgeColor || 'bg-slate-100 text-slate-700'}">
+                  ${item.categoryLabel}
+                </span>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                  ${item.date}
+                </span>
+              </div>
+              ${isApproved ? `
+                <div class="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onclick="openEditNewsModal('${item.id}')"
+                    class="text-[11px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-brand-600 hover:text-white transition cursor-pointer"
+                    title="뉴스 수정"
+                  >
+                    ✏️ 수정
+                  </button>
+                  <button
+                    type="button"
+                    onclick="deleteNewsItem('${item.id}')"
+                    class="text-[11px] font-bold px-2 py-1 rounded-lg bg-rose-100 dark:bg-rose-950/40 text-rose-600 hover:bg-rose-600 hover:text-white transition cursor-pointer"
+                    title="뉴스 삭제"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+
+            <!-- 기사 제목 (클릭 시 네이버 검색/원문 바로가기) -->
+            <a
+              href="${item.naverUrl || item.googleUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="block text-sm sm:text-base font-black text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition leading-snug break-keep"
+            >
+              ${item.title}
+            </a>
+
+            <!-- 기사 핵심 요약 -->
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+              ${item.snippet}
+            </p>
+
+            <!-- 태그 리스트 -->
+            <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+              ${tagsHtml}
+            </div>
+          </div>
+
+          <!-- 하단 포털 다이렉트 버튼 -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+            <span class="text-[11px] text-slate-400">
+              출처: ${item.source}
+            </span>
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${item.youtubeUrl ? `
+                <a
+                  href="${item.youtubeUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-2.5 py-1.5 rounded-xl text-xs font-black bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-500/20 hover:bg-rose-100 transition flex items-center gap-1 shadow-2xs"
+                  title="유튜브에서 즉시 영상 시청 (새 창)"
+                >
+                  <span>▶ 영상 시청</span>
+                </a>
+              ` : ''}
+              ${item.channelUrl ? `
+                <a
+                  href="${item.channelUrl}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-2 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition flex items-center gap-1"
+                  title="채널 최신 영상 목록 보기"
+                >
+                  <span>📺 채널 최신순</span>
+                </a>
+              ` : ''}
+              <a
+                href="${item.naverUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 hover:bg-emerald-100 transition flex items-center gap-1"
+                title="네이버 뉴스 검색 바로가기"
+              >
+                <span>🟢 N뉴스</span>
+              </a>
+              <a
+                href="${item.googleUrl}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-500/20 hover:bg-blue-100 transition flex items-center gap-1"
+                title="구글 뉴스 검색 바로가기"
+              >
+                <span>🔍 G뉴스</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setRunningNewsCategoryFilter(cat) {
+    currentNewsCategoryFilter = cat;
+    document.querySelectorAll('.news-cat-btn').forEach(btn => {
+      const bCat = btn.getAttribute('data-news-cat');
+      if (bCat === cat) {
+        btn.className = 'news-cat-btn px-3 py-1.5 rounded-xl text-xs font-black bg-blue-600 text-white shadow-xs transition cursor-pointer';
+      } else {
+        btn.className = 'news-cat-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition cursor-pointer';
+      }
+    });
+    renderRunningNewsCards();
+  }
+
+  function handleClickAddNews() {
+    if (!checkAdminPermissionOrPrompt('러닝 뉴스 등록')) return;
+    editingNewsItemId = null;
+    const titleEl = document.getElementById('news-modal-title');
+    if (titleEl) titleEl.textContent = '➕ 신규 데일리 러닝 뉴스 등록 (관리자)';
+
+    const idInput = document.getElementById('news-modal-id');
+    const catInput = document.getElementById('news-modal-category');
+    const rankInput = document.getElementById('news-modal-rank');
+    const nameInput = document.getElementById('news-modal-name');
+    const snipInput = document.getElementById('news-modal-snippet');
+    const nvInput = document.getElementById('news-modal-naver');
+    const ggInput = document.getElementById('news-modal-google');
+    const tagsInput = document.getElementById('news-modal-tags');
+
+    if (idInput) idInput.value = '';
+    if (catInput) catInput.value = 'shoes';
+    if (rankInput) rankInput.value = runningNewsList.length + 1;
+    if (nameInput) nameInput.value = '';
+    if (snipInput) snipInput.value = '';
+    if (nvInput) nvInput.value = '';
+    if (ggInput) ggInput.value = '';
+    const ytAddInput = document.getElementById('news-modal-youtube');
+    if (ytAddInput) ytAddInput.value = '';
+    if (tagsInput) tagsInput.value = '';
+
+    const modal = document.getElementById('news-manage-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function openEditNewsModal(newsId) {
+    if (!checkAdminPermissionOrPrompt('러닝 뉴스 수정')) return;
+    const item = runningNewsList.find(n => n.id === newsId);
+    if (!item) return;
+
+    editingNewsItemId = newsId;
+    const titleEl = document.getElementById('news-modal-title');
+    if (titleEl) titleEl.textContent = `✏️ 'TOP ${item.rank}' 뉴스 수정`;
+
+    const idInput = document.getElementById('news-modal-id');
+    const catInput = document.getElementById('news-modal-category');
+    const rankInput = document.getElementById('news-modal-rank');
+    const nameInput = document.getElementById('news-modal-name');
+    const snipInput = document.getElementById('news-modal-snippet');
+    const nvInput = document.getElementById('news-modal-naver');
+    const ggInput = document.getElementById('news-modal-google');
+    const tagsInput = document.getElementById('news-modal-tags');
+
+    if (idInput) idInput.value = item.id;
+    if (catInput) catInput.value = item.category;
+    if (rankInput) rankInput.value = item.rank;
+    if (nameInput) nameInput.value = item.title;
+    if (snipInput) snipInput.value = item.snippet;
+    if (nvInput) nvInput.value = item.naverUrl || '';
+    if (ggInput) ggInput.value = item.googleUrl || '';
+    const ytEditInput = document.getElementById('news-modal-youtube');
+    if (ytEditInput) ytEditInput.value = item.youtubeUrl || '';
+    if (tagsInput) tagsInput.value = (item.tags || []).join(', ');
+
+    const modal = document.getElementById('news-manage-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  function closeNewsManageModal() {
+    const modal = document.getElementById('news-manage-modal');
+    if (modal) modal.classList.add('hidden');
+    editingNewsItemId = null;
+  }
+
+  function submitNewsManageModal(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!checkAdminPermissionOrPrompt('러닝 뉴스 저장')) return;
+
+    const catInput = document.getElementById('news-modal-category');
+    const rankInput = document.getElementById('news-modal-rank');
+    const nameInput = document.getElementById('news-modal-name');
+    const snipInput = document.getElementById('news-modal-snippet');
+    const nvInput = document.getElementById('news-modal-naver');
+    const ggInput = document.getElementById('news-modal-google');
+    const ytInput = document.getElementById('news-modal-youtube');
+    const tagsInput = document.getElementById('news-modal-tags');
+
+    const category = catInput ? catInput.value : 'shoes';
+    const rank = rankInput ? parseInt(rankInput.value, 10) || 1 : 1;
+    const title = nameInput ? nameInput.value.trim() : '';
+    const snippet = snipInput ? snipInput.value.trim() : '';
+    const naverUrl = nvInput ? nvInput.value.trim() : '';
+    const googleUrl = ggInput ? ggInput.value.trim() : '';
+    const youtubeUrl = ytInput ? ytInput.value.trim() : '';
+    const rawTags = tagsInput ? tagsInput.value.trim() : '';
+
+    if (!title || !snippet) {
+      alert('뉴스 제목과 요약 설명은 필수 입력 항목입니다.');
+      return;
+    }
+
+    const catLabels = {
+      shoes: '👟 신상 러닝화',
+      race: '🏃 대회 속보',
+      trend: '🔬 훈련·영양',
+      youtube: '🎬 유튜브 러닝'
+    };
+
+    const tags = rawTags.split(',').map(t => t.trim()).filter(Boolean).map(t => t.startsWith('#') ? t : '#' + t);
+
+    if (editingNewsItemId) {
+      const idx = runningNewsList.findIndex(n => n.id === editingNewsItemId);
+      if (idx !== -1) {
+        runningNewsList[idx].title = title;
+        runningNewsList[idx].snippet = snippet;
+        runningNewsList[idx].category = category;
+        runningNewsList[idx].categoryLabel = catLabels[category] || '📰 뉴스';
+        runningNewsList[idx].rank = rank;
+        runningNewsList[idx].naverUrl = naverUrl || `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(title)}`;
+        runningNewsList[idx].googleUrl = googleUrl || `https://news.google.com/search?q=${encodeURIComponent(title)}&hl=ko&gl=KR&ceid=KR%3Ako`;
+        if (youtubeUrl) runningNewsList[idx].youtubeUrl = youtubeUrl;
+        runningNewsList[idx].tags = tags;
+      }
+    } else {
+      const newItem = {
+        id: 'news_' + Date.now(),
+        rank,
+        category,
+        categoryLabel: catLabels[category] || '📰 뉴스',
+        badgeColor: category === 'youtube' ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20' : '',
+        title,
+        snippet,
+        date: '오늘 데일리 추가',
+        source: '관리자 추천 등록',
+        tags,
+        naverUrl: naverUrl || `https://search.naver.com/search.naver?where=news&query=${encodeURIComponent(title)}`,
+        googleUrl: googleUrl || `https://news.google.com/search?q=${encodeURIComponent(title)}&hl=ko&gl=KR&ceid=KR%3Ako`,
+        youtubeUrl: youtubeUrl || ''
+      };
+      runningNewsList.push(newItem);
+    }
+
+    runningNewsList.sort((a, b) => a.rank - b.rank);
+    saveRunningNews(runningNewsList);
+    renderRunningNewsCards();
+    closeNewsManageModal();
+    alert('러닝 뉴스가 성공적으로 저장되었습니다!');
+  }
+
+  function deleteNewsItem(newsId) {
+    if (!checkAdminPermissionOrPrompt('러닝 뉴스 삭제')) return;
+    const item = runningNewsList.find(n => n.id === newsId);
+    if (!item) return;
+
+    if (!confirm(`정말로 'TOP ${item.rank}: ${item.title}' 뉴스를 삭제하시겠습니까?`)) return;
+
+    runningNewsList = runningNewsList.filter(n => n.id !== newsId);
+    saveRunningNews(runningNewsList);
+    renderRunningNewsCards();
+  }
+
+  function resetDefaultRunningNews() {
+    if (!checkAdminPermissionOrPrompt('러닝 뉴스 기본 복원')) return;
+    if (!confirm('러닝 뉴스 목록을 기본 TOP 20 최신 핫이슈로 복원하시겠습니까?')) return;
+
+    runningNewsList = JSON.parse(JSON.stringify(DEFAULT_RUNNING_NEWS));
+    saveRunningNews(runningNewsList);
+    renderRunningNewsCards();
+    alert('기본 데일리 러닝 뉴스 TOP 20으로 복원되었습니다.');
+  }
+
+  function initRunningNewsModule() {
+    renderRunningNewsCards();
+
+    const searchInput = document.getElementById('news-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        currentNewsSearchQuery = searchInput.value.trim();
+        renderRunningNewsCards();
+      });
+    }
+
+    const modal = document.getElementById('news-manage-modal');
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeNewsManageModal();
+      });
+    }
+  }
+
+  
+  // =========================================================================
+  // [구글 파이어베이스 클라우드 실시간 동기화 엔진] Google Firebase Realtime Database
+  // =========================================================================
+  const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyDCn2T8oXq-Tg26QJmfRAwANupoIaG3KKQ",
+    authDomain: "pacecraft-runner.firebaseapp.com",
+    databaseURL: "https://pacecraft-runner-default-rtdb.firebaseio.com",
+    projectId: "pacecraft-runner",
+    storageBucket: "pacecraft-runner.firebasestorage.app",
+    messagingSenderId: "269627218102",
+    appId: "1:269627218102:web:5bc94389401f724658ee17",
+    measurementId: "G-PVQ2Y0XGCT"
+  };
+
+  let firebaseDb = null;
+  let isFirebaseSyncActive = false;
+
+  function initFirebaseCloudSync() {
+    try {
+      if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+        if (!firebase.apps || !firebase.apps.length) {
+          firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        firebaseDb = firebase.database();
+        isFirebaseSyncActive = true;
+        console.log("🔥 [Firebase] 실시간 클라우드 데이터베이스 연결 성공!");
+        listenToFirebaseCloudData();
+      }
+    } catch (err) {
+      console.warn("⚠️ [Firebase] 클라우드 동기화 오프라인/로컬 모드로 작동 중:", err);
+    }
+  }
+
+  function listenToFirebaseCloudData() {
+    if (!firebaseDb) return;
+
+    // 1. 마라톤 대회 실시간 동기화
+    firebaseDb.ref('pacecraft_races').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+        majorRaces = data;
+        try { localStorage.setItem(RACES_CUSTOM_STORAGE_KEY, JSON.stringify(majorRaces)); } catch (e) {}
+        renderRaceButtons();
+        updateRaceDOM();
+        renderRightRaceScheduleSidebar();
+        renderSidebarMiniCalendar();
+        console.log("🔥 [Firebase] 대회 목록 실시간 동기화 완료:", Object.keys(majorRaces).length, "개");
+      } else {
+        // 클라우드 최초 생성 시 현재 기본 대회 목록 업로드
+        if (isCurrentAdminApproved()) {
+          firebaseDb.ref('pacecraft_races').set(majorRaces);
+        }
+      }
+    });
+
+    // 2. 추천 유튜브 강좌 실시간 동기화
+    firebaseDb.ref('pacecraft_youtube_videos').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && Array.isArray(data) && data.length > 0) {
+        youtubeVideos = data;
+        try { localStorage.setItem(YOUTUBE_VIDEOS_STORAGE_KEY, JSON.stringify(youtubeVideos)); } catch (e) {}
+        renderYoutubeVideoCards();
+        console.log("🔥 [Firebase] 유튜브 영상 실시간 동기화 완료:", youtubeVideos.length, "개");
+      } else {
+        if (isCurrentAdminApproved()) {
+          firebaseDb.ref('pacecraft_youtube_videos').set(youtubeVideos);
+        }
+      }
+    });
+
+    // 3. 추천 유튜브 코치진 실시간 동기화
+    firebaseDb.ref('pacecraft_youtube_coaches').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && Array.isArray(data) && data.length > 0) {
+        youtubeCoaches = data;
+        try { localStorage.setItem(YOUTUBE_COACHES_STORAGE_KEY, JSON.stringify(youtubeCoaches)); } catch (e) {}
+        renderYoutubeCoachCards();
+      } else {
+        if (isCurrentAdminApproved()) {
+          firebaseDb.ref('pacecraft_youtube_coaches').set(youtubeCoaches);
+        }
+      }
+    });
+
+    // 4. 데일리 러닝 뉴스 TOP 20 실시간 동기화
+    firebaseDb.ref('pacecraft_running_news').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && Array.isArray(data) && data.length > 0) {
+        runningNewsList = data;
+        try { localStorage.setItem(RUNNING_NEWS_STORAGE_KEY, JSON.stringify(runningNewsList)); } catch (e) {}
+        renderRunningNewsCards();
+        console.log("🔥 [Firebase] 러닝 뉴스 실시간 동기화 완료:", runningNewsList.length, "개");
+      } else {
+        if (isCurrentAdminApproved()) {
+          firebaseDb.ref('pacecraft_running_news').set(runningNewsList);
+        }
+      }
+    });
+
+    // 5. 제휴 스토어 및 추천 기어 링크 실시간 동기화
+    firebaseDb.ref('pacecraft_affiliates').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (data && Array.isArray(data) && data.length > 0) {
+        affiliateLinks = data;
+        try { localStorage.setItem(AFFILIATES_STORAGE_KEY, JSON.stringify(affiliateLinks)); } catch (e) {}
+        renderAffiliateCards();
+        console.log("🔥 [Firebase] 제휴 링크 실시간 동기화 완료:", affiliateLinks.length, "개");
+      } else {
+        if (isCurrentAdminApproved()) {
+          firebaseDb.ref('pacecraft_affiliates').set(affiliateLinks);
+        }
+      }
+    });
+  }
+
+  // 클라우드 업로드 헬퍼
+  function syncToFirebaseCloud(path, data) {
+    if (isFirebaseSyncActive && firebaseDb) {
+      try {
+        firebaseDb.ref(path).set(data);
+        console.log(`🔥 [Firebase] '${path}' 클라우드 저장 완료!`);
+      } catch (err) {
+        console.warn(`⚠️ [Firebase] '${path}' 클라우드 저장 실패:`, err);
+      }
+    }
+  }
+
   // =========================================================================
   // [반응형 대시보드 탭 컨트롤러 & 레이아웃 관리자 (8개 독립 패널 원클릭 전환)]
   // =========================================================================
@@ -5260,7 +6307,8 @@ ${content}
     'tab-checklist': 'panel-checklist',
     'tab-gear': 'panel-gear',
     'tab-faq': 'panel-faq',
-    'tab-youtube': 'panel-youtube'
+    'tab-youtube': 'panel-youtube',
+    'tab-news': 'panel-news'
   };
 
   let currentActiveTabId = 'tab-calc';
@@ -6289,6 +7337,19 @@ ${content}
   window.submitYoutubeCoachManageModal = submitYoutubeCoachManageModal;
   window.deleteYoutubeCoach = deleteYoutubeCoach;
   window.resetDefaultYoutubeCoaches = resetDefaultYoutubeCoaches;
+  window.prevMiniCalendarMonth = prevMiniCalendarMonth;
+  window.nextMiniCalendarMonth = nextMiniCalendarMonth;
+  window.renderSidebarMiniCalendar = renderSidebarMiniCalendar;
+  window.renderRunningNewsCards = renderRunningNewsCards;
+  window.setRunningNewsCategoryFilter = setRunningNewsCategoryFilter;
+  window.openEditNewsModal = openEditNewsModal;
+  window.closeNewsManageModal = closeNewsManageModal;
+  window.submitNewsManageModal = submitNewsManageModal;
+  window.deleteNewsItem = deleteNewsItem;
+  window.resetDefaultRunningNews = resetDefaultRunningNews;
+  window.initFirebaseCloudSync = initFirebaseCloudSync;
+  window.syncToFirebaseCloud = syncToFirebaseCloud;
+  window.handleClickAddNews = handleClickAddNews;
   window.setYoutubeCreatorFilter = setYoutubeCreatorFilter;
   window.setYoutubeCategoryFilter = setYoutubeCategoryFilter;
   window.openYoutubePlayer = openYoutubePlayer;
@@ -6323,7 +7384,14 @@ ${content}
     ['updateDDayBadge', updateDDayBadge],
     ['renderRightRaceScheduleSidebar', renderRightRaceScheduleSidebar],
     ['calculateAndRender', calculateAndRender],
+    ['FirebaseCloudSync', initFirebaseCloudSync],
     ['YoutubeLectureModule', initYoutubeLectureModule],
+    ['RunningNewsModule', initRunningNewsModule],
+    ['SidebarClockAndCalendar', () => {
+      updateSidebarLiveClock();
+      setInterval(updateSidebarLiveClock, 1000);
+      renderSidebarMiniCalendar();
+    }],
     ['ShoeBibleModule', () => {
       const sbInput = document.getElementById('shoe-bible-search-input');
       if (sbInput) {
