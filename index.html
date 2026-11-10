@@ -1,24 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko" class="dark">
 <head>
-<script>
-window.__errors = [];
-window.onerror = function(msg, url, line, col, err) {
-  window.__errors.push(msg + ' at line ' + line + ':' + col);
-};
-window.addEventListener('load', function() {
-  setTimeout(function() {
-    var out = document.createElement('div');
-    out.id = '__debug_output__';
-    out.innerText = JSON.stringify({
-      errors: window.__errors,
-      activeTab: typeof currentActiveTabId !== 'undefined' ? currentActiveTabId : 'undefined',
-      buttonsCount: document.querySelectorAll('.dash-tab-btn').length
-    });
-    document.body.appendChild(out);
-  }, 500);
-});
-</script>
+
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -32,7 +15,7 @@ window.addEventListener('load', function() {
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://pacecraftrunner.vercel.app/" />
   <meta property="og:title" content="마라톤 페이스 & VDOT 레이스 전략 플래너 PRO" />
-  <meta property="og:description" content="내 기록으로 분석하는 VDOT 달성 확률, 5km 스플릿 시간표, 에너지젤 보급 타임라인을 3초 만에 확인하세요." />
+  <meta property="og:description" content="VDOT 페이스 계산, GPX 코스 고도 분석, 구간별 레이스 계획표, 에너지젤·급수 전략, 기록 비교를 한 번에 관리하세요." />
   <meta property="og:locale" content="ko_KR" />
 
   <!-- Google AdSense 소유권 확인 메타태그 & 공식 스크립트 (ca-pub-8777128879154634) -->
@@ -64,7 +47,7 @@ window.addEventListener('load', function() {
   <!-- Pretendard 웹폰트 -->
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
   <!-- 분리된 커스텀 스타일시트 -->
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=20261110-chartfix2" />
 
   <script>
     tailwind.config = {
@@ -124,6 +107,13 @@ window.addEventListener('load', function() {
     </div>
   </nav>
 
+  <!-- mobile quick navigation; existing full menu remains available above -->
+  <nav id="pc-quick-bottom" aria-label="모바일 주요 메뉴 바로가기">
+    <button type="button" onclick="switchDashboardTab('tab-calc')"><span>🏃</span>VDOT</button>
+    <button type="button" onclick="switchDashboardTab('tab-plan')"><span>🏁</span>전략표</button>
+    <button type="button" onclick="switchDashboardTab('tab-dday')"><span>📅</span>대회</button>
+    <button type="button" onclick="document.getElementById('mobile-tabs-bar')?.scrollIntoView({behavior:'smooth',block:'start'})"><span>☰</span>전체 메뉴</button>
+  </nav>
   <!-- 메인 컨테이너 -->
   <main id="marathon-planner-app" class="max-w-[1440px] mx-auto p-3 sm:p-6 lg:p-8">
 
@@ -140,10 +130,11 @@ window.addEventListener('load', function() {
             마라톤 레이스 전략 &amp; 보급 플래너 PRO
           </h1>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            현재 기록 기반 VDOT 달성 확률, 5km 구간별 스플릿 시간표, 에너지젤·수분 보급 타임라인을 한눈에 설계하세요.
+            최근 기록으로 목표 페이스를 분석하고, GPX 코스·보급·대회 당일 전략까지 나만의 레이스 계획을 완성하세요.
           </p>
         </div>
 
+        <div class="pr-hero-cta"><button type="button" onclick="switchDashboardTab('tab-plan')">🏁 나만의 레이스 전략 만들기 <span>→</span></button><small>코스 고도 · 페이스 · 에너지젤 · 계획표</small></div>
         <!-- [이미지 요청 위치] 라이트모드 하단 빈칸: 러닝 잇템 & 러닝화 바이블 & 러닝뉴스 원클릭 버튼 -->
         <div class="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
@@ -196,6 +187,10 @@ window.addEventListener('load', function() {
       <button type="button" data-dash-tab="tab-calc" onclick="switchDashboardTab('tab-calc')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-extrabold bg-brand-600 text-white shadow-sm transition">
         🏃‍♂️ 1. VDOT·스플릿
       </button>
+      <button type="button" data-dash-tab="tab-plan" onclick="switchDashboardTab('tab-plan')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+        🗺️ 코스·레이스 계획표
+      </button>
+
       <button type="button" data-dash-tab="tab-daily" onclick="switchDashboardTab('tab-daily')" class="dash-tab-btn shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
         💧 2. 수분·습관체크
       </button>
@@ -238,6 +233,11 @@ window.addEventListener('load', function() {
               <span class="text-sm">🏃‍♂️</span>
               <span>1. VDOT 페이스·스플릿</span>
             </button>
+            <button type="button" data-dash-tab="tab-plan" onclick="switchDashboardTab('tab-plan')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
+              <span class="text-sm">🗺️</span>
+              <span>NEW · 코스·레이스 계획표</span>
+            </button>
+
             <button type="button" data-dash-tab="tab-daily" onclick="switchDashboardTab('tab-daily')" class="dash-tab-btn dash-pc-btn w-full px-3 py-2.5 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition flex items-center gap-2.5 text-left">
               <span class="text-sm">💧</span>
               <span>2. 수분·습관 체크리스트</span>
@@ -469,7 +469,7 @@ window.addEventListener('load', function() {
             <div class="flex items-center justify-between mb-3">
               <h3 class="text-base font-bold flex items-center gap-2">
                 <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white text-xs flex items-center justify-center font-bold">4</span>
-                목표 달성 확률 &amp; VDOT 난이도 분석
+                목표 여유도 지수 &amp; VDOT 난이도 분석
               </h3>
               <span id="feasibility-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
                 도전적 페이스
@@ -479,14 +479,15 @@ window.addEventListener('load', function() {
             <!-- 확률 게이지 바 -->
             <div class="mb-4">
               <div class="flex justify-between items-end mb-1.5">
-                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">달성 성공 확률</span>
-                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono"><span id="prob-val">68</span>%</span>
+                <span class="text-xs text-slate-500 dark:text-slate-400 font-medium">목표 여유도 참고 지수</span>
+                <span class="text-2xl font-black text-brand-600 dark:text-brand-400 font-mono"><span id="prob-val">68</span><span class="text-sm"> / 100</span></span>
               </div>
               <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3 overflow-hidden p-0.5">
                 <div id="prob-bar" class="bg-gradient-to-r from-amber-500 to-brand-600 h-full rounded-full transition-all duration-500" style="width: 68%;"></div>
               </div>
             </div>
 
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">※ 자체 수식 기반 비교 지수이며 실제 목표 달성 확률(%)이 아닙니다. 훈련·날씨·컨디션을 반영하지 않습니다.</p>
             <!-- VDOT 비교 요약 그리드 -->
             <div class="grid grid-cols-3 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center mb-3">
               <div>
@@ -697,6 +698,82 @@ window.addEventListener('load', function() {
     </section>
       </div>
 
+      <!-- [신규] 거리별 코스 페이스 보정 + 개별 보급/넷타임 편집 통합 플래너 -->
+      <div id="panel-plan" class="dash-panel space-y-5 hidden" style="display:none">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm mt-4">
+          <div class="flex flex-wrap justify-between items-start gap-3">
+            <div>
+              <div class="flex items-center gap-2 mb-1"><span class="rp-tag">NEW</span><span class="text-xs font-bold text-brand-600 dark:text-brand-400">Pacecraft Runner · RACE PLAN</span></div>
+              <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">🗺️ 나만의 코스·레이스 계획표</h2>
+              <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">대회 구간의 ±초/km 보정을 적용하고, 1km별 페이스·넷타임·에너지젤·메모를 수정하여 저장하세요.</p>
+            </div>
+            <button type="button" id="rp-load-vdot" class="rp-button rp-button-outline">↙ 현재 VDOT 목표 불러오기</button>
+          </div>
+          <div id="rp-status" role="status" aria-live="polite" class="rp-status mt-3">기존 기록과 별개인 개인 계획표입니다. 수정 내용은 이 브라우저에 저장됩니다.</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
+            <label class="rp-field">대회 선택
+              <select id="rp-race" class="rp-input"><option value="chuncheon">춘천마라톤</option><option value="seoul">서울마라톤 (동아)</option><option value="jtbc">JTBC 서울마라톤</option><option value="daegu">대구국제마라톤</option><option value="gyeongju">경주마라톤</option><option value="busan">부산브릿지마라톤</option><option value="jinju">진주마라톤</option><option value="custom">직접 지정/기타</option></select>
+            </label>
+            <label class="rp-field">레이스 거리
+              <select id="rp-distance" class="rp-input"><option value="42.195">풀코스 42.195km</option><option value="21.0975">하프 21.0975km</option><option value="10">10km</option></select>
+            </label>
+            <label class="rp-field">주행 전략
+              <select id="rp-strategy" class="rp-input"><option value="even">⚖️ 이븐 페이스</option><option value="negative">🚀 네거티브 스플릿</option><option value="positive">🔥 포지티브 스플릿</option></select>
+            </label>
+            <div class="rp-field"><span>목표 넷타임 (시 : 분 : 초)</span>
+              <div class="flex items-center gap-1.5"><input id="rp-hours" type="number" min="0" max="13" class="rp-input rp-time" aria-label="목표 시간 (시)"><span>:</span><input id="rp-minutes" type="number" min="0" max="59" class="rp-input rp-time" aria-label="목표 시간 (분)"><span>:</span><input id="rp-seconds" type="number" min="0" max="59" class="rp-input rp-time" aria-label="목표 시간 (초)"></div>
+            </div>
+            <label class="rp-field">코스 보정 계산 방식
+              <select id="rp-mode" class="rp-input"><option value="add">추가 시간 반영 (최종 기록 변동)</option><option value="target">목표 기록 유지 (다른 구간 분산)</option></select>
+            </label>
+            <label class="rp-field">출발 시간 (시각 안내용)
+              <input id="rp-start-time" type="time" class="rp-input">
+            </label>
+          </div>
+          <label class="flex gap-2.5 items-start mt-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-xs sm:text-sm text-slate-700 dark:text-slate-200">
+            <input type="checkbox" id="rp-apply-vdot" class="mt-0.5 accent-indigo-600">
+            <span><strong>VDOT·스플릿 화면에도 이 코스 보정 적용</strong><br><small class="text-slate-500 dark:text-slate-400">두 화면의 목표 거리가 같을 때만 기존 스플릿에 반영합니다. 기존 VDOT 목표 시간은 변경하지 않습니다.</small></span>
+          </label>
+        </div>
+        <!-- Pacecraft PRO 2026: strategy cockpit / charts / GPX / nutrition / records / profiles -->
+        <div id="rp-pro-suite" class="rp-pro-suite" aria-label="Pacecraft PRO 레이스 전략 센터"></div>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex flex-wrap justify-between gap-3 mb-3">
+            <div><h3 class="font-black text-base text-slate-900 dark:text-white">⛰️ 코스 구간 보정 설정</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">예: 28~29km 구간에서 <strong>+2초/km</strong> → 해당 1km 구간 2초 추가. 음수(-)는 빠르게 달리는 구간입니다.</p></div>
+            <div class="flex flex-wrap gap-2"><button id="rp-example-rule" type="button" class="rp-button rp-button-outline">⚠️ 28km 가상 예시 (+2초)</button><button id="rp-add-rule" type="button" class="rp-button rp-button-primary">+ 보정 구간 추가</button></div>
+          </div>
+          <div class="overflow-x-auto"><table class="rp-rule-table w-full text-xs sm:text-sm"><thead><tr><th>시작 km</th><th>끝 km</th><th>보정 초/km</th><th>지형·메모</th><th>삭제</th></tr></thead><tbody id="rp-rules-body"></tbody></table></div>
+          <p id="rp-no-rules" class="text-xs text-slate-500 dark:text-slate-400 my-3">등록된 코스 구간이 없습니다. 구간 추가 또는 예시 버튼을 눌러 주세요.</p>
+          <div class="flex flex-wrap items-center gap-2 mt-4">
+            <button id="rp-download-template" type="button" class="rp-button rp-button-outline">CSV 양식 다운로드</button>
+            <button id="rp-import-rules" type="button" class="rp-button rp-button-outline">CSV/JSON 구간 불러오기</button>
+            <input id="rp-import-rules-file" type="file" accept=".csv,.json,text/csv,application/json" class="hidden">
+            <button id="rp-clear-rules" type="button" class="rp-button rp-button-ghost">구간 모두 지우기</button>
+          </div>
+          <p class="text-xs text-amber-700 dark:text-amber-300 mt-3">※ 28~29km +2초는 <strong>실제 지형과 무관한 가상 예시</strong>이며, 실제 대회 공식 고도·페이스 보정값이 아닙니다. 코스 데이터를 받으면 CSV로 적용할 수 있습니다. 구간이 중복되면 보정 초가 합산됩니다.</p>
+        </div>
+        <div id="rp-export-area" class="bg-white dark:bg-slate-900 rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div class="flex flex-wrap justify-between gap-3 items-start">
+            <div><h3 class="font-black text-base sm:text-lg">🏁 레이스 전체 계획표</h3><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">자동 생성 후 페이스/넷타임을 직접 변경하면 이후 구간의 누적 시간이 재계산됩니다. 보급·메모도 수정 가능합니다.</p></div>
+            <div class="flex flex-wrap gap-2"><button id="rp-rebuild" type="button" class="rp-button rp-button-primary">🔄 계획 다시 계산</button><button id="rp-auto-fuel" type="button" class="rp-button rp-button-outline">⚡ 보급 추천 배치</button></div>
+          </div>
+          <div id="rp-summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4 mb-4" aria-live="polite"></div>
+          <div class="rp-table-wrap overflow-x-auto"><table class="rp-plan-table w-full" aria-label="구간별 레이스 계획표"><thead><tr><th>구간</th><th>페이스<br>(분:초/km)</th><th>구간시간</th><th>누적 넷타임<br>(시:분:초)</th><th>예상 통과시각</th><th>보급·에너지젤</th><th>지형·개인 메모</th></tr></thead><tbody id="rp-plan-body"></tbody></table></div>
+          <label class="rp-field mt-4">전체 레이스 전략 / 준비 메모
+            <textarea id="rp-general-memo" rows="3" maxlength="3000" class="rp-input" placeholder="예: 초반 5km 오버페이스 주의, 28km 언덕에서 호흡 관리, 35km 이후 가능한 만큼 가속"></textarea>
+          </label>
+          <div class="flex flex-wrap gap-2 mt-4 rp-toolbar">
+            <button id="rp-save" type="button" class="rp-button rp-button-primary">💾 브라우저 저장</button>
+            <button id="rp-download-csv" type="button" class="rp-button rp-button-outline">📊 CSV/엑셀 다운로드</button>
+            <button id="rp-print" type="button" class="rp-button rp-button-outline">🖨️ 인쇄·PDF 저장</button>
+            <button id="rp-export-json" type="button" class="rp-button rp-button-outline">⬇️ 계획 백업(JSON)</button>
+            <button id="rp-import-json" type="button" class="rp-button rp-button-outline">⬆️ 저장한 계획 불러오기</button>
+            <input type="file" id="rp-import-json-file" accept=".json,application/json" class="hidden">
+          </div>
+          <p class="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 mt-4">저장은 현재 브라우저의 localStorage를 사용합니다. 다른 기기와 자동 동기화되지 않으니 JSON으로 별도 백업하세요. 보급 추천은 일반적인 계산 예시이며, AI API 연결이나 외부 사이트 자동 수집 기능은 포함하지 않습니다.</p>
+        </div>
+      </div>
+
       <!-- [대시보드 패널 2] 데일리 러너 수분 충전 트래커 & 나만의 체크리스트 -->
       <div id="panel-daily" class="dash-panel space-y-6 hidden" style="display: none;">
         <!-- [신규 기능] 게스트 누구나 가능한 데일리 수분 섭취 & 습관 체크리스트 -->
@@ -900,6 +977,7 @@ window.addEventListener('load', function() {
           <div>
             <label for="race-course-select" class="block text-[11px] font-bold text-slate-500 mb-1">코스 지형 난이도</label>
             <select id="race-course-select" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+              <option value="unknown">코스 확인 필요 (지형 보정 없음)</option>
               <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
               <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
               <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
@@ -915,7 +993,7 @@ window.addEventListener('load', function() {
               <span class="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
                 📝 대회 기타 메모 &amp; 주요 공지
               </span>
-              <span id="admin-auth-status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">구글 승인 관리자 전용</span>
+              <span id="admin-auth-status-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">Firebase Google 인증 관리자 전용</span>
             </div>
             <div class="flex items-center gap-1.5">
               <button id="open-contact-modal-btn" type="button" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold text-brand-600 dark:text-brand-400 bg-brand-50 dark:bg-brand-950/40 hover:bg-brand-100 dark:hover:bg-brand-900/60 border border-brand-200 dark:border-brand-800 transition">
@@ -1972,6 +2050,14 @@ window.addEventListener('load', function() {
           <span class="text-[10px] px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-600 dark:text-brand-400 font-bold">클릭 시 선택</span>
         </div>
 
+        <div class="flex items-center justify-between gap-2">
+          <label for="race-sidebar-filter" class="text-[10px] font-bold text-slate-500 dark:text-slate-400">목록 보기</label>
+          <select id="race-sidebar-filter" onchange="renderRightRaceScheduleSidebar()" class="rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 text-[11px] py-1 px-2">
+            <option value="upcoming">예정된 대회 먼저</option>
+            <option value="all">전체 보기</option>
+            <option value="past">종료된 대회</option>
+          </select>
+        </div>
         <!-- 메이저 대회 리스트 컨테이너 (실시간 D-Day + 공식링크 + 클릭 시 목표 대회 즉시 선택) -->
         <div id="right-race-schedule-list" class="flex flex-col gap-2 max-h-[58vh] overflow-y-auto pr-0.5 space-y-0.5">
           <div onclick="selectRace('seoul')" class="p-2.5 rounded-xl border-2 border-brand-500 bg-brand-50/70 dark:bg-brand-950/40 shadow-xs transition cursor-pointer">
@@ -1981,6 +2067,51 @@ window.addEventListener('load', function() {
             </div>
           </div>
         </div>
+
+        <!-- 자동 발견 일정: 네이버 검색은 공식 확정일이 아니라 후보로 구분 -->
+        <section id="race-auto-box" aria-label="자동 마라톤 대회 발견" class="space-y-2 rounded-xl border border-indigo-200/60 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 p-3">
+          <div class="flex items-center justify-between gap-1">
+            <h4 class="font-extrabold text-xs text-slate-900 dark:text-white">🔎 전국 대회 자동 발견</h4>
+            <button type="button" id="race-auto-reload" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-300 underline">새로고침</button>
+          </div>
+          <p id="race-auto-info" aria-live="polite" class="text-[10px] leading-relaxed text-slate-500 dark:text-slate-400">네이버 일정 검색 자료를 불러옵니다.</p>
+          <p class="text-[10px] text-amber-700 dark:text-amber-300 leading-relaxed">⚠️ 외부 검색 자료는 검증 전 후보입니다. 대회일·접수일이 다를 수 있으므로 출처를 확인해 주세요.</p>
+          <div id="race-auto-items" class="space-y-2 max-h-80 overflow-auto"></div>
+          <button type="button" id="race-auto-more" hidden class="text-[11px] font-bold text-indigo-600 dark:text-indigo-300">전체 보기</button>
+          <button type="button" id="race-auto-open-admin" hidden class="w-full rounded-lg bg-indigo-700 hover:bg-indigo-800 py-2 text-xs font-bold text-white">🔐 관리자 자동화·Gemini 설정 열기</button>
+          <div id="race-auto-admin" class="hidden border-t border-indigo-200/80 dark:border-indigo-800/50 pt-3 mt-3 space-y-2">
+            <div class="flex items-center gap-2 justify-between"><h4 class="text-xs font-extrabold text-emerald-700 dark:text-emerald-300">🔐 관리자 전용 자동화·Google AI</h4></div>
+            <div id="race-auto-admin-status" class="space-y-1 p-2 rounded-lg bg-white dark:bg-slate-900 text-[11px]" aria-live="polite"></div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" id="race-auto-sync" class="rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[11px] py-2">대회 지금 수집</button>
+              <button type="button" id="race-auto-refresh-admin" class="rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold text-[11px] py-2">후보 새로고침</button>
+            </div>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">자동 수집된 대회는 먼저 검토 목록에 들어옵니다. 원문에서 날짜를 확인하고 승인하세요.</p>
+            <div id="race-auto-admin-candidates" class="max-h-72 overflow-auto space-y-2" aria-label="관리자 승인 대기 목록"></div>
+            <div class="pt-2 border-t border-indigo-200/70 dark:border-indigo-900 space-y-2">
+              <label class="block text-xs font-bold text-slate-800 dark:text-white" for="race-auto-ai-question">✨ Gemini 운영자 검토 도우미</label>
+              <textarea id="race-auto-ai-question" rows="4" maxlength="3000" class="w-full rounded-lg p-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white" placeholder="대회 일정 후보 검토 또는 마라톤 운영 관련 질문을 입력하세요."></textarea>
+              <button type="button" id="race-auto-ai-run" class="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 py-2 text-white text-xs font-bold">Gemini 관리자 전용 분석</button>
+              <pre id="race-auto-ai-answer" aria-live="polite" class="whitespace-pre-wrap break-words text-[11px] leading-relaxed text-slate-700 dark:text-slate-200"></pre>
+              <details id="race-auto-ai-settings" class="rounded-lg border border-emerald-200/70 dark:border-emerald-900 p-2 space-y-2">
+                <summary class="cursor-pointer text-xs font-bold text-emerald-700 dark:text-emerald-300">⚙️ Google AI 연결 설정 (관리자 전용)</summary>
+                <div class="space-y-2 pt-2">
+                  <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200" for="race-auto-google-project">Google 프로젝트 ID</label>
+                  <input id="race-auto-google-project" type="text" autocomplete="off" maxlength="63" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="프로젝트 ID" />
+                  <label class="text-[11px] font-bold text-slate-700 dark:text-slate-200" for="race-auto-google-key">Gemini API 키 (새로 등록할 때만 입력)</label>
+                  <input id="race-auto-google-key" type="password" autocomplete="new-password" spellcheck="false" class="w-full rounded-lg border border-slate-300 dark:border-slate-700 p-2 text-xs bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="AI Studio에서 발급받은 API 키" />
+                  <div class="grid grid-cols-2 gap-2">
+                    <button id="race-auto-ai-save" type="button" class="py-2 rounded-lg text-[11px] font-extrabold bg-emerald-600 text-white">설정 안전하게 저장</button>
+                    <button id="race-auto-ai-remove" type="button" class="py-2 rounded-lg text-[11px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white">등록한 키 삭제</button>
+                  </div>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400">서버 AES-256-GCM 암호화 저장. 설정에는 Vercel RACE_SECRET_ENCRYPTION_KEY가 먼저 필요하며, API 키는 다시 표시하지 않습니다. 브라우저·GitHub에 키를 보관하지 않습니다.</p>
+                </div>
+              </details>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400">Google AI 프로젝트·API 설정 상태는 Firebase 인증된 관리자에게만 조회됩니다. API 키는 서버 환경변수 또는 암호화된 비공개 DB에 저장합니다.</p>
+              <div class="flex flex-wrap gap-2"><a class="text-[10px] font-bold text-indigo-600 dark:text-indigo-300 underline" target="_blank" rel="noopener noreferrer" href="https://aistudio.google.com/api-keys">AI Studio 키 관리 ↗</a><a class="text-[10px] font-bold text-indigo-600 dark:text-indigo-300 underline" target="_blank" rel="noopener noreferrer" href="https://vercel.com/dashboard">Vercel 환경설정 ↗</a></div>
+            </div>
+          </div>
+        </section>
 
         <!-- 전국 마라톤 일정 종합 사이트 바로가기 버튼 -->
         <a href="http://www.marathon.pe.kr/" target="_blank" rel="noopener noreferrer" class="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center justify-center gap-1.5">
@@ -2001,7 +2132,7 @@ window.addEventListener('load', function() {
             <span>📅 내 캘린더에 일정 등록 (네이버·구글)</span>
           </button>
 
-          <!-- [+ 신규 대회 등록] & [선택 대회 수정] 버튼 (구글 승인 관리자 전용) -->
+          <!-- [+ 신규 대회 등록] & [선택 대회 수정] 버튼 (Firebase Google 인증 관리자 전용) -->
           <div class="grid grid-cols-2 gap-1.5">
             <button type="button" id="right-add-race-btn" onclick="handleClickAddRaceWithAuth()" class="py-2 px-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-[11px] font-extrabold transition flex items-center justify-center gap-1 shadow-sm cursor-pointer">
               <span>➕ 대회 추가</span>
@@ -2132,38 +2263,8 @@ window.addEventListener('load', function() {
         </div>
 
         <div id="admin-auth-login-view">
-          <!-- 최고 관리자 1초 즉시 인증 -->
-          <div class="mb-3 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
-            <div class="text-[11px] text-amber-800 dark:text-amber-300 font-bold">
-              👑 최고 관리자 (rkstmtk@gmail.com) 본인이신가요?
-            </div>
-            <button
-              type="button"
-              onclick="quickLoginAsOwner()"
-              class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-extrabold transition shadow-xs whitespace-nowrap"
-            >
-              1초 인증
-            </button>
-          </div>
-          <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-            구글(Google) 계정 이메일 확인
-          </label>
-          <div class="flex gap-2 mb-3">
-            <input
-              id="admin-google-email-input"
-              type="email"
-              placeholder="예: rkstmtk@gmail.com"
-              class="flex-1 px-3 py-2 rounded-xl text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
-            />
-            <button
-              id="admin-google-verify-btn"
-              type="button"
-              class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold transition shadow-sm whitespace-nowrap"
-            >
-              승인 확인
-            </button>
-          </div>
-
+          <p class="text-xs text-slate-600 dark:text-slate-300 mb-3">Firebase가 제공하는 실제 Google 로그인 화면에서 운영자 계정으로 인증합니다. 이메일을 입력하는 것만으로는 관리자 권한이 부여되지 않습니다.</p>
+          <button id="admin-google-verify-btn" type="button" class="w-full rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-extrabold px-4 py-3">Google 계정으로 안전하게 로그인</button>
           <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
             <span class="text-[11px] text-slate-500">아직 승인받지 않으셨나요?</span>
             <button
@@ -2188,7 +2289,7 @@ window.addEventListener('load', function() {
               type="button"
               class="hidden text-[11px] text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 underline"
             >
-              + 추가 관리자 이메일 승인 관리
+              관리자 권한 설정 안내
             </button>
             <button
               id="admin-logout-btn"
@@ -2324,7 +2425,7 @@ window.addEventListener('load', function() {
     </div>
   </div>
 
-  <!-- [모달] 마라톤 대회 일정 추가 및 정보·날짜·사이트주소 수정/삭제 모달 (구글 승인 관리자 전용) -->
+  <!-- [모달] 마라톤 대회 일정 추가 및 정보·날짜·사이트주소 수정/삭제 모달 (Firebase Google 인증 관리자 전용) -->
   <div id="add-race-modal" onclick="if(event.target === this) closeAddRaceModal()" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-xs p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-4">
@@ -2386,6 +2487,7 @@ window.addEventListener('load', function() {
             id="new-race-course-select"
             class="w-full px-3 py-2 rounded-xl text-xs font-bold bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
+            <option value="unknown">코스 확인 필요 (지형 보정 없음)</option>
             <option value="flat" selected>★☆☆ 평지·고속 코스 (기록 단축 최적)</option>
             <option value="rolling">★★☆ 완만한 언덕 코스 (+2~3초/km 보정)</option>
             <option value="hilly">★★★ 업다운 난코스 (+5~7초/km 보정)</option>
@@ -2553,7 +2655,12 @@ window.addEventListener('load', function() {
     <!-- Google Firebase Realtime Database SDK (실시간 전세계 자동 동기화) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="./app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="./race-course.js?v=20261110-chartfix2"></script>
+  <script src="./app.js?v=20261110-chartfix2"></script>
+  <script src="./race-plan-ui.js?v=20261110-chartfix2"></script>
+  <script src="./race-pro.js?v=20261110-chartfix2"></script>
+  <script src="./race-auto.js"></script>
 
   <!-- [유튜브 인앱 재생 팝업 모달] -->
   <div id="youtube-player-modal" onclick="if(event.target === this) closeYoutubePlayer()" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-xs p-3 sm:p-5">

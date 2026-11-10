@@ -652,7 +652,7 @@
     recentSec: 48 * 60 + 20,        // 기본 10km 48분 20초
     targetDist: 42.195,             // 10 | 21.0975 | 42.195
     targetSec: 3 * 3600 + 30 * 60,  // 기본 풀코스 3시간 30분 00초
-    strategy: 'negative',           // 'even' | 'negative' | 'positive'
+    strategy: 'even',               // 신규 접속 기본값: 평탄 기준; 선택한 전략은 그대로 사용
     height: 172,                    // cm (120 ~ 210)
     weight: 68                      // kg (30 ~ 130)
   };
@@ -958,7 +958,7 @@
 
     const equivTargetSec = predictEquivalentTimeSec(currentVDOT, state.targetDist);
 
-    // 키·체중(BMI) 및 종목 특성을 반영한 달성 확률 산출
+    // VDOT 차이와 BMI 입력값을 이용한 자체 '여유도' 참고 지수 (실제 확률 아님)
     const metabolic = calcMetabolicProfile(state.height, state.weight, state.targetDist, state.targetSec);
     if (bmiStatusBadge) {
       bmiStatusBadge.textContent = `BMI ${metabolic.bmi.toFixed(1)} · ${metabolic.bmiType}`;
@@ -1010,10 +1010,10 @@
     if (prob >= 80) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400';
       probBarEl.className = 'h-full bg-emerald-500 rounded-full transition-all duration-300';
-      badgeEl.textContent = '✅ 안정권 목표 (충분히 달성 가능)';
+      badgeEl.textContent = '✅ 상대적으로 여유 있는 목표';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400';
       adviceToneClass = 'text-emerald-600 dark:text-emerald-400';
-      adviceMsg = `현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 달성이 충분히 가능합니다! 초반 오버페이스만 주의하세요.`;
+      adviceMsg = `현재 VDOT(<strong>${currentVDOT.toFixed(1)}</strong>)과 ${bodyInfoText} 조건에서 목표(${targetName} ${formatHMS(state.targetSec)}) 는 지수상 상대적으로 여유가 있습니다. 실제 달성은 훈련 수준·코스·기상에 따라 달라집니다.`;
       btnGradientClass = 'from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700';
     } else if (prob >= 55) {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-sky-600 dark:text-sky-400';
@@ -1021,7 +1021,7 @@
       badgeEl.textContent = '🔥 적정 도전 목표 (6~10주 훈련 권장)';
       badgeEl.className = 'self-start sm:self-auto px-3 py-1 rounded-full text-xs font-extrabold bg-sky-500/15 text-sky-600 dark:text-sky-400';
       adviceToneClass = 'text-sky-600 dark:text-sky-400';
-      adviceMsg = `${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표입니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.`;
+      adviceMsg = `${bodyInfoText} 기준 VDOT <strong>+${vdotDiff.toFixed(1)}</strong> 향상이 필요한 도전 목표로 추정됩니다. 주 1회 <strong>T 페이스(역치주)</strong>와 레이스 보급 전략을 병행하세요.`;
       btnGradientClass = 'from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700';
     } else {
       probValEl.className = 'text-2xl sm:text-3xl font-extrabold font-mono text-rose-600 dark:text-rose-400';
@@ -1085,7 +1085,52 @@
     renderProLabTools(currentVDOT, targetVDOT, targetPace, metabolic, { eFast, eSlow, mPace, tPace, iPace });
   }
 
+  // 코스 보정은 전체 계획표와 공통 엔진을 사용합니다. 미설정 시 기존 출력 유지.
+  function renderCourseSplitTable(config) {
+    const engine = window.PacecraftCourseEngine;
+    const plan = engine.calculate({ distanceKm: state.targetDist, targetSeconds: state.targetSec,
+      strategy: state.strategy, mode: config.mode, rules: config.rules });
+    const key = getTargetDistKey();
+    const milestones = key === '42.195'
+      ? [5,10,15,20,21.0975,25,30,35,40,42.195]
+      : key === '21.0975' ? [5,10,15,20,21.0975] : [2,4,5,6,8,10];
+    const title = document.getElementById('split-table-title');
+    if (title) title.textContent = '⛰️ 코스 특징 반영 · 구간별 페이스/넷타임';
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const rowsHtml = plan.splits(milestones).map(seg => {
+      const isHalf = (key === '42.195' && Math.abs(seg.endKm - 21.0975) < 0.01) ||
+        (key === '10' && Math.abs(seg.endKm - 5) < 0.01);
+      const isFinish = Math.abs(seg.endKm - state.targetDist) < 0.01;
+      let label = `${seg.endKm} km`;
+      if (isHalf && key === '42.195') label = 'Half (21.1km)';
+      if (isHalf && key === '10') label = 'Half (5.0km 반환)';
+      if (isFinish) label = `Finish (${seg.endKm}km)`;
+      const highlight = isFinish ? 'bg-brand-50/80 dark:bg-brand-950/40 font-extrabold text-brand-700 dark:text-brand-300'
+        : isHalf ? 'bg-slate-50/90 dark:bg-slate-800/40 font-semibold' : '';
+      const notes = seg.rules.map(rule => `${rule.startKm}~${rule.endKm}km ${rule.secPerKm >= 0 ? '+' : ''}${rule.secPerKm}초/km${rule.note ? ' · '+rule.note : ''}`);
+      const guide = notes.length ? esc(notes.join(' / ')) : '기본 전략 구간';
+      return `<tr class="${highlight}">
+        <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap">${label}</td>
+        <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap text-brand-600 dark:text-brand-400 font-bold">${formatPace(seg.paceSeconds)}/km</td>
+        <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap text-slate-500 dark:text-slate-400">${formatDurationClean(seg.seconds)}</td>
+        <td class="py-2.5 px-2 sm:px-3 whitespace-nowrap font-bold">${formatHMS(seg.cumulative)}</td>
+        <td class="py-2.5 px-2 sm:px-3 font-sans text-xs text-slate-600 dark:text-slate-300 font-medium">${guide}</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('split-table-body').innerHTML = rowsHtml;
+    const chip = document.getElementById('split-strategy-chip');
+    if (chip) chip.textContent = `${config.mode === 'target' ? '🎯 목표 기록 유지' : '⏱️ 추가시간 반영'} · 코스 보정 ${plan.terrainDelta >= 0 ? '+' : ''}${Math.round(plan.terrainDelta)}초`;
+  }
+
   function renderSplitTable(basePaceSec) {
+    try {
+      const engine = window.PacecraftCourseEngine;
+      const config = engine && engine.load();
+      if (config && config.applyToVDOT && config.rules.length && Math.abs(config.distanceKm-state.targetDist) < 0.001) {
+        renderCourseSplitTable(config);
+        return;
+      }
+    } catch (err) { console.warn('[Course split] 기존 스플릿으로 대체:', err); }
     const key = getTargetDistKey();
     const milestones = key === '42.195'
       ? [5, 10, 15, 20, 21.0975, 25, 30, 35, 40, 42.195]
@@ -2668,7 +2713,8 @@
       const courseDescMap = {
         flat: `<strong>평지 고속 코스:</strong> 고도 편차가 적어 목표 기록(<strong>${formatHMS(state.targetSec)}</strong>) 달성에 최적입니다.`,
         rolling: `<strong>완만한 언덕 코스:</strong> 언덕 구간 페이스 저하(+2.5초/km) 감안 시 실전 보정 기록 <strong>${adjCourseTime}</strong> 예상`,
-        hilly: `<strong>업다운 난코스:</strong> 오르막 체력 소모(+6초/km) 감안 시 보정 기록 <strong>${adjCourseTime}</strong> (전반 오버페이스 절대 금물)`
+        hilly: `<strong>업다운 난코스:</strong> 오르막 체력 소모(+6초/km) 감안 시 보정 기록 <strong>${adjCourseTime}</strong> (전반 오버페이스 절대 금물)`,
+        unknown: `<strong>코스 지형 미확인:</strong> 아직 공식 고도 데이터를 검증하지 않아 지형 보정은 적용하지 않았습니다. GPX를 불러오거나 직접 지형을 설정하세요.`
       };
       ddayCourseSummary.innerHTML = courseDescMap[labState.courseType];
     }
@@ -3149,7 +3195,7 @@
 
       if (ddayCourseSummary) {
         const cType = labState.courseType || 'flat';
-        let desc = '<strong>평지 고속 코스:</strong> 고도 편차가 적어 목표 기록 달성에 최적입니다.';
+        let desc = cType === 'unknown' ? '<strong>코스 지형 미확인:</strong> 자동 발견 대회는 지형 보정값이 없습니다. 정확한 자료를 확인하거나 직접 설정하세요.' : '<strong>평지 고속 코스:</strong> 고도 편차가 적어 목표 기록 달성에 최적입니다.';
         if (cType === 'rolling' || cType === 'gentle_hills') {
           desc = '<strong>완만한 언덕 코스:</strong> 언덕 구간 페이스 저하(+2~3초/km) 감안 시 후반 페이스 안배가 중요합니다.';
         } else if (cType === 'hilly' || cType === 'lake_updown') {
@@ -3198,17 +3244,15 @@
       today.setHours(0, 0, 0, 0);
       const diffDays = Math.round((new Date(race.date + 'T00:00:00') - today) / (1000 * 60 * 60 * 24));
       const ddayStr = diffDays > 0 ? `D-${diffDays}` : diffDays === 0 ? 'D-DAY' : `D+${Math.abs(diffDays)} 종료`;
-      dateEl.textContent = `📅 ${race.date} (${ddayStr}) · 오전 07:00 ~ 13:00`;
+      dateEl.textContent = `📅 ${race.date} (${ddayStr}) · 정확한 출발 시각은 주최측 확인`;
     }
 
     if (previewEl) {
-      previewEl.textContent = `[일정명]: [마라톤] ${race.name} 레이스 데이
-[일시]: ${race.date} 07:00 ~ 13:00 (KST)
-[장소]: ${race.name} 집결지 및 출발지
-[상세]: 대회 공식 홈페이지: ${race.url || 'http://www.marathon.pe.kr/'}
-• 06:30 대회장 도착 및 워밍업
-• 07:00 물품보관소 마감 전 보관 & 에너지젤 1포
-• 08:00 대회 출발 및 실전 페이스 유지!`;
+      previewEl.textContent = `[일정명]: [마라톤] ${race.name}
+[일자]: ${race.date} (종일 일정으로 내보내기)
+[출발시간]: 주최 측 공식 안내 확인 필요
+[장소]: 주최 측 공식 안내 확인 필요
+[참고 URL]: ${race.url || '없음'}`;
     }
 
     modal.classList.remove('hidden');
@@ -3225,64 +3269,36 @@
     }
   }
 
+  function nextDateCalendarString(isoDate) {
+    const d = new Date(isoDate + 'T12:00:00');
+    d.setDate(d.getDate() + 1);
+    return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+  }
   function exportToGoogleCalendar(key) {
     const race = getCalendarTargetRace(key);
     const cleanDate = race.date.replace(/-/g, '');
-    const title = `[마라톤] ${race.name} 레이스 데이`;
-    const dates = `${cleanDate}T070000/${cleanDate}T130000`;
-    const location = `${race.name} 집결지 및 출발지`;
-    const details = `[Pacecraft Runner 마라톤 일정]
-🏃 대회명: ${race.name}
-📅 일자: ${race.date} (오전 7시 ~ 오후 1시)
-🔗 공식 웹사이트: ${race.url || 'http://www.marathon.pe.kr/'}
-
-⏱️ 대회 당일 추천 일정:
-• 06:30 대회장 도착 및 환복/워밍업
-• 07:00 물품보관소 짐 보관 & 에너지젤 1포
-• 07:30 출발 그룹 집결
-• 레이스 완주 후 수분/단백질 보충!
-(마라톤 레이스 플래너: Pacecraft Runner)`;
-
-    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&ctz=Asia/Seoul&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
+    const title = `[마라톤] ${race.name} (출발 시간 별도 확인)`;
+    // 등록할 대회의 출발 시각을 확인하지 못했으므로 종일 일정으로 표시.
+    const dates = `${cleanDate}/${nextDateCalendarString(race.date)}`;
+    const details = `Pacecraft Runner 대회 일정\n대회명: ${race.name}\n개최 예정일: ${race.date}\n참고/공식 링크: ${race.url||'없음'}\n출발 시간, 장소, 접수 여부는 반드시 주최 측 안내를 확인하세요.`;
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&ctz=Asia/Seoul&details=${encodeURIComponent(details)}`;
     window.open(gcalUrl, '_blank', 'noopener,noreferrer');
-    showToast(`📅 [${race.name}] 구글 캘린더 등록 창이 열렸습니다.`);
+    showToast(`📅 [${race.name}] 구글 캘린더 종일 일정 작성 창을 열었습니다.`);
   }
 
   function generateIcsFileContent(race) {
     const cleanDate = race.date.replace(/-/g, '');
-    const uid = `marathon-${cleanDate}-${Date.now()}@marathonlab.pro`;
-    const nowStr = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-    const title = `[마라톤] ${race.name} 레이스 데이`;
-    const location = `${race.name} 집결지 및 출발지`;
-    const details = `[Pacecraft Runner] ${race.name} 마라톤 일정\n일자: ${race.date}\n공식 사이트: ${race.url || 'http://www.marathon.pe.kr/'}\n\n06:30 대회장 도착 & 워밍업\n07:00 물품보관소 마감\n08:00 출발`;
-
+    const title = `[마라톤] ${race.name} (시간 미확인)`;
+    const cleanText = v => String(v||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
     return [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//Pacecraft Runner//Marathon Race Calendar//KO',
-      'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH',
-      'BEGIN:VTIMEZONE',
-      'TZID:Asia/Seoul',
-      'BEGIN:STANDARD',
-      'DTSTART:19700101T000000',
-      'TZOFFSETFROM:+0900',
-      'TZOFFSETTO:+0900',
-      'TZNAME:KST',
-      'END:STANDARD',
-      'END:VTIMEZONE',
-      'BEGIN:VEVENT',
-      `UID:${uid}`,
-      `DTSTAMP:${nowStr}`,
-      `DTSTART;TZID=Asia/Seoul:${cleanDate}T070000`,
-      `DTEND;TZID=Asia/Seoul:${cleanDate}T130000`,
-      `SUMMARY:${title}`,
-      `DESCRIPTION:${details}`,
-      `LOCATION:${location}`,
-      `URL:${race.url || 'http://www.marathon.pe.kr/'}`,
-      'STATUS:CONFIRMED',
-      'END:VEVENT',
-      'END:VCALENDAR'
+      'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pacecraft Runner//Race Calendar//KO','CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',`UID:race-${cleanDate}-${Date.now()}@pacecraft-runner`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z`,
+      `DTSTART;VALUE=DATE:${cleanDate}`,`DTEND;VALUE=DATE:${nextDateCalendarString(race.date)}`,
+      `SUMMARY:${cleanText(title)}`,
+      `DESCRIPTION:${cleanText(`Pacecraft Runner 대회 일정\n출발 시간/장소/접수는 주최측 확인 필요\n참고 링크: ${race.url||'없음'}`)}`,
+      `URL:${raceSourceHref(race.url).replace(/&amp;/g,'&') || 'https://pacecraftrunner.vercel.app/'}`,
+      'END:VEVENT','END:VCALENDAR'
     ].join('\r\n');
   }
 
@@ -3316,14 +3332,11 @@
     const race = getCalendarTargetRace(key);
     const text = `[마라톤 일정 등록 안내]
 대회명: ${race.name}
-날짜: ${race.date} (오전 07:00 ~ 13:00)
+날짜: ${race.date} (출발 시각 확인 필요)
 공식 홈페이지: ${race.url || 'http://www.marathon.pe.kr/'}
-집결지: ${race.name} 출발지
+집결지: 주최측 안내 확인 필요
 
-⏱️ 레이스 타임라인:
-• 06:30 도착 및 준비운동
-• 07:00 짐 보관 완료 & 에너지젤 섭취
-• 08:00 출발`;
+참가자는 접수/출발 시간과 장소를 공식 주최측 안내에서 확인하세요.`;
 
     navigator.clipboard.writeText(text).then(() => {
       showToast('📋 캘린더 일정 내용이 클립보드에 복사되었습니다.');
@@ -3384,6 +3397,15 @@
   window.setSplitStrategy = setSplitStrategy;
 
 
+  // 외부 대회 데이터는 사용자 생성 콘텐츠로 간주하여 HTML 삽입 전에 이스케이프합니다.
+  function escapeRaceMarkup(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  function raceSourceHref(value) {
+    try { const url = new URL(String(value)); return ['https:', 'http:'].includes(url.protocol) ? url.toString().replace(/&/g, '&amp;').replace(/"/g, '&quot;') : ''; }
+    catch (e) { return ''; }
+  }
+  let sidebarRaceView = 'upcoming';
   function renderRightRaceScheduleSidebar() {
     const listContainer = document.getElementById('right-race-schedule-list');
     const badgeEl = document.getElementById('right-admin-status-badge');
@@ -3427,7 +3449,24 @@
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const keys = Object.keys(majorRaces);
+    const filter = document.getElementById('race-sidebar-filter');
+    if (filter) sidebarRaceView = filter.value || 'upcoming';
+    const nowStamp = today.getTime();
+    const keys = Object.keys(majorRaces).filter(key => majorRaces[key] && /^20\d{2}-\d{2}-\d{2}$/.test(majorRaces[key].date || '')).filter(key => {
+      const t = new Date(majorRaces[key].date + 'T00:00:00').getTime();
+      if(sidebarRaceView === 'upcoming') return t >= nowStamp;
+      if(sidebarRaceView === 'past') return t < nowStamp;
+      return true;
+    }).sort((a,b) => {
+      const at = new Date(majorRaces[a].date + 'T00:00:00').getTime(), bt = new Date(majorRaces[b].date + 'T00:00:00').getTime();
+      if(sidebarRaceView === 'all') {const af=at >= nowStamp, bf=bt >= nowStamp; if(af!==bf) return af?-1:1;}
+      return sidebarRaceView === 'past' ? bt - at : at - bt;
+    });
+    if (!keys.length) {
+      const empty=document.createElement('p'); empty.className='text-xs text-slate-500 dark:text-slate-400 p-2';
+      empty.textContent=sidebarRaceView==='upcoming'?'예정된 승인 대회가 없습니다. 아래 자동 발견에서 최신 일정을 확인하세요.':'해당 대회가 없습니다.';
+      listContainer.appendChild(empty);
+    }
     keys.forEach(key => {
       const race = majorRaces[key];
       const targetDate = new Date(race.date + 'T00:00:00');
@@ -3483,16 +3522,16 @@
 
       card.innerHTML = `
         <div class="flex items-center justify-between gap-1.5 mb-1">
-          <span class="text-xs font-extrabold ${titleColorClass} truncate">${isSelected ? '🎯 ' : ''}${race.name}${pastTagHtml}</span>
+          <span class="text-xs font-extrabold ${titleColorClass} truncate">${isSelected ? '🎯 ' : ''}${escapeRaceMarkup(race.name)}${race.sourceWarning?' (출처 검토)':''}${pastTagHtml}</span>
           <span class="text-[10px] px-1.5 py-0.5 rounded font-mono shrink-0 ${badgeColor}">${ddayText}</span>
         </div>
         <div class="flex items-center justify-between text-[11px] ${isPast ? 'text-rose-400/90 dark:text-rose-400/75' : 'text-slate-500 dark:text-slate-400'}">
-          <span class="font-mono text-[10px]">📅 ${race.date}</span>
+          <span class="font-mono text-[10px]">📅 ${escapeRaceMarkup(race.date)}</span>
           <div class="flex items-center gap-1">
-            ${race.url ? `<a href="${race.url}" target="_blank" rel="noopener noreferrer" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:underline font-bold" title="공식 홈페이지 바로가기">홈피 ↗</a>` : ''}
-            <button type="button" data-cal-race="${key}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 font-bold transition flex items-center gap-0.5" title="구글·네이버 캘린더에 일정 등록"><span>📅</span>일정</button>
-            <button type="button" data-edit-race="${key}" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 font-bold transition" title="대회 날짜·홈페이지 주소 수정">수정</button>
-            <button type="button" data-del-race="${key}" class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 font-bold transition" title="대회 삭제">삭제</button>
+            ${raceSourceHref(race.url) ? `<a href="${raceSourceHref(race.url)}" target="_blank" rel="noopener noreferrer" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:underline font-bold" title="${race.sourceWarning?'외부 검색 출처 확인':'대회 홈페이지'}">${race.sourceWarning?'출처 ↗':'홈피 ↗'}</a>` : ''}
+            <button type="button" data-cal-race="${escapeRaceMarkup(key)}" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 font-bold transition flex items-center gap-0.5" title="구글·네이버 캘린더에 일정 등록"><span>📅</span>일정</button>
+            ${isApproved ? `<button type="button" data-edit-race="${escapeRaceMarkup(key)}" class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 font-bold transition" title="대회 날짜·홈페이지 주소 수정">수정</button>
+            <button type="button" data-del-race="${escapeRaceMarkup(key)}" class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-500 dark:text-rose-400 hover:bg-rose-500/20 font-bold transition" title="대회 삭제">삭제</button>` : ''}
           </div>
         </div>
       `;
@@ -3840,8 +3879,8 @@
       const race = majorRaces[currentSelectedRaceKey];
       if (nameEl) nameEl.textContent = `${race.name} (${race.date})`;
       if (linkEl) {
-        linkEl.href = race.url || 'http://www.marathon.pe.kr/';
-        linkEl.innerHTML = `<span>${race.name} 공식 홈페이지 바로가기</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>`;
+        linkEl.href = raceSourceHref(race.url).replace(/&amp;/g,'&') || 'http://www.marathon.pe.kr/';
+        linkEl.innerHTML = `<span>${escapeRaceMarkup(race.name)} ${race.sourceWarning?'검색 출처 확인':'공식 홈페이지 바로가기'}</span><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>`;
       }
       if (statusTag) {
         statusTag.textContent = `${race.name} 날짜 자동 저장됨`;
@@ -3964,67 +4003,41 @@
   const APPROVED_ADMINS_STORAGE_KEY = 'marathon_pro_approved_admins_v2';
   const LOGGED_ADMIN_STORAGE_KEY = 'marathon_pro_logged_admin_email_v3';
 
-  function getApprovedAdminEmails() {
-    try {
-      const stored = localStorage.getItem(APPROVED_ADMINS_STORAGE_KEY);
-      if (stored) {
-        const list = JSON.parse(stored);
-        if (Array.isArray(list)) {
-          if (!list.map(e => e.toLowerCase()).includes(SUPER_ADMIN_EMAIL.toLowerCase())) {
-            list.push(SUPER_ADMIN_EMAIL);
-          }
-          return list;
-        }
-      }
-    } catch (e) {}
-    return [SUPER_ADMIN_EMAIL];
-  }
-
-  function saveApprovedAdminEmails(list) {
-    try {
-      localStorage.setItem(APPROVED_ADMINS_STORAGE_KEY, JSON.stringify(list));
-    } catch (e) {}
-  }
-
+  // SECURITY: localStorage and typed email are never authentication.
+  // Firebase Google sign-in must be enabled and server-side RTDB rules must check auth.uid.
+  function getApprovedAdminEmails() { return [SUPER_ADMIN_EMAIL]; }
+  function saveApprovedAdminEmails() { /* 관리자 승인 변경은 서버 관리 설정에서만 가능 */ }
   function getLoggedAdminEmail() {
     try {
-      return localStorage.getItem(LOGGED_ADMIN_STORAGE_KEY) || null;
-    } catch (e) {
-      return null;
-    }
+      const user = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+      return user && user.emailVerified && user.providerData.some(p => p.providerId === 'google.com') ? user.email : null;
+    } catch (_) { return null; }
   }
-
   function isCurrentAdminApproved() {
     const email = getLoggedAdminEmail();
-    if (!email) return false;
-    const approvedList = getApprovedAdminEmails().map(e => e.toLowerCase().trim());
-    return approvedList.includes(email.toLowerCase().trim()) || email.toLowerCase().trim() === SUPER_ADMIN_EMAIL.toLowerCase();
+    return !!(email && email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase());
   }
-
   function checkAdminPermissionOrPrompt(actionName) {
-    if (isCurrentAdminApproved()) {
-      return true;
-    }
+    if (isCurrentAdminApproved()) return true;
     openAdminAuthModal(actionName || '관리자 전용 권한');
     return false;
   }
-
-  // 소유자(rkstmtk@gmail.com) 구글 인증 로그인 완료 처리
-  function quickLoginAsOwner() {
+  async function quickLoginAsOwner() {
     try {
-      localStorage.setItem(LOGGED_ADMIN_STORAGE_KEY, SUPER_ADMIN_EMAIL);
-    } catch (e) {}
-    updateAdminAuthModalView();
-    renderRightRaceScheduleSidebar();
-    closeAdminAuthModal();
-    showToast(`👑 관리자(${SUPER_ADMIN_EMAIL}) 구글 로그인 인증이 완료되었습니다!`);
-    if (pendingActionAfterAuth) {
-      const act = pendingActionAfterAuth;
-      pendingActionAfterAuth = null;
-      setTimeout(() => {
-        if (act === 'add_race' || act.type === 'add_race') openAddRaceModal();
-        else if (act.type === 'edit_race') openEditRaceModal(act.key);
-      }, 120);
+      if (typeof firebase === 'undefined' || !firebase.auth) throw new Error('Firebase 인증 라이브러리를 불러오지 못했습니다.');
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({prompt:'select_account'});
+      await firebase.auth().signInWithPopup(provider);
+      if (!isCurrentAdminApproved()) {
+        await firebase.auth().signOut();
+        throw new Error('이 계정은 운영자 계정으로 등록되어 있지 않습니다.');
+      }
+      updateAdminAuthModalView();
+      renderRightRaceScheduleSidebar();
+      closeAdminAuthModal();
+      showToast('✅ Firebase에서 확인된 Google 계정으로 로그인했습니다.');
+    } catch(err) {
+      alert('관리자 로그인 실패: '+ (err.message || err) +'\nFirebase Console에서 Google 로그인 제공업체와 승인된 도메인을 확인해 주세요.');
     }
   }
 
@@ -4200,30 +4213,8 @@ ${content}
   }
 
   function verifyGoogleAdminInput() {
-    const emailInput = document.getElementById('admin-google-email-input');
-    const val = emailInput ? emailInput.value.trim() : '';
-    if (!val || !val.includes('@')) {
-      alert('구글(Google) 이메일 주소를 입력해 주세요.\n(최고 관리자: rkstmtk@gmail.com)');
-      if (emailInput) emailInput.focus();
-      return;
-    }
-
-    const approvedList = getApprovedAdminEmails().map(e => e.toLowerCase().trim());
-    if (approvedList.includes(val.toLowerCase())) {
-      try {
-        localStorage.setItem(LOGGED_ADMIN_STORAGE_KEY, val.toLowerCase());
-      } catch (e) {}
-      updateAdminAuthModalView();
-      renderRightRaceScheduleSidebar();
-      closeAdminAuthModal();
-      showToast(`🎉 구글 관리자(${val}) 승인 확인 완료!`);
-      if (pendingActionAfterAuth === 'add_race') {
-        pendingActionAfterAuth = null;
-        setTimeout(() => openAddRaceModal(), 120);
-      }
-    } else {
-      alert(`❌ [${val}] 계정은 승인된 관리자 목록에 없습니다.\n\n대회 추가 및 공지 작성은 승인받은 구글 계정(rkstmtk@gmail.com 외 승인 아이디)만 가능합니다.\n하단 '관리자 승인 요청 보내기'를 통해 신청해 주세요.`);
-    }
+    // 입력 이메일 문자열의 소유권을 확인할 수 없으므로 실제 Google 인증 창 사용.
+    quickLoginAsOwner();
   }
 
   function initAdminAndContactSystem() {
@@ -4294,35 +4285,21 @@ ${content}
     }
 
     const logoutBtn = document.getElementById('admin-logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        try { localStorage.removeItem(LOGGED_ADMIN_STORAGE_KEY); } catch (e) {}
-        updateAdminAuthModalView();
-        renderRightRaceScheduleSidebar();
-        closeAdminAuthModal();
-        const formEl = document.getElementById('admin-memo-form');
-        if (formEl) formEl.classList.add('hidden');
-        showToast('🔒 관리자 계정에서 로그아웃되었습니다.');
-      });
-    }
-
+    if (logoutBtn) logoutBtn.addEventListener('click', async () => {
+      try { if (typeof firebase !== 'undefined' && firebase.auth) await firebase.auth().signOut(); } catch(e) { console.warn(e); }
+      try { localStorage.removeItem(LOGGED_ADMIN_STORAGE_KEY); } catch(e) {}
+      updateAdminAuthModalView(); renderRightRaceScheduleSidebar(); closeAdminAuthModal();
+      const formEl = document.getElementById('admin-memo-form');
+      if (formEl) formEl.classList.add('hidden');
+      showToast('관리자 Google 계정에서 로그아웃했습니다.');
+    });
     const managePermBtn = document.getElementById('admin-manage-perm-btn');
-    if (managePermBtn) {
-      managePermBtn.addEventListener('click', () => {
-        const currentList = getApprovedAdminEmails();
-        const addEmail = prompt(`[최고 관리자 전용] 현재 대회 추가·관리 승인된 구글 계정 목록:\n- ${currentList.join('\n- ')}\n\n새로 추가 승인할 구글 이메일을 입력하세요:`);
-        if (addEmail && addEmail.includes('@')) {
-          const trimmed = addEmail.trim().toLowerCase();
-          if (!currentList.map(e => e.toLowerCase()).includes(trimmed)) {
-            currentList.push(trimmed);
-            saveApprovedAdminEmails(currentList);
-            alert(`✅ [${trimmed}] 구글 계정이 관리자로 추가 승인되었습니다.`);
-          } else {
-            alert('이미 승인되어 있는 구글 계정입니다.');
-          }
-        }
-      });
-    }
+    if (managePermBtn) managePermBtn.addEventListener('click', () => {
+      alert('다른 관리자를 추가하려면 신뢰할 수 있는 서버에서 권한을 부여하고 Firebase 보안 규칙을 변경해야 합니다. 브라우저에서 이메일을 추가하는 기능은 보안상 중단했습니다.');
+    });
+    try { if (typeof firebase !== 'undefined' && firebase.auth) firebase.auth().onAuthStateChanged(() => {
+      updateAdminAuthModalView(); renderRightRaceScheduleSidebar();
+    }); } catch(e) { console.warn(e); }
 
     const openReqFromAuthBtn = document.getElementById('open-approval-request-from-auth-btn');
     if (openReqFromAuthBtn) {
@@ -6602,7 +6579,7 @@ ${content}
         console.log("🔥 [Firebase] 대회 목록 실시간 동기화 완료:", Object.keys(majorRaces).length, "개");
       } else {
         // 클라우드 최초 생성 시 현재 기본 대회 목록 자동 시딩
-        firebaseDb.ref('pacecraft_races').set(majorRaces);
+        // Empty cloud data is intentionally NOT auto-written by visitors.
       }
     });
 
@@ -6615,7 +6592,7 @@ ${content}
         renderYoutubeVideoCards();
         console.log("🔥 [Firebase] 유튜브 영상 실시간 동기화 완료:", youtubeVideos.length, "개");
       } else {
-        firebaseDb.ref('pacecraft_youtube_videos').set(youtubeVideos);
+        // Empty cloud data is intentionally NOT auto-written by visitors.
       }
     });
 
@@ -6627,7 +6604,7 @@ ${content}
         try { localStorage.setItem(YOUTUBE_COACHES_STORAGE_KEY, JSON.stringify(youtubeCoaches)); } catch (e) {}
         renderYoutubeCoachCards();
       } else {
-        firebaseDb.ref('pacecraft_youtube_coaches').set(youtubeCoaches);
+        // Empty cloud data is intentionally NOT auto-written by visitors.
       }
     });
 
@@ -6641,7 +6618,7 @@ ${content}
         renderRightSidebarWidgets();
         console.log("🔥 [Firebase] 러닝 뉴스 실시간 동기화 완료:", runningNewsList.length, "개");
       } else {
-        firebaseDb.ref('pacecraft_running_news').set(runningNewsList);
+        // Empty cloud data is intentionally NOT auto-written by visitors.
       }
     });
 
@@ -6655,21 +6632,21 @@ ${content}
         if (typeof renderCTAModule === "function") { renderCTAModule(state.targetSec / state.targetDist); }
         console.log("🔥 [Firebase] 제휴 링크 실시간 동기화 완료:", affiliateLinks.length, "개");
       } else {
-        firebaseDb.ref('pacecraft_affiliates').set(affiliateLinks);
+        // Empty cloud data is intentionally NOT auto-written by visitors.
       }
     });
   }
 
   // 클라우드 업로드 헬퍼
   function syncToFirebaseCloud(path, data) {
-    if (isFirebaseSyncActive && firebaseDb) {
-      try {
-        firebaseDb.ref(path).set(data);
-        console.log(`🔥 [Firebase] '${path}' 클라우드 저장 완료!`);
-      } catch (err) {
-        console.warn(`⚠️ [Firebase] '${path}' 클라우드 저장 실패:`, err);
-      }
+    // Client guard only; server Firebase RTDB rules must independently enforce auth.uid.
+    const approvedPaths = new Set(['pacecraft_races','pacecraft_youtube_videos','pacecraft_youtube_coaches','pacecraft_running_news','pacecraft_affiliates']);
+    if (!approvedPaths.has(path) || !isCurrentAdminApproved() || !isFirebaseSyncActive || !firebaseDb) {
+      console.warn('[Firebase] 업로드 차단: 인증된 운영자만 쓰기 가능');
+      return;
     }
+    firebaseDb.ref(path).set(data).then(() => console.log('[Firebase] 클라우드 반영 완료:', path))
+      .catch(err => { console.error('[Firebase] 권한 거부/쓰기 실패:', err); alert('Firebase 저장에 실패했습니다. 보안 규칙과 Google 인증을 확인하세요.'); });
   }
 
   // =========================================================================
@@ -6677,6 +6654,7 @@ ${content}
   // =========================================================================
   const DASH_TAB_TO_PANEL = {
     'tab-calc': 'panel-calc',
+    'tab-plan': 'panel-plan',
     'tab-daily': 'panel-daily',
     'tab-dday': 'panel-dday',
     'tab-fueling': 'panel-fueling',
@@ -6864,13 +6842,7 @@ ${content}
     const templateBtn = document.getElementById('admin-memo-template-btn');
     const changePwBtn = document.getElementById('admin-change-pw-btn');
 
-    function getAdminPw() {
-      try {
-        return localStorage.getItem(ADMIN_PW_STORAGE_KEY) || 'admin1234';
-      } catch (e) {
-        return 'admin1234';
-      }
-    }
+    function getAdminPw() { return null; } // 비보안 브라우저 암호 사용 중단
 
     function renderMemo() {
       let memo = '';
@@ -6930,24 +6902,9 @@ ${content}
     }
 
     if (changePwBtn) {
-      changePwBtn.addEventListener('click', () => {
-        const currPw = prompt('현재 관리자 비밀번호를 입력하세요:');
-        if (currPw === null) return;
-        if (currPw.trim() !== getAdminPw()) {
-          alert('❌ 현재 비밀번호가 일치하지 않습니다.');
-          return;
-        }
-        const newPw = prompt('새로운 관리자 비밀번호를 입력하세요 (4자 이상):');
-        if (newPw && newPw.trim().length >= 4) {
-          try {
-            localStorage.setItem(ADMIN_PW_STORAGE_KEY, newPw.trim());
-            alert('✅ 관리자 비밀번호가 성공적으로 변경되었습니다.');
-          } catch (e) {}
-        } else {
-          alert('비밀번호 변경이 취소되었거나 너무 짧습니다.');
-        }
-      });
+      changePwBtn.addEventListener('click', () => alert('기존 브라우저 암호 방식은 안전하지 않아 중단했습니다. 관리자 로그인은 Firebase Google 인증을 사용합니다.'));
     }
+
   }
 
   // --- [게스트 이용 가능: 데일리 러너 수분 섭취 & 나만의 체크리스트 모듈] ---
@@ -7764,6 +7721,13 @@ ${content}
   window.closeAdminAuthModal = closeAdminAuthModal;
   window.openContactRequestModal = openContactRequestModal;
   window.closeContactRequestModal = closeContactRequestModal;
+
+  // 별도 레이스 플래너가 기존 VDOT 계산값을 안전하게 조회/갱신할 수 있는 인터페이스
+  window.PacecraftBridge = {
+    getGoals: () => ({distanceKm: state.targetDist, targetSeconds: state.targetSec,
+      strategy: state.strategy, race: currentSelectedRaceKey}),
+    recalculate: () => calculateAndRender()
+  };
 
   // 초기 실행 (개별 try-catch로 무중단 실행 보장)
   [
