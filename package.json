@@ -1,0 +1,16 @@
+{
+  "name": "pacecraft-runner-auto",
+  "private": true,
+  "version": "2.3.0",
+  "description": "Pacecraft Runner static frontend with secure Vercel race discovery and private Gemini assistant",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node --check app.js && node --check race-auto.js && node --check race-course.js && node --check race-plan-ui.js && node --check race-pro.js && node --check api/admin-races.js && node --check api/public-races.js && node --check api/cron-races.js"
+  }
+}

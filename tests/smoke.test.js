@@ -1,0 +1,12 @@
+'use strict';
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const E=require('../race-course.js');
+const R=require('../lib/races.js');
+const catalog=require('../data/race-courses.json');
+test('new course defaults to manual race with even pacing',()=>{const p=E.defaultPlan();assert.equal(p.race,'custom');assert.equal(p.strategy,'even');assert.equal(p.rules.length,0)});
+test('flat marathon is exactly 4:30:00',()=>{const a=E.calculate({...E.defaultPlan(),targetSeconds:16200});assert.equal(Math.round(a.totalSeconds),16200)});
+test('major races have valid links and distances',()=>{assert.equal(catalog.races.length,7);for(const r of catalog.races){assert.equal(r.distanceKm,42.195);assert.match(r.officialUrl,/^https:\/\//)}});
+test('invalid dates are refused',()=>{assert.equal(R.validDate('2026-02-30'),'');assert.equal(R.validDate('2026-11-10'),'2026-11-10')});
+test('candidate search rejects javascript links',()=>{assert.equal(R.normalizeCandidate({title:'2027 서울마라톤',link:'javascript:alert(1)'},'test'),null)});
+test('dates are never automatically verified',()=>{const c=R.normalizeCandidate({title:'2027 서울마라톤 2027.03.21',link:'https://example.com/race'},'검색','2026-11-10');assert.equal(c?.confidence,'미확인')});
