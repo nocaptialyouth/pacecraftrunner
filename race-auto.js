@@ -46,7 +46,7 @@
   function statusDate(date){return date ? date.replace(/-/g,'. ') : '날짜 확인 필요';}
   function renderPublic(){
     if(!list)return;list.replaceChildren();
-    const rows=expand?publicRows:publicRows.slice(0,4);
+    const rows=expand?publicRows:publicRows.slice(0,10);
     if(!rows.length){line(list,'수집된 후보가 아직 없습니다. 관리자 설정 후 자동 갱신됩니다.','text-[10px] text-slate-400');}
     rows.forEach(c=>{
       const box=el('div','rounded-xl border border-slate-200 dark:border-slate-700 p-2 bg-white/60 dark:bg-slate-800/40 space-y-1');
@@ -59,19 +59,31 @@
       bottom.appendChild(makeLink(c.url,'검색 출처 ↗'));
       box.appendChild(bottom);list.appendChild(box);
     });
-    if(showMore){showMore.hidden=publicRows.length<=4;showMore.textContent=expand?'접기':`전체 ${publicRows.length}건 보기`;}
+    if(showMore){showMore.hidden=publicRows.length<=10;showMore.textContent=expand?'접기':`전체 ${publicRows.length}건 보기`;}
+  }
+  function renderGoogleSuggestions(html){
+    let box=q('race-auto-google-suggestions');
+    if(!box){box=document.createElement('div');box.id='race-auto-google-suggestions';root.appendChild(box);}
+    box.replaceChildren();
+    if(!html)return;
+    const label=document.createElement('p');label.className='text-[10px] text-slate-500 mt-2 mb-1';label.textContent='Google 검색 제안';box.appendChild(label);
+    const frame=document.createElement('iframe');frame.title='Google 검색 제안';
+    frame.setAttribute('sandbox','allow-scripts allow-popups allow-popups-to-escape-sandbox');
+    frame.style.cssText='width:100%;max-width:100%;height:60px;border:0;';
+    frame.srcdoc=String(html).slice(0,20000);box.appendChild(frame);
   }
   async function loadPublic(){
     if(info)info.textContent='대회 검색 자료 확인 중…';
     try{
-      const res=await fetch('/api/public-races',{cache:'no-store'});
+      const res=await fetch('/api/public-races',{cache:'default',signal:AbortSignal.timeout(40000)});
       const payload=await res.json();
       if(!res.ok||!payload.ok)throw new Error(payload.error||'목록 응답 오류');
       publicRows=Array.isArray(payload.candidates)?payload.candidates:[];
       const date=payload.updatedAt?new Date(payload.updatedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}):'미실행';
-      if(info)info.textContent=`네이버 검색 기반 자동 발견 · ${publicRows.length}개 후보 · 마지막 갱신 ${date}`;
+      if(info)info.textContent=`Google AI · Google 검색 기반 자동 발견 · ${publicRows.length}개 후보 · 마지막 갱신 ${date}`;
+      renderGoogleSuggestions(payload.searchSuggestionsHtml||'');
       renderPublic();
-    }catch(e){publicRows=[];renderPublic();showError('자동 검색 연결 대기 중 · '+(e.message||'환경설정 필요'));}
+    }catch(e){publicRows=[];renderGoogleSuggestions('');renderPublic();showError('자동 검색 연결 대기 중 · '+(e.message||'환경설정 필요'));}
   }
   async function token(){
     if(typeof firebase==='undefined'||!firebase.auth)throw new Error('Firebase 인증 SDK가 필요합니다.');
@@ -91,7 +103,7 @@
     if(!adminInfo)return;
     adminInfo.replaceChildren();
     line(adminInfo,`Google AI 프로젝트: ${d.project}`,'text-xs font-bold text-slate-800 dark:text-white');
-    line(adminInfo,`Gemini API: ${d.geminiConfigured?'연결 키 설정됨':'키 미설정'} · NAVER 검색: ${d.naverConfigured?'설정됨':'미설정'}`);
+    line(adminInfo,`Gemini API: ${d.geminiConfigured?'연결 키 설정됨':'키 미설정'} · Google 검색 수집: ${d.geminiSearchConfigured?'키 설정됨':'키 미설정'}`);
     line(adminInfo,`일정 자동 수집: 매일 10:00(KST) 예정 · 검토대기 ${d.pending}건`);
     line(adminInfo,`확인된 정형 피드 자동 게시: ${d.autoPublishVerified?'사용':'사용 안 함'}`);
     if(d.lastSync?.updatedAt)line(adminInfo,`최종 작업: ${new Date(d.lastSync.updatedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} (${d.lastSync.state||'-'})`);
@@ -105,11 +117,11 @@
     allRows.slice(0,60).forEach(c=>{
       const box=el('div','rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 space-y-2');
       line(box,c.name,'text-xs font-semibold break-words text-slate-800 dark:text-white');
-      line(box,`${c.date||'개최일 확인 필요'} · ${c.source||'NAVER'} · ${c.confidence||'검토 필요'}`,'text-[10px] text-slate-500');
+      line(box,`${c.date||'개최일 확인 필요'} · ${c.source||'Google AI'} · ${c.confidence||'검토 필요'}`,'text-[10px] text-slate-500');
       const links=el('div','flex flex-wrap gap-2 items-center');
       links.appendChild(makeLink(c.url,'원본 확인 ↗'));
       const ask=el('button','px-2 py-1 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300','AI로 검토');
-      ask.addEventListener('click',()=>{if(aiInput){aiInput.value=`다음은 네이버에서 찾은 마라톤 일정 후보입니다. 검증 전 자료이므로 공식 일정 여부 및 확인할 항목을 알려 주세요.\n대회명: ${c.name}\n날짜 후보: ${c.date||'없음'}\n출처: ${c.url}\n설명: ${c.description||''}`;aiInput.focus();}});
+      ask.addEventListener('click',()=>{if(aiInput){aiInput.value=`다음은 Google AI 검색에서 찾은 마라톤 일정 후보입니다. 검증 전 자료이므로 공식 일정 여부 및 확인할 항목을 알려 주세요.\n대회명: ${c.name}\n날짜 후보: ${c.date||'없음'}\n출처: ${c.url}\n설명: ${c.description||''}`;aiInput.focus();}});
       links.appendChild(ask);
       const accept=el('button','px-2 py-1 rounded-lg text-xs font-bold text-white bg-emerald-600','승인');
       accept.disabled=!c.date;
@@ -139,7 +151,7 @@
   }
   async function syncNow(){
     if(busy)return;
-    try{setWorking(true);if(adminInfo)adminInfo.textContent='네이버 검색과 데이터 검토 후보를 동기화하는 중…';
+    try{setWorking(true);if(adminInfo)adminInfo.textContent='Google AI 검색 후보를 동기화하는 중…';
       const d=await callAdmin('sync');await loadCandidates();await loadPublic();displayAdminStatus(await callAdmin('status'));
       window.alert(`수집 완료: 발견 ${d.found}건 / 신규 ${d.added}건 / 자동 반영 ${d.published}건${d.errors?.length?'\n주의: '+d.errors.join('; '):''}`);
     }catch(e){window.alert(`자동 수집 실패: ${e.message}`);await refreshAdmin();}
