@@ -12,7 +12,7 @@ module.exports=async function handler(req,res){
    stored=sortCandidates(Object.values(items||{})).filter(x=>String(x.source||'').startsWith('Google AI')).slice(0,30);
   }catch(e){/* Firebase configuration may be missing; public Google AI results can still be read. */}
   const fresh=meta?.updatedAt && Date.now()-Date.parse(meta.updatedAt)<24*3600000;
-  let rows=stored,updatedAt=meta?.updatedAt||null,suggestions='',warning='',state=meta?.state||'ok';
+  let rows=stored,updatedAt=meta?.updatedAt||null,suggestions=meta?.searchSuggestionsHtml||'',warning='',state=meta?.state||'ok';
   if(!rows.length||!fresh){
     const live=await Gemini.discover();
     rows=sortCandidates(live.rows).slice(0,30);
