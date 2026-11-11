@@ -4297,9 +4297,14 @@ ${content}
     if (managePermBtn) managePermBtn.addEventListener('click', () => {
       alert('다른 관리자를 추가하려면 신뢰할 수 있는 서버에서 권한을 부여하고 Firebase 보안 규칙을 변경해야 합니다. 브라우저에서 이메일을 추가하는 기능은 보안상 중단했습니다.');
     });
-    try { if (typeof firebase !== 'undefined' && firebase.auth) firebase.auth().onAuthStateChanged(() => {
-      updateAdminAuthModalView(); renderRightRaceScheduleSidebar();
-    }); } catch(e) { console.warn(e); }
+    try {
+      if (typeof firebase !== 'undefined' && firebase.initializeApp && (!firebase.apps || !firebase.apps.length)) {
+        firebase.initializeApp(FIREBASE_CONFIG);
+      }
+      if (typeof firebase !== 'undefined' && firebase.auth) firebase.auth().onAuthStateChanged(() => {
+        updateAdminAuthModalView(); renderRightRaceScheduleSidebar();
+      });
+    } catch(e) { console.warn(e); }
 
     const openReqFromAuthBtn = document.getElementById('open-approval-request-from-auth-btn');
     if (openReqFromAuthBtn) {
@@ -6534,7 +6539,7 @@ ${content}
   // [구글 파이어베이스 클라우드 실시간 동기화 엔진] Google Firebase Realtime Database
   // =========================================================================
   const FIREBASE_CONFIG = {
-    apiKey: "AIzaSyDCn2T8oXq-Tg26QJmfRAwANupoIaG3KKQ",
+    apiKey: "AIzaSyDCn2T8oXq-Tg26QJmfrAwANupoIaG3KKQ",
     authDomain: "pacecraft-runner.firebaseapp.com",
     databaseURL: "https://pacecraft-runner-default-rtdb.firebaseio.com",
     projectId: "pacecraft-runner",
@@ -6635,12 +6640,24 @@ ${content}
         // Empty cloud data is intentionally NOT auto-written by visitors.
       }
     });
+
+    // 6. 관리자 공지 메모 실시간 동기화
+    firebaseDb.ref('pacecraft_admin_memo').on('value', (snapshot) => {
+      const memo = snapshot.val();
+      if (typeof memo === 'string' && memo.trim()) {
+        try { localStorage.setItem(ADMIN_MEMO_STORAGE_KEY, memo); } catch (e) {}
+        const displayEl = document.getElementById('admin-memo-display');
+        const inputEl = document.getElementById('admin-memo-input');
+        if (displayEl) displayEl.textContent = memo;
+        if (inputEl) inputEl.value = memo;
+      }
+    });
   }
 
   // 클라우드 업로드 헬퍼
   function syncToFirebaseCloud(path, data) {
     // Client guard only; server Firebase RTDB rules must independently enforce auth.uid.
-    const approvedPaths = new Set(['pacecraft_races','pacecraft_youtube_videos','pacecraft_youtube_coaches','pacecraft_running_news','pacecraft_affiliates']);
+    const approvedPaths = new Set(['pacecraft_races','pacecraft_youtube_videos','pacecraft_youtube_coaches','pacecraft_running_news','pacecraft_affiliates','pacecraft_admin_memo']);
     if (!approvedPaths.has(path) || !isCurrentAdminApproved() || !isFirebaseSyncActive || !firebaseDb) {
       console.warn('[Firebase] 업로드 차단: 인증된 운영자만 쓰기 가능');
       return;
@@ -6890,6 +6907,9 @@ ${content}
           localStorage.setItem(ADMIN_MEMO_STORAGE_KEY, val);
           showToast('✅ 관리자 메모가 저장되었습니다.');
         } catch (e) {}
+        if (typeof syncToFirebaseCloud === 'function') {
+          syncToFirebaseCloud('pacecraft_admin_memo', val);
+        }
         renderMemo();
         if (formEl) formEl.classList.add('hidden');
       });
@@ -7731,6 +7751,7 @@ ${content}
 
   // 초기 실행 (개별 try-catch로 무중단 실행 보장)
   [
+    ['FirebaseCloudSync', initFirebaseCloudSync],
     ['AffiliateLinkManager', initAffiliateLinkManager],
     ['AdminAndContactSystem', initAdminAndContactSystem],
     ['DashboardNavigation', initDashboardNavigation],
@@ -7745,7 +7766,6 @@ ${content}
     ['renderRightRaceScheduleSidebar', renderRightRaceScheduleSidebar],
     ['renderRightSidebarWidgets', renderRightSidebarWidgets],
     ['calculateAndRender', calculateAndRender],
-    ['FirebaseCloudSync', initFirebaseCloudSync],
     ['YoutubeLectureModule', initYoutubeLectureModule],
     ['RunningNewsModule', initRunningNewsModule],
     ['SidebarClockAndCalendar', () => {
