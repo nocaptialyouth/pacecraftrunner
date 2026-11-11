@@ -1,0 +1,32 @@
+name: Marathon-Online Daily Race Import
+on:
+  schedule:
+    - cron: '0 0 * * *' # 09:00 KST; GitHub can start later
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: daily-marathon-online-import
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch allowed public schedule
+        run: node scripts/sync-marathon-online.js
+      - name: Update repository dataset
+        run: |
+          if git diff --quiet -- data/marathon-online-races.json; then
+            echo "No race schedule changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/marathon-online-races.json
+          git commit -m "data: import marathon-online races"
+          git push origin HEAD:main
