@@ -104,7 +104,7 @@
     adminInfo.replaceChildren();
     line(adminInfo,`Google AI 프로젝트: ${d.project}`,'text-xs font-bold text-slate-800 dark:text-white');
     line(adminInfo,`Gemini API: ${d.geminiConfigured?'연결 키 설정됨':'키 미설정'} · Google 검색 수집: ${d.geminiSearchConfigured?'키 설정됨':'키 미설정'}`);
-    line(adminInfo,`일정 자동 수집: 매일 10:00(KST) 예정 · 검토대기 ${d.pending}건`);
+    line(adminInfo,`일정 자동 수집: 매일 오전 9시(KST) 예약 · 검토대기 ${d.pending}건`);
     line(adminInfo,`확인된 정형 피드 자동 게시: ${d.autoPublishVerified?'사용':'사용 안 함'}`);
     if(d.lastSync?.updatedAt)line(adminInfo,`최종 작업: ${new Date(d.lastSync.updatedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'})} (${d.lastSync.state||'-'})`);
     const projectField=q('race-auto-google-project'); if(projectField)projectField.value=d.project||'';
