@@ -1,5 +1,9 @@
 name: Marathon-Online Daily Race Import
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily-marathon-online.yml'
   schedule:
     - cron: '0 0 * * *' # 09:00 KST; GitHub can start later
   workflow_dispatch:
