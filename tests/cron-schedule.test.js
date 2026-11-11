@@ -1,8 +1,11 @@
 'use strict';
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const config = require('../vercel.json');
-test('race discovery cron runs every day at 09:00 KST (00:00 UTC)',()=>{
-  assert.equal(config.crons.length,1);
-  assert.deepEqual(config.crons[0],{path:'/api/cron-races',schedule:'0 0 * * *'});
+const test=require('node:test'),assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const vercel=require('../vercel.json');
+const workflow=fs.readFileSync(path.join(__dirname,'../.github/workflows/daily-marathon-online.yml'),'utf8');
+test('race schedule importer runs daily at 09:00 KST via GitHub Actions',()=>{
+ assert.match(workflow,/cron:\s*'0 0 \* \* \*'/);
+ assert.match(workflow,/node scripts\/sync-marathon-online\.js/);
+ assert.equal(vercel.crons,undefined);
 });
