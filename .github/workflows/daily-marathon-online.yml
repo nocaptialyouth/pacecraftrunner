@@ -21,6 +21,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check backup-source robots and response (diagnostic only)
+        run: |
+          node - <<'NODE'
+          async function check(url) {
+            try {
+              const r=await fetch(url,{redirect:'manual',signal:AbortSignal.timeout(8000)});
+              console.log('[source-check]',new URL(url).hostname,new URL(url).pathname,'status='+r.status,'redirect='+String(r.headers.get('location')||'').slice(0,150));
+            }catch(e){console.log('[source-check]',url,'error='+e.message);}
+          }
+          Promise.all([
+            check('https://gorunning.kr/robots.txt'),
+            check('https://gorunning.kr/races/'),
+            check('https://playatlas.to/robots.txt'),
+            check('https://playatlas.to/ko/events/marathon/upcoming')
+          ]);
+          NODE
       - name: Probe original site with safe robots check
         run: node scripts/sync-marathon-online.js
       - name: Update repository dataset
