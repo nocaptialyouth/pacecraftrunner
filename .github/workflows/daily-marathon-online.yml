@@ -32,7 +32,7 @@ jobs:
           }
           Promise.all([
             (async()=>{const r=await fetch('https://playatlas.to/robots.txt',{signal:AbortSignal.timeout(8000)});console.log('[playatlas-robots]',(await r.text()).slice(0,2500).replaceAll('\\n',' '));})(),
-            (async()=>{const r=await fetch('https://playatlas.to/ko/events/marathon/upcoming',{signal:AbortSignal.timeout(10000)});const h=await r.text();console.log('[playatlas-html]',h.slice(0,1100).replaceAll('\\n',' '),'len='+h.length,'nextData='+h.includes('__NEXT_DATA__'),'jsonld='+h.includes('application/ld+json'));})()
+            (async()=>{const r=await fetch('https://playatlas.to/ko/events/marathon/upcoming',{signal:AbortSignal.timeout(10000)});const h=await r.text();const at=h.indexOf('남승룡');console.log('[playatlas-html]',h.slice(Math.max(0,at-450),at+900).replaceAll('\\n',' '),'len='+h.length,'nuxt='+h.includes('__NUXT_DATA__'),'at='+at);})()
           ]).catch(e=>console.log('[backup-diag-error]',e.message));
           NODE
       - name: Probe original site with safe robots check
