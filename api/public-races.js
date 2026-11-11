@@ -1,31 +1,26 @@
 'use strict';
-const {output,errorResponse,requireMethod,readPath}=require('../lib/backend');
-const {sortCandidates}=require('../lib/races');
-const Gemini=require('../lib/gemini-races');
+const {output,errorResponse,requireMethod}=require('../lib/backend');
+const R=require('../lib/races');
+const data=require('../data/marathon-online-races.json');
+const catalog=require('../data/race-courses.json');
 module.exports=async function handler(req,res){
  try{
-  requireMethod(req,'GET');
-  let stored=[],meta=null;
-  try{
-   const [items,last]=await Promise.all([readPath('pacecraft_race_candidates'),readPath('pacecraft_race_sync_meta')]);
-   meta=last;
-   stored=sortCandidates(Object.values(items||{})).filter(x=>String(x.source||'').startsWith('Google AI')).slice(0,30);
-  }catch(e){/* Firebase configuration may be missing; public Google AI results can still be read. */}
-  const fresh=meta?.updatedAt && Date.now()-Date.parse(meta.updatedAt)<24*3600000;
-  let rows=stored,updatedAt=meta?.updatedAt||null,suggestions=meta?.searchSuggestionsHtml||'',warning='',state=meta?.state||'ok';
-  if(!rows.length||!fresh){
-    const live=await Gemini.discover();
-    rows=sortCandidates(live.rows).slice(0,30);
-    updatedAt=live.updatedAt;
-    suggestions=live.suggestions;
-    state=live.state;
-    warning=live.errors.length?'Gemini 검색 결과 형식을 확인해야 합니다.':'';
+  requireMethod(req,'GET');const today=R.kstToday();
+  let candidates=R.sortCandidates((data.races||[]).map(r=>({...r,lastSeen:data.updatedAt||data.asOf,status:'pending'})),today)
+   .filter(x=>x.date&&x.date>=today).slice(0,10);
+  let source=data.sourceName||'대회 일정',warning=data.status==='auto'?'':'초기 참고 목록입니다. 원본 자동수집 성공 후 교체되며, 개최일과 접수는 공식 홈페이지에서 확인하세요.';
+  if(!candidates.length){
+   source='주요 대회 코스 참고 목록';warning='최근 원본 일정 수집이 지연되어 기본 대회 목록을 표시합니다.';
+   candidates=(catalog.races||[]).filter(x=>x.date>=today).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,10).map(x=>({
+    id:x.id,name:x.name,date:x.date,url:x.officialUrl,source,sourceUrl:x.officialUrl,
+    location:x.location||'',courses:[],confidence:'미확인',status:'pending'
+   }));
   }
-  res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=3600');
-  output(res,200,{
-   ok:true,candidates:rows.map(c=>({id:c.id,name:c.name,date:c.date||'',url:c.url,source:c.source,confidence:'미확인',lastSeen:c.lastSeen})),
-   updatedAt,state,source:'Gemini Google Search',count:rows.length,searchSuggestionsHtml:suggestions,
-   warning:(warning?warning+' ':'')+'Google 검색 근거가 있어도 날짜와 개최 여부는 공식 확인 전까지 미확인입니다. Firebase 관리자 승인·저장은 별도 연결이 필요합니다.'
-  });
- }catch(e){errorResponse(res,e);}
+  res.setHeader('Cache-Control','public, s-maxage=1800, stale-while-revalidate=7200');
+  return output(res,200,{ok:true,source,sourceUrl:data.sourceUrl,updatedAt:data.updatedAt||data.asOf,
+   state:candidates.length?'ok':'empty',count:candidates.length,warning,searchSuggestionsHtml:'',
+   candidates:candidates.map(x=>({id:x.id,name:x.name,date:x.date,url:x.url,source:x.source||source,
+    sourceUrl:x.sourceUrl||data.sourceUrl,courses:x.courses||[],location:x.location||'',
+    confidence:'미확인',lastSeen:x.lastSeen||null}))});
+ }catch(e){return errorResponse(res,e)}
 };

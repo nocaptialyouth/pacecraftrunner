@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "sourceName": "PLAYATLAS (초기 참고)",
+  "sourceUrl": "https://playatlas.to/ko/events/marathon",
+  "asOf": "2026-11-11",
+  "updatedAt": null,
+  "status": "initial-reference",
+  "races": [
+    {
+      "id": "seed-01",
+      "name": "제26회 순천 남승룡마라톤대회",
+      "date": "2026-11-14",
+      "courses": [
+        "풀",
+        "하프",
+        "10km",
+        "5km"
+      ],
+      "location": "순천 팔마종합운동장",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-02",
+      "name": "2026 제주감귤국제마라톤대회",
+      "date": "2026-11-15",
+      "courses": [
+        "풀",
+        "하프",
+        "10km"
+      ],
+      "location": "제주 조천운동장",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-03",
+      "name": "제28회 부산국제마라톤대회",
+      "date": "2026-11-15",
+      "courses": [
+        "하프",
+        "10km",
+        "5km"
+      ],
+      "location": "부산 다대포해수욕장",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-04",
+      "name": "제24회 상주 곶감 마라톤 대회",
+      "date": "2026-11-15",
+      "courses": [
+        "풀",
+        "하프",
+        "10km",
+        "4.4km"
+      ],
+      "location": "상주시민운동장",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-05",
+      "name": "2026 MBN 서울마라톤",
+      "date": "2026-11-15",
+      "courses": [
+        "하프",
+        "10km"
+      ],
+      "location": "서울 광화문광장",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-06",
+      "name": "2026 인천마라톤",
+      "date": "2026-11-22",
+      "courses": [
+        "풀",
+        "10km",
+        "5km"
+      ],
+      "location": "인천아시아드주경기장",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-07",
+      "name": "2026 남원 춘향 전국 마라톤대회",
+      "date": "2026-11-28",
+      "courses": [
+        "풀",
+        "하프",
+        "10km",
+        "5km"
+      ],
+      "location": "남원 종합스포츠타운",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-08",
+      "name": "2026 부산브릿지 마라톤",
+      "date": "2026-12-06",
+      "courses": [
+        "풀",
+        "10km"
+      ],
+      "location": "부산 벡스코",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-09",
+      "name": "제36회 진주마라톤",
+      "date": "2026-12-13",
+      "courses": [
+        "풀",
+        "하프",
+        "10km",
+        "5km"
+      ],
+      "location": "진주노을공원",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "seed-10",
+      "name": "2027 전국마라톤협회 제주 4Full 마라톤",
+      "date": "2027-01-22",
+      "courses": [
+        "풀"
+      ],
+      "location": "제주",
+      "url": "https://playatlas.to/ko/events/marathon",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon",
+      "source": "PLAYATLAS (초기 참고)",
+      "confidence": "미확인",
+      "status": "pending"
+    }
+  ]
+}

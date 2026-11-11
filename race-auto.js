@@ -47,7 +47,7 @@
   function renderPublic(){
     if(!list)return;list.replaceChildren();
     const rows=expand?publicRows:publicRows.slice(0,10);
-    if(!rows.length){line(list,'수집된 후보가 아직 없습니다. 관리자 설정 후 자동 갱신됩니다.','text-[10px] text-slate-400');}
+    if(!rows.length){line(list,'수집된 예정 대회가 없습니다. 출처를 확인해 주세요.','text-[10px] text-slate-400');}
     rows.forEach(c=>{
       const box=el('div','rounded-xl border border-slate-200 dark:border-slate-700 p-2 bg-white/60 dark:bg-slate-800/40 space-y-1');
       const header=el('div','flex items-start justify-between gap-2');
@@ -56,7 +56,9 @@
       box.appendChild(header);
       const bottom=el('div','flex flex-wrap gap-1.5 items-center justify-between');
       bottom.appendChild(el('span','text-[10px] text-slate-500 dark:text-slate-400',`📅 ${statusDate(c.date)}`));
-      bottom.appendChild(makeLink(c.url,'검색 출처 ↗'));
+      bottom.appendChild(makeLink(c.url,'대회 출처 ↗'));
+      if(c.courses?.length)box.appendChild(el('span','text-[10px] text-slate-500','종목: '+c.courses.join(' · ')));
+      if(c.location)box.appendChild(el('span','text-[10px] text-slate-500','장소: '+c.location));
       box.appendChild(bottom);list.appendChild(box);
     });
     if(showMore){showMore.hidden=publicRows.length<=10;showMore.textContent=expand?'접기':`전체 ${publicRows.length}건 보기`;}
@@ -80,8 +82,8 @@
       if(!res.ok||!payload.ok)throw new Error(payload.error||'목록 응답 오류');
       publicRows=Array.isArray(payload.candidates)?payload.candidates:[];
       const date=payload.updatedAt?new Date(payload.updatedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}):'미실행';
-      if(info)info.textContent=`Google AI · Google 검색 기반 자동 발견 · ${publicRows.length}개 후보 · 마지막 갱신 ${date}`;
-      renderGoogleSuggestions(payload.searchSuggestionsHtml||'');
+      if(info)info.textContent=`공개 대회 일정 · 출처 확인 · ${publicRows.length}개 후보 · 마지막 갱신 ${date}`;
+      renderGoogleSuggestions('');
       renderPublic();
     }catch(e){publicRows=[];renderGoogleSuggestions('');renderPublic();showError('자동 검색 연결 대기 중 · '+(e.message||'환경설정 필요'));}
   }
