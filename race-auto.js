@@ -57,6 +57,7 @@
       const bottom=el('div','flex flex-wrap gap-1.5 items-center justify-between');
       bottom.appendChild(el('span','text-[10px] text-slate-500 dark:text-slate-400',`📅 ${statusDate(c.date)}`));
       bottom.appendChild(makeLink(c.url,'대회 출처 ↗'));
+      if(c.source)box.appendChild(el('span','text-[10px] text-slate-500','출처: '+c.source));
       if(c.courses?.length)box.appendChild(el('span','text-[10px] text-slate-500','종목: '+c.courses.join(' · ')));
       if(c.location)box.appendChild(el('span','text-[10px] text-slate-500','장소: '+c.location));
       box.appendChild(bottom);list.appendChild(box);
@@ -82,7 +83,7 @@
       if(!res.ok||!payload.ok)throw new Error(payload.error||'목록 응답 오류');
       publicRows=Array.isArray(payload.candidates)?payload.candidates:[];
       const date=payload.updatedAt?new Date(payload.updatedAt).toLocaleString('ko-KR',{timeZone:'Asia/Seoul'}):'미실행';
-      if(info)info.textContent=`공개 대회 일정 · 출처 확인 · ${publicRows.length}개 후보 · 마지막 갱신 ${date}`;
+      if(info)info.textContent=`${payload.source||'공개 대회 일정'} · 예정 대회 ${publicRows.length}개 · 자료 기준 ${date}${payload.warning?' · '+payload.warning:''}`;
       renderGoogleSuggestions('');
       renderPublic();
     }catch(e){publicRows=[];renderGoogleSuggestions('');renderPublic();showError('자동 검색 연결 대기 중 · '+(e.message||'환경설정 필요'));}
