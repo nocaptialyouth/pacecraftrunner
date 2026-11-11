@@ -13,3 +13,13 @@ test('부정확한 날짜와 차단된 robots 규칙은 반영하지 않는다',
  assert.equal(S.allowed('User-agent: *\nDisallow: /\n','http://www.marathon.pe.kr/'),false);
  assert.equal(S.allowed('User-agent: *\nDisallow: /admin\n','http://www.marathon.pe.kr/schedule'),true);
 });
+
+test('PLAYATLAS 공개 일정 카드는 원문 링크와 개최 종목만 추출',()=>{
+ const h='<html><title>2026 예정 마라톤</title><a href="/ko/events/제26회-순천-남승룡마라톤대회"><h3>제26회 순천 남승룡마라톤대회</h3><p>11.14 (토)</p><span>FULL HALF 10K 5K</span></a></html>';
+ const rows=S.parsePlayAtlas(h,'2026-11-11');
+ assert.equal(rows.length,1);
+ assert.equal(rows[0].date,'2026-11-14');
+ assert.equal(rows[0].name,'제26회 순천 남승룡마라톤대회');
+ assert.deepEqual(rows[0].courses,['풀','하프','10km','5km']);
+ assert.match(rows[0].url,/^https:\/\/playatlas\.to\/ko\/events\//);
+});

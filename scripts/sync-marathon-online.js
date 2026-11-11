@@ -5,7 +5,7 @@ const BASE='http://www.marathon.pe.kr/';
 const OUT='data/marathon-online-races.json';
 const BOT='PacecraftRunnerScheduleBot/1.0 (+https://pacecraftrunner.vercel.app/)';
 const HOSTS=new Set(['www.marathon.pe.kr','marathon.pe.kr']);
-function plain(s){return String(s||'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]*>/g,' ').replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&(nbsp|amp|lt|gt|quot);/gi,(_,n)=>({nbsp:' ',amp:'&',lt:'<',gt:'>',quot:'"'}[n.toLowerCase()])).replace(/\s+/g,' ').trim().slice(0,200);}
+function plain(s){return String(s||'').replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,' ').replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi,' ').replace(/<[^>]*>/g,' ').replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(+n)).replace(/&(nbsp|amp|lt|gt|quot);/gi,(_,n)=>({nbsp:' ',amp:'&',lt:'<',gt:'>',quot:'"'}[n.toLowerCase()])).replace(/\s+/g,' ').trim().slice(0,900);}
 function kst(){return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());}
 function validDate(v){if(!/^20\d{2}-\d{2}-\d{2}$/.test(v||''))return '';const d=new Date(v+'T00:00:00Z');return Number.isNaN(+d)||d.toISOString().slice(0,10)!==v?'':v;}
 function dateIn(s,year){const t=plain(s);let m=t.match(/(20\d{2})\s*[.\/\-년]\s*(\d{1,2})\s*[.\/\-월]\s*(\d{1,2})/);if(!m)m=t.match(/(?:^|\s)(\d{1,2})\s*[.\/\-월]\s*(\d{1,2})(?:\s*일)?(?:\s|$)/);if(!m)return '';const parts=m.length===4?[m[1],m[2],m[3]]:[year,m[1],m[2]];return validDate(String(parts[0])+'-'+String(parts[1]).padStart(2,'0')+'-'+String(parts[2]).padStart(2,'0'));}
@@ -55,21 +55,74 @@ async function get(url){
  return {url:res.url,html};
  }finally{clearTimeout(timer);}
 }
-async function collect(){
- let robots='';
- try{robots=(await get(new URL('/robots.txt',BASE).href)).html;}catch(e){if(!/HTTP 404\b/.test(e.message))throw Error('robots.txt 확인 실패: '+e.message);}
- const queue=[BASE],seen=new Set(),items=[],errors=[];
- while(queue.length&&seen.size<6){const url=queue.shift();if(seen.has(url))continue;seen.add(url);
- if(!allowed(robots,url)){errors.push('robots.txt 수집 제한: '+url);continue;}
- try{const page=await get(url);items.push(...parseRows(page.html,page.url));for(const link of nextPages(page.html,page.url))if(!seen.has(link)&&!queue.includes(link))queue.push(link);}
- catch(e){errors.push(e.message);}
- if(queue.length)await new Promise(done=>setTimeout(done,550));
+const PLAYATLAS='https://playatlas.to/ko/events/marathon/upcoming';
+function parsePlayAtlas(html,today=kst()){
+ const yearMatch=String(html).slice(0,12000).match(/20\d{2}/),year=yearMatch?Number(yearMatch[0]):Number(today.slice(0,4));
+ const rows=[];
+ for(const m of String(html).matchAll(/<a\b[^>]*href\s*=\s*["'](\/ko\/events\/[^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)){
+  const href=m[1],fragment=m[2],date=dateIn(fragment.replace(/<[^>]+>/g,' '),year);
+  if(!date||date<today||date>String(+today.slice(0,4)+2)+'-12-31')continue;
+  const h=fragment.match(/<h[2-4]\b[^>]*>([\s\S]*?)<\/h[2-4]>/i);
+  let slug='';try{slug=decodeURIComponent(href.split('/').pop()).replace(/-/g,' ');}catch{}
+  const name=(h?plain(h[1]):slug).slice(0,140);
+  if(!raceName(name))continue;
+  const url=safeUrl(href,PLAYATLAS);
+  const distance=courses(fragment.replace(/<[^>]+>/g,' '));
+  rows.push({id:crypto.createHash('sha256').update(name+'|'+date).digest('hex').slice(0,20),
+   name,date,url,sourceUrl:PLAYATLAS,source:'PLAYATLAS (대체 공개 일정)',
+   location:'',courses:distance,confidence:'미확인',status:'pending'});
  }
- const rows=[...new Map(items.map(x=>[x.name+'|'+x.date,x])).values()].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,50);
- if(!rows.length)throw Error('원본에서 유효한 대회 날짜를 수집하지 못했습니다. 이전 파일 보존: '+errors.slice(0,4).join('; '));
- const result={schemaVersion:1,sourceName:'마라톤온라인 (Roadrun)',sourceUrl:BASE,
-  asOf:kst(),updatedAt:new Date().toISOString(),status:'auto',races:rows};
- fs.writeFileSync(OUT,JSON.stringify(result,null,2)+'\n');console.log('일정 수집 성공:',rows.length,'건');
+ return [...new Map(rows.map(r=>[r.name+'|'+r.date,r])).values()].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,40);
+}
+async function fallbackPlayAtlas(){
+ const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),12500);
+ try{
+  const headers={'User-Agent':BOT,'Accept':'text/html,text/plain'};
+  const r=await fetch('https://playatlas.to/robots.txt',{headers,signal:controller.signal});
+  if(!r.ok||new URL(r.url).hostname!=='playatlas.to')throw Error('대체 출처 robots.txt 접근 불가');
+  const robots=await r.text();
+  if(!allowed(robots,PLAYATLAS))throw Error('대체 출처 robots.txt 수집 제한');
+  const page=await fetch(PLAYATLAS,{headers,signal:controller.signal});
+  if(!page.ok||new URL(page.url).hostname!=='playatlas.to')throw Error('대체 출처 대회 페이지 접근 불가');
+  const html=await page.text();if(html.length>750000)throw Error('대체 출처 응답 크기 초과');
+  const races=parsePlayAtlas(html);
+  if(!races.length)throw Error('대체 출처에서 일정 추출 0건');
+  return races;
+ }finally{clearTimeout(timer);}
+}
+
+async function collect(){
+ let items=[],origin='마라톤온라인 (Roadrun)',originUrl=BASE,method='primary',note='';
+ try{
+  let robots='';
+  try{robots=(await get(new URL('/robots.txt',BASE).href)).html;}
+  catch(e){if(!/HTTP 404\b/.test(e.message))throw Error('robots.txt 확인 실패: '+e.message);}
+  const queue=[BASE],seen=new Set();
+  while(queue.length&&seen.size<6){
+   const url=queue.shift();if(seen.has(url))continue;seen.add(url);
+   if(!allowed(robots,url))throw Error('원본 robots.txt에서 해당 경로 제한');
+   const page=await get(url);
+   items.push(...parseRows(page.html,page.url));
+   for(const link of nextPages(page.html,page.url))if(!seen.has(link)&&!queue.includes(link))queue.push(link);
+   if(queue.length)await new Promise(done=>setTimeout(done,550));
+  }
+  if(!items.length)throw Error('원본 대회 추출 0건');
+ }catch(e){
+  note=String(e.message).slice(0,160);
+  console.warn('[marathon-sync] 원본 연결 불가, 대체 출처 확인:',note);
+  items=await fallbackPlayAtlas();
+  origin='PLAYATLAS (대체 공개 일정)';
+  originUrl=PLAYATLAS;
+  method='fallback';
+ }
+ const rows=[...new Map(items.map(r=>[r.name+'|'+r.date,r])).values()]
+  .sort((a,b)=>a.date.localeCompare(b.date)).slice(0,50);
+ if(!rows.length)throw Error('공개 대회 일정 0건. 기존 파일 보존');
+ fs.writeFileSync(OUT,JSON.stringify({schemaVersion:1,sourceName:origin,sourceUrl:originUrl,
+  asOf:kst(),updatedAt:new Date().toISOString(),status:'auto',method,
+  warning:method==='fallback'?'마라톤온라인 원본 서버가 접근되지 않아 대체 공개 출처를 참고했습니다.':'',
+  races:rows},null,2)+'\n');
+ console.log('[marathon-sync] 공개 대회 갱신 완료:',rows.length,'건, 출처:',origin);
 }
 if(require.main===module)collect().catch(e=>{console.error('[marathon-sync]',e.message);process.exitCode=1});
-module.exports={plain,kst,validDate,dateIn,courses,parseRows,allowed,nextPages,collect};
+module.exports={plain,kst,validDate,dateIn,courses,parseRows,parsePlayAtlas,allowed,nextPages,collect};
