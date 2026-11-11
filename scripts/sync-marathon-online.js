@@ -47,7 +47,7 @@ function allowed(robots,target){
 async function get(url){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),14000);
  try{const res=await fetch(url,{headers:{'User-Agent':BOT,'Accept':'text/html, text/plain'},signal:controller.signal});
- if(!HOSTS.has(new URL(res.url).hostname))throw Error('다른 호스트 리디렉션 거부');
+ if(!HOSTS.has(new URL(res.url).hostname))throw Error('다른 호스트 리디렉션 거부: '+new URL(res.url).hostname);
  if(!res.ok)throw Error('HTTP '+res.status+' '+url);
  const b=Buffer.from(await res.arrayBuffer());if(b.length>1500000)throw Error('응답 크기 초과');
  const c=res.headers.get('content-type')||'',charset=c.match(/charset=["']?([\w-]+)/i)?.[1]||b.toString('ascii',0,600).match(/charset=["']?([\w-]+)/i)?.[1]||'euc-kr';

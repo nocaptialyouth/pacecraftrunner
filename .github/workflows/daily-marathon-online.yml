@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Fetch allowed public schedule
+      - name: Probe original site with safe robots check
         run: node scripts/sync-marathon-online.js
       - name: Update repository dataset
         run: |
