@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceName": "PLAYATLAS (대체 공개 일정)",
   "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
-  "asOf": "2026-11-16",
-  "updatedAt": "2026-11-16T05:40:48.148Z",
+  "asOf": "2026-11-17",
+  "updatedAt": "2026-11-17T07:18:01.659Z",
   "status": "auto",
   "method": "fallback",
   "warning": "마라톤온라인 원본 서버가 접근되지 않아 대체 공개 출처를 참고했습니다.",
@@ -128,6 +128,37 @@
       "location": "",
       "courses": [
         "풀",
+        "하프",
+        "10km",
+        "5km"
+      ],
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "5e3111b64aa819ad01c2",
+      "name": "2026 긍정 하프 마라톤",
+      "date": "2026-11-28",
+      "url": "https://playatlas.to/ko/events/2026-%EA%B8%8D%EC%A0%95-%ED%95%98%ED%94%84-%EB%A7%88%EB%9D%BC%ED%86%A4",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
+      "source": "PLAYATLAS (대체 공개 일정)",
+      "location": "",
+      "courses": [
+        "하프",
+        "10km"
+      ],
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "63cad0b13fca129b63a4",
+      "name": "제1회 가야왕도 김해 전국어울림 마라톤대회",
+      "date": "2026-11-29",
+      "url": "https://playatlas.to/ko/events/%EC%A0%9C1%ED%9A%8C-%EA%B0%80%EC%95%BC%EC%99%95%EB%8F%84-%EA%B9%80%ED%95%B4-%EC%A0%84%EA%B5%AD%EC%96%B4%EC%9A%B8%EB%A6%BC-%EB%A7%88%EB%9D%BC%ED%86%A4%EB%8C%80%ED%9A%8C",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
+      "source": "PLAYATLAS (대체 공개 일정)",
+      "location": "",
+      "courses": [
         "하프",
         "10km",
         "5km"
