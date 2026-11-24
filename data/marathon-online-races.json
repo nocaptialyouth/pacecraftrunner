@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceName": "PLAYATLAS (대체 공개 일정)",
   "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
-  "asOf": "2026-11-23",
-  "updatedAt": "2026-11-23T06:44:04.544Z",
+  "asOf": "2026-11-24",
+  "updatedAt": "2026-11-24T09:11:15.622Z",
   "status": "auto",
   "method": "fallback",
   "warning": "마라톤온라인 원본 서버가 접근되지 않아 대체 공개 출처를 참고했습니다.",
@@ -192,6 +192,21 @@
       "location": "",
       "courses": [
         "하프",
+        "10km"
+      ],
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "131f1dcdf8d7e6c5f2d7",
+      "name": "2026 부산브릿지 마라톤",
+      "date": "2026-12-06",
+      "url": "https://playatlas.to/ko/events/2026-%EB%B6%80%EC%82%B0%EB%B8%8C%EB%A6%BF%EC%A7%80-%EB%A7%88%EB%9D%BC%ED%86%A4",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
+      "source": "PLAYATLAS (대체 공개 일정)",
+      "location": "",
+      "courses": [
+        "풀",
         "10km"
       ],
       "confidence": "미확인",
