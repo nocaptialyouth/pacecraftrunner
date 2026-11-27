@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "sourceName": "PLAYATLAS (대체 공개 일정)",
   "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
-  "asOf": "2026-11-26",
-  "updatedAt": "2026-11-26T07:38:09.134Z",
+  "asOf": "2026-11-27",
+  "updatedAt": "2026-11-27T07:36:02.494Z",
   "status": "auto",
   "method": "fallback",
   "warning": "마라톤온라인 원본 서버가 접근되지 않아 대체 공개 출처를 참고했습니다.",
@@ -45,22 +45,6 @@
       "name": "제1회 가야왕도 김해 전국어울림 마라톤대회",
       "date": "2026-11-29",
       "url": "https://playatlas.to/ko/events/%EC%A0%9C1%ED%9A%8C-%EA%B0%80%EC%95%BC%EC%99%95%EB%8F%84-%EA%B9%80%ED%95%B4-%EC%A0%84%EA%B5%AD%EC%96%B4%EC%9A%B8%EB%A6%BC-%EB%A7%88%EB%9D%BC%ED%86%A4%EB%8C%80%ED%9A%8C",
-      "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
-      "source": "PLAYATLAS (대체 공개 일정)",
-      "location": "",
-      "courses": [
-        "하프",
-        "10km",
-        "5km"
-      ],
-      "confidence": "미확인",
-      "status": "pending"
-    },
-    {
-      "id": "a63a87b3ffd202ff097e",
-      "name": "2026 새한미디어 마라톤",
-      "date": "2026-11-29",
-      "url": "https://playatlas.to/ko/events/2026-%EC%83%88%ED%95%9C%EB%AF%B8%EB%94%94%EC%96%B4-%EB%A7%88%EB%9D%BC%ED%86%A4",
       "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
       "source": "PLAYATLAS (대체 공개 일정)",
       "location": "",
@@ -208,6 +192,21 @@
       "courses": [
         "풀",
         "10km"
+      ],
+      "confidence": "미확인",
+      "status": "pending"
+    },
+    {
+      "id": "94bfea164acb6dc7bffc",
+      "name": "제1회 정읍시 고향사랑기부마라톤대회",
+      "date": "2026-12-06",
+      "url": "https://playatlas.to/ko/events/2026-%EC%A0%9C1%ED%9A%8C-%EC%A0%95%EC%9D%8D%EC%8B%9C-%EA%B3%A0%ED%96%A5%EC%82%AC%EB%9E%91%EA%B8%B0%EB%B6%80%EB%A7%88%EB%9D%BC%ED%86%A4%EB%8C%80%ED%9A%8C",
+      "sourceUrl": "https://playatlas.to/ko/events/marathon/upcoming",
+      "source": "PLAYATLAS (대체 공개 일정)",
+      "location": "",
+      "courses": [
+        "10km",
+        "5km"
       ],
       "confidence": "미확인",
       "status": "pending"
